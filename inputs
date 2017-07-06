@@ -11,7 +11,7 @@ numMGsmooth = 4 # number of GSRB smooths before and after MG coarsening
 num_mg     = 1 
 numMGIterations = 2 #this is the number of MG v-cycles in the preconditioner
 max_iterations = 100 #max number of solver iterations
-max_NL_iterations = 5 #non linear outside loop iterations
+max_NL_iterations = 2 #non linear outside loop iterations
 tolerance  = 1.0e-9   #solver tolerance for declaring convergence
 hang       = 1.0e-10  #solver tolerance for deciding when we're hung
 verbosity = 6 # higher number means more verbose output
@@ -27,7 +27,7 @@ coefficient_average_type = harmonic
 max_level    = 2
 ref_ratio    = 2 2 2 2 2 
 n_cells      = 32 32 32
-read_in_grids
+#read_in_grids
 
 
 # AMR Mesh generation parameters

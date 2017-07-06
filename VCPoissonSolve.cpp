@@ -40,6 +40,7 @@ using std::cerr;
 /* see BoxTools/BaseFabMacros.H  for ForAllXBNN loop macro */
 void
 setACoef(LevelData<FArrayBox>& a_aCoef,
+         LevelData<FArrayBox>& a_phi,
          const VCPoissonParameters& a_params,
          const RealVect& a_dx)
 {
@@ -99,6 +100,31 @@ setBCoef(LevelData<FluxBox>& a_bCoef,
     }
 }
 
+void
+setCCoef(LevelData<FArrayBox>& a_cCoef,
+         const VCPoissonParameters& a_params,
+         const RealVect& a_dx)
+{
+  RealVect pos;
+  int num;
+  DataIterator dit = a_cCoef.dataIterator();
+  for (dit.begin(); dit.ok(); ++dit)
+    {
+      FArrayBox& cCoef = a_cCoef[dit];
+      ForAllXBNN(Real, cCoef, cCoef.box(), 0, cCoef.nComp());
+      {
+        num = nR;
+        D_TERM(pos[0]=a_dx[0]*(iR+0.5);,
+               pos[1]=a_dx[1]*(jR+0.5);,
+               pos[2]=a_dx[2]*(kR+0.5));
+        cCoefR = pos[0];// this just fixed the aCoef to be x (which is what was also set in functionsF.Chf:w
+        // Eugene change 
+//        aCoefR = D_TERM(pos[0]*,pos[1]*,pos[2]);
+        // constant-coefficient
+        //aCoefR = 1.0;
+      }EndFor;
+    } // end loop over grids
+}
 
 
 /******/
@@ -113,6 +139,7 @@ int poissonSolve(Vector<LevelData<FArrayBox>* >& a_phi,
   a_phi.resize(nlevels);
   a_rhs.resize(nlevels);
   Vector<RefCountedPtr<LevelData<FArrayBox> > > aCoef(nlevels);
+  Vector<RefCountedPtr<LevelData<FArrayBox> > > cCoef(nlevels);
   Vector<RefCountedPtr<LevelData<FluxBox> > > bCoef(nlevels);
   Vector<ProblemDomain> vectDomains(nlevels);
   Vector<RealVect> vectDx(nlevels);
@@ -127,12 +154,16 @@ int poissonSolve(Vector<LevelData<FArrayBox>* >& a_phi,
       a_rhs[ilev] = new LevelData<FArrayBox>(a_grids[ilev], 1,IntVect::Zero);
       a_phi[ilev] = new LevelData<FArrayBox>(a_grids[ilev], 1,IntVect::Unit);
       aCoef[ilev] = RefCountedPtr<LevelData<FArrayBox> >(new LevelData<FArrayBox>(a_grids[ilev], 1, IntVect::Zero));
+      cCoef[ilev] = RefCountedPtr<LevelData<FArrayBox> >(new LevelData<FArrayBox>(a_grids[ilev], 1, IntVect::Zero));
       bCoef[ilev] = RefCountedPtr<LevelData<FluxBox> >(new LevelData<FluxBox>(a_grids[ilev], 1, IntVect::Zero));
       vectDomains[ilev] = domLev;
       vectDx[ilev] = dxLev;
 
-      set_initial_phi (*a_phi[ilev], dxLev, a_params);
+      set_initial_phi (*a_phi[ilev], vectDx[ilev], a_params);
 
+      //prepare dx, domain for next level
+      dxLev /=      a_params.refRatio[ilev];
+      domLev.refine(a_params.refRatio[ilev]);
     }
 
 
@@ -172,19 +203,17 @@ int poissonSolve(Vector<LevelData<FArrayBox>* >& a_phi,
     // Assign values here
     for (int ilev = 0; ilev < nlevels; ilev++)
       {
-        setACoef(*aCoef[ilev], a_params, dxLev);
-        setBCoef(*bCoef[ilev], a_params, dxLev);
+        setACoef(*aCoef[ilev], *a_phi[ilev], a_params, vectDx[ilev]);
+        setBCoef(*bCoef[ilev], a_params, vectDx[ilev]);
+        setCCoef(*cCoef[ilev], a_params, vectDx[ilev]);
 
 //        for (DataIterator dit = a_grids[ilev].dataIterator(); dit.ok(); ++dit)
 //          {
 //            (*a_phi[ilev])[dit()].setVal(0.);
 //          }
 
-        setRHS (*a_rhs[ilev], *a_phi[ilev], dxLev, a_params);
+        setRHS (*a_rhs[ilev], *a_phi[ilev], vectDx[ilev], a_params);
 
-        //prepare dx, domain for next level
-        dxLev /=      a_params.refRatio[ilev];
-        domLev.refine(a_params.refRatio[ilev]);
       }
 
     // set up solver
@@ -205,7 +234,7 @@ int poissonSolve(Vector<LevelData<FArrayBox>* >& a_phi,
 
     solver.solve(a_phi, a_rhs);
 
-    delete opFactory;
+//    delete opFactory;
   }
 
 
@@ -298,8 +327,9 @@ int main(int argc, char* argv[])
     //read params from file
     getPoissonParameters(param);
     int nlevels = param.numLevels;
-    Vector<LevelData<FArrayBox>* > phi(nlevels, NULL);
-    Vector<LevelData<FArrayBox>* > rhs(nlevels, NULL);
+    Vector<LevelData<FArrayBox>* > phi(nlevels, NULL); // chi
+//    Vector<LevelData<FArrayBox>* > psi(nlevels, NULL); // scalar field 
+    Vector<LevelData<FArrayBox>* > rhs(nlevels, NULL); // rhs
 
     setGrids(grids,  param);
 

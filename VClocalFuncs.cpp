@@ -503,7 +503,7 @@ void set_initial_phi(LevelData<FArrayBox>&    a_phi,
 {
   CH_assert(a_phi.nComp() == 1);
   int comp=0;
-  const RealVect&    trig = getTrigRV();
+//  const RealVect&    trig = getTrigRV();
 
   for (DataIterator dit = a_phi.dataIterator(); dit.ok(); ++dit)
   {
@@ -547,6 +547,25 @@ void setRHS(LevelData<FArrayBox>&    a_rhs,
 
     }
 }
+
+/********/
+void setRHS_VC(LevelData<FArrayBox>&    a_rhs,
+            LevelData<FArrayBox>&    a_phi,
+            const RealVect&          a_dx,
+            const VCPoissonParameters& a_params)
+{
+  CH_assert(a_rhs.nComp() == 1);
+  int comp = 0;
+
+  for (DataIterator dit = a_rhs.dataIterator(); dit.ok(); ++dit)
+  {
+      FArrayBox& thisRHS = a_rhs[dit()];
+      Box thisBox = thisRHS.box();
+  }
+}
+
+
+
 
 
 extern

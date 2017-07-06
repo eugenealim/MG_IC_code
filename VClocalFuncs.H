@@ -74,6 +74,11 @@ extern void setRHS(LevelData<FArrayBox>&    a_rhs,
                    const RealVect&          a_dx,
                    const VCPoissonParameters& a_params);
 
+extern void setRHS_VC(LevelData<FArrayBox>&    a_rhs,
+                     LevelData<FArrayBox>&    a_phi,
+                     const RealVect&          a_dx,
+                     const VCPoissonParameters& a_params);
+
 extern void set_initial_phi(LevelData<FArrayBox>&    a_phi,
                    const RealVect&          a_dx,
                    const VCPoissonParameters& a_params);
