@@ -4,6 +4,7 @@ refine_threshold = 0.85
 # spatially-varying aCoef and bCoef are set in the example itself
 alpha = 1.0
 beta  = 1.0
+gamma = 0.0
 
 write_output = 1 # write solution to an hdf5 plotfile
 numMGsmooth = 4 # number of GSRB smooths before and after MG coarsening
@@ -23,6 +24,14 @@ trig = 1.3 2.2 3.1
 #coefficient_average_type = arithmetic
 coefficient_average_type = harmonic
 
+# problem type 0=original 1=gaussians
+probtype = 1
+
+# VC Coef type
+ACoeftype = 1 # 0 is A(x) = x, 1 is A(x) = 1
+BCoeftype = 1 # 0 is B(x) = , 1 is B(x) = (1,1,1) 
+CCoeftype = 0 #
+
 ###GRID STUFF
 max_level    = 2
 ref_ratio    = 2 2 2 2 2 
@@ -41,10 +50,14 @@ domain_length = 1.0 1.0 1.0
 
 # bcs for domain-boundary faces 
 # 2==trig Neumann, 3 == trig Dirichlet
-bc_lo              = 3 3 3   
-bc_hi              = 3 3 3   
+# 1== const Neumann, 0 == const Dirichlet
+#bc_lo              = 3 3 3   
+#bc_hi              = 3 3 3   
 #bc_lo              = 2 2 2    
 #bc_hi              = 2 2 2  
+bc_lo              = 0 0 0
+bc_hi              = 0 0 0  
+bc_value = 0.0
 
 
 

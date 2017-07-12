@@ -36,6 +36,7 @@ c     end debug
      &    chf_const_realvect[probhi],
      &    chf_const_real[aCoef],
      &    chf_const_real[bCoef],
+     &    chf_const_real[cCoef],
      &    chf_box[box])
 
         integer chf_ddecl[i;j;k]
@@ -50,7 +51,7 @@ c
           x(1) = (j+half)*dx(1) + problo(1);
           x(2) = (k+half)*dx(2) + problo(2)]
 
-          call getlofphipoint(lofphi(chf_ix[i;j;k]),freq,x,aCoef,bCoef)
+          call getlofphipoint(lofphi(chf_ix[i;j;k]),freq,x,aCoef,bCoef,cCoef)
         chf_enddo
 
         return
@@ -62,7 +63,8 @@ c
      &    chf_const_realvect[freq],
      &    chf_const_realvect[x],
      &    chf_const_real[aCoefmult],
-     &    chf_const_real[bCoefmult])
+     &    chf_const_real[bCoefmult],
+     &    chf_const_real[cCoefmult])
 
         integer dir
         real_t fac,phi, temp
@@ -70,6 +72,7 @@ c
 c       set lofphi to l(a trig function at the spatial coordinates)
 c       aCoef = aCoefmult*x
 c       bCoef = bCoefmult*(x+y+z)
+c       cCoef is the laplacian term NEED TO ADD (eugene)
 c
         fac = -(chf_dterm[freq(0)**2;
      &                  + freq(1)**2;

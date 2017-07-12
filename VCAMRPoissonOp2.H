@@ -86,14 +86,15 @@ public:
   /*@{*/
 
   /// For tga stuff
-  virtual void setAlphaAndBeta(const Real& a_alpha,
-                               const Real& a_beta);
+  virtual void setAlphaAndBetaAndGamma(const Real& a_alpha,
+                               const Real& a_beta, const Real& a_gamma);
 
   /// Also calls reset lambda
   virtual void setCoefs(const RefCountedPtr<LevelData<FArrayBox> >& a_aCoef,
                         const RefCountedPtr<LevelData<FluxBox>   >& a_bCoef,
                         const Real& a_alpha,
-                        const Real& a_beta);
+                        const Real& a_beta,
+                        const Real& a_gamma);
 
   /// Should be called before the relaxation parameter is needed.
   virtual void resetLambda();
@@ -153,6 +154,9 @@ public:
 
   /// Reciprocal of the diagonal entry of the operator matrix
   LevelData<FArrayBox> m_lambda;
+
+  /// Some new public constants, in addition to m_alpha and m_beta inherited from AMRPoissonOp
+  Real m_gamma;
 
 protected:
   LayoutData<CFIVS> m_loCFIVS[SpaceDim];
@@ -223,6 +227,7 @@ public:
      a_bc holds the boundary conditions.
      a_alpha is the identity constant coefficient
      a_beta is the laplacian constant coefficient.
+     a_gamma is the pure laplacian constant coefficient.
      a_aCoef is the identity spatially varying coefficient
      a_bCoef is the laplacian spatially varying coefficient.
   */
@@ -234,7 +239,8 @@ public:
               const Real&                                    a_alpha,
               Vector<RefCountedPtr<LevelData<FArrayBox> > >& a_aCoef,
               const Real&                                    a_beta,
-              Vector<RefCountedPtr<LevelData<FluxBox> > >&   a_bCoef);
+              Vector<RefCountedPtr<LevelData<FluxBox> > >&   a_bCoef,
+              const Real&                                    a_gamma);
 
   //! Defines a factory for VCAMRPoissonOp2 which allows the operators to
   //! allocate their own coefficient data. \f$\alpha\f$ and \f$\beta\f$
@@ -278,6 +284,7 @@ private:
 
   Real m_alpha;
   Real m_beta;
+  Real m_gamma;
 
   Vector<RefCountedPtr<LevelData<FArrayBox> > > m_aCoef;
   Vector<RefCountedPtr<LevelData<FluxBox> > >   m_bCoef;

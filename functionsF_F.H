@@ -45,6 +45,7 @@ void FORTRAN_NAME( GETLOFPHI ,getlofphi )(
       ,CHFp_CONST_REALVECT(probhi)
       ,CHFp_CONST_REAL(aCoef)
       ,CHFp_CONST_REAL(bCoef)
+      ,CHFp_CONST_REAL(cCoef)
       ,CHFp_BOX(box) );
 
 #define FORT_GETLOFPHI FORTRAN_NAME( inlineGETLOFPHI, inlineGETLOFPHI)
@@ -58,6 +59,7 @@ inline void FORTRAN_NAME(inlineGETLOFPHI, inlineGETLOFPHI)(
       ,CHFp_CONST_REALVECT(probhi)
       ,CHFp_CONST_REAL(aCoef)
       ,CHFp_CONST_REAL(bCoef)
+      ,CHFp_CONST_REAL(cCoef)
       ,CHFp_BOX(box) )
 {
  CH_TIMELEAF("FORT_GETLOFPHI");
@@ -69,6 +71,7 @@ inline void FORTRAN_NAME(inlineGETLOFPHI, inlineGETLOFPHI)(
       ,CHFt_CONST_REALVECT(probhi)
       ,CHFt_CONST_REAL(aCoef)
       ,CHFt_CONST_REAL(bCoef)
+      ,CHFt_CONST_REAL(cCoef)
       ,CHFt_BOX(box) );
 }
 #endif  // GUARDGETLOFPHI 
@@ -82,7 +85,8 @@ void FORTRAN_NAME( GETLOFPHIPOINT ,getlofphipoint )(
       ,CHFp_CONST_REALVECT(freq)
       ,CHFp_CONST_REALVECT(x)
       ,CHFp_CONST_REAL(aCoefmult)
-      ,CHFp_CONST_REAL(bCoefmult) );
+      ,CHFp_CONST_REAL(bCoefmult)
+      ,CHFp_CONST_REAL(cCoefmult) );
 
 #define FORT_GETLOFPHIPOINT FORTRAN_NAME( inlineGETLOFPHIPOINT, inlineGETLOFPHIPOINT)
 #define FORTNT_GETLOFPHIPOINT FORTRAN_NAME( GETLOFPHIPOINT, getlofphipoint)
@@ -92,7 +96,8 @@ inline void FORTRAN_NAME(inlineGETLOFPHIPOINT, inlineGETLOFPHIPOINT)(
       ,CHFp_CONST_REALVECT(freq)
       ,CHFp_CONST_REALVECT(x)
       ,CHFp_CONST_REAL(aCoefmult)
-      ,CHFp_CONST_REAL(bCoefmult) )
+      ,CHFp_CONST_REAL(bCoefmult)
+      ,CHFp_CONST_REAL(cCoefmult) )
 {
  CH_TIMELEAF("FORT_GETLOFPHIPOINT");
  FORTRAN_NAME( GETLOFPHIPOINT ,getlofphipoint )(
@@ -100,7 +105,8 @@ inline void FORTRAN_NAME(inlineGETLOFPHIPOINT, inlineGETLOFPHIPOINT)(
       ,CHFt_CONST_REALVECT(freq)
       ,CHFt_CONST_REALVECT(x)
       ,CHFt_CONST_REAL(aCoefmult)
-      ,CHFt_CONST_REAL(bCoefmult) );
+      ,CHFt_CONST_REAL(bCoefmult)
+      ,CHFt_CONST_REAL(cCoefmult) );
 }
 #endif  // GUARDGETLOFPHIPOINT 
 

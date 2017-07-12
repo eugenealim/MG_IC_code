@@ -46,23 +46,39 @@ setACoef(LevelData<FArrayBox>& a_aCoef,
 {
   RealVect pos;
   int num;
-  DataIterator dit = a_aCoef.dataIterator();
-  for (dit.begin(); dit.ok(); ++dit)
+
+  if (a_params.ACoeftype == 0) // original
     {
-      FArrayBox& aCoef = a_aCoef[dit];
-      ForAllXBNN(Real, aCoef, aCoef.box(), 0, aCoef.nComp());
+    DataIterator dit = a_aCoef.dataIterator();
+    for (dit.begin(); dit.ok(); ++dit)
       {
-        num = nR;
-        D_TERM(pos[0]=a_dx[0]*(iR+0.5);,
-               pos[1]=a_dx[1]*(jR+0.5);,
-               pos[2]=a_dx[2]*(kR+0.5));
-        aCoefR = pos[0];// this just fixed the aCoef to be x (which is what was also set in functionsF.Chf:w
-        // Eugene change 
-//        aCoefR = D_TERM(pos[0]*,pos[1]*,pos[2]);
-        // constant-coefficient
-        //aCoefR = 1.0;
-      }EndFor;
-    } // end loop over grids
+        FArrayBox& aCoef = a_aCoef[dit];
+        ForAllXBNN(Real, aCoef, aCoef.box(), 0, aCoef.nComp());  // Macros in BoxTools/BaseFabMacros.H
+        {
+          num = nR;
+          D_TERM(pos[0]=a_dx[0]*(iR+0.5);,
+                pos[1]=a_dx[1]*(jR+0.5);,
+                pos[2]=a_dx[2]*(kR+0.5));
+          aCoefR = pos[0];// this just fixed the aCoef to be x (which is what was also set in functionsF.Chf:w
+          // Eugene change 
+  //        aCoefR = D_TERM(pos[0]*,pos[1]*,pos[2]);
+          // constant-coefficient
+          //aCoefR = 1.0;
+        }EndFor;
+      } // end loop over grids
+    }
+  else if (a_params.ACoeftype == 1) // ACoef is constant 1
+    {
+      DataIterator dit = a_aCoef.dataIterator();
+      for (dit.begin(); dit.ok(); ++dit)
+        {
+          FArrayBox& aCoef = a_aCoef[dit];
+          ForAllXBNN(Real, aCoef, aCoef.box(), 0, aCoef.nComp());
+          {
+            aCoefR = 1.0; // constant 
+          }
+        }EndFor;
+    } // end ACoeftype
 }
 
 
@@ -71,33 +87,55 @@ setBCoef(LevelData<FluxBox>& a_bCoef,
          const VCPoissonParameters& a_params,
          const RealVect& a_dx)
 {
-  DataIterator dit = a_bCoef.dataIterator();
-  for (dit.begin(); dit.ok(); ++dit)
+  if (a_params.BCoeftype == 0 ) // original
     {
-      FluxBox& thisBCoef = a_bCoef[dit];
-      for (int dir=0; dir<SpaceDim; dir++)
-        {
-          FArrayBox& dirFlux = thisBCoef[dir];
-          const Box& dirBox = dirFlux.box();
-          // this sets up a vector which is 0 in the dir
-          // direct and 0.5 in the other (cell-centered) directions
-          RealVect offsets = BASISREALV(dir);
-          RealVect pos;
-          offsets -= RealVect::Unit;
-          offsets *= -0.5;
-          int n;
-          ForAllXBNN(Real, dirFlux, dirBox, 0, dirFlux.nComp())
-            {
-              n = nR;
-              D_TERM(pos[0] = a_dx[0]*(iR+offsets[0]);,
-                     pos[1] = a_dx[1]*(jR+offsets[1]);,
-                     pos[2] = a_dx[2]*(kR+offsets[2]));
-              dirFluxR = D_TERM(pos[0], +pos[1], +pos[2]);
-              // constant-coefficient
-              //dirFluxR = 1.0;
-            }EndFor
-        } // end loop over directions
+    DataIterator dit = a_bCoef.dataIterator();
+    for (dit.begin(); dit.ok(); ++dit)
+      {
+        FluxBox& thisBCoef = a_bCoef[dit];
+        for (int dir=0; dir<SpaceDim; dir++)
+          {
+            FArrayBox& dirFlux = thisBCoef[dir];
+            const Box& dirBox = dirFlux.box();
+            // this sets up a vector which is 0 in the dir
+            // direct and 0.5 in the other (cell-centered) directions
+            RealVect offsets = BASISREALV(dir);
+            RealVect pos;
+            offsets -= RealVect::Unit;
+            offsets *= -0.5;
+            int n;
+            ForAllXBNN(Real, dirFlux, dirBox, 0, dirFlux.nComp())
+              {
+                n = nR;
+                D_TERM(pos[0] = a_dx[0]*(iR+offsets[0]);,
+                      pos[1] = a_dx[1]*(jR+offsets[1]);,
+                      pos[2] = a_dx[2]*(kR+offsets[2]));
+                dirFluxR = D_TERM(pos[0], +pos[1], +pos[2]);
+                // constant-coefficient
+                //dirFluxR = 1.0;
+              }EndFor
+          } // end loop over directions
+      }
     }
+  else if (a_params.BCoeftype == 1) // B(x) = (1,1,1)
+    {
+    DataIterator dit = a_bCoef.dataIterator();
+    for (dit.begin(); dit.ok(); ++dit)
+      {
+        FluxBox& thisBCoef = a_bCoef[dit];
+        for (int dir=0; dir<SpaceDim; dir++)
+          {
+            FArrayBox& dirFlux = thisBCoef[dir];
+            const Box& dirBox = dirFlux.box();
+            // this sets up a vector which is 0 in the dir
+            // direct and 0.5 in the other (cell-centered) directions
+            ForAllXBNN(Real, dirFlux, dirBox, 0, dirFlux.nComp())
+              {
+                dirFluxR = 1.0; // constant direction
+              }EndFor
+          } // end loop over directions
+      }
+    } // end BCoeftype
 }
 
 void

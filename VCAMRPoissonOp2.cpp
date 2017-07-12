@@ -81,6 +81,7 @@ void VCAMRPoissonOp2::residualI(LevelData<FArrayBox>&       a_lhs,
 #if CH_SPACEDIM >= 4
                           This_will_not_compile!
 #endif
+                          CHF_CONST_REAL(m_gamma),
                           CHF_BOX(region),
                           CHF_CONST_REAL(m_dx));
     } // end loop over boxes
@@ -187,6 +188,7 @@ void VCAMRPoissonOp2::applyOpNoBoundary(LevelData<FArrayBox>&      a_lhs,
 #if CH_SPACEDIM >= 4
                          This_will_not_compile!
 #endif
+                         CHF_CONST_REAL(m_gamma),
                          CHF_BOX(region),
                          CHF_CONST_REAL(m_dx));
     } // end loop over boxes
@@ -250,16 +252,19 @@ void VCAMRPoissonOp2::restrictResidual(LevelData<FArrayBox>&       a_resCoarse,
 #if CH_SPACEDIM >= 4
                            This_will_not_compile!
 #endif
+                           CHF_CONST_REAL(m_gamma),
                            CHF_BOX_SHIFT(region, iv),
                            CHF_CONST_REAL(m_dx));
     }
 }
 
-void VCAMRPoissonOp2::setAlphaAndBeta(const Real& a_alpha,
-                                      const Real& a_beta)
+void VCAMRPoissonOp2::setAlphaAndBetaAndGamma(const Real& a_alpha,
+                                              const Real& a_beta,
+                                              const Real& a_gamma)
 {
   m_alpha = a_alpha;
   m_beta  = a_beta;
+  m_gamma = a_gamma;
 
   // Our relaxation parameter is officially out of date!
   m_lambdaNeedsResetting = true;
@@ -268,10 +273,12 @@ void VCAMRPoissonOp2::setAlphaAndBeta(const Real& a_alpha,
 void VCAMRPoissonOp2::setCoefs(const RefCountedPtr<LevelData<FArrayBox> >& a_aCoef,
                                const RefCountedPtr<LevelData<FluxBox  > >& a_bCoef,
                                const Real&                                 a_alpha,
-                               const Real&                                 a_beta)
+                               const Real&                                 a_beta,
+                               const Real&                                 a_gamma)
 {
   m_alpha = a_alpha;
   m_beta  = a_beta;
+  m_gamma = a_gamma;
 
   m_aCoef = a_aCoef;
   m_bCoef = a_bCoef;
@@ -620,6 +627,7 @@ void VCAMRPoissonOp2::levelGSRB(LevelData<FArrayBox>&       a_phi,
 #if CH_SPACEDIM >= 4
                                  This_will_not_compile!
 #endif
+                                 CHF_CONST_REAL(m_gamma),
                                  CHF_CONST_FRA(m_lambda[dit]),
                                  CHF_CONST_INT(whichPass));
         } // end loop through grids
@@ -707,6 +715,7 @@ void VCAMRPoissonOp2::looseGSRB(LevelData<FArrayBox>&       a_phi,
 #if CH_SPACEDIM >= 4
                            This_will_not_compile!
 #endif
+                           CHF_CONST_REAL(m_gamma),
                            CHF_CONST_FRA(m_lambda[dit]),
                            CHF_CONST_INT(whichPass));
 
@@ -740,6 +749,7 @@ void VCAMRPoissonOp2::looseGSRB(LevelData<FArrayBox>&       a_phi,
 #if CH_SPACEDIM >= 4
                            This_will_not_compile!
 #endif
+                           CHF_CONST_REAL(m_gamma),
                            CHF_CONST_FRA(m_lambda[dit]),
                            CHF_CONST_INT(whichPass));
   } // end loop through grids
@@ -879,7 +889,8 @@ void VCAMRPoissonOp2Factory::define(const ProblemDomain&                        
                                    const Real&                                    a_alpha,
                                    Vector<RefCountedPtr<LevelData<FArrayBox> > >& a_aCoef,
                                    const Real&                                    a_beta,
-                                   Vector<RefCountedPtr<LevelData<FluxBox> > >&   a_bCoef)
+                                   Vector<RefCountedPtr<LevelData<FluxBox> > >&   a_bCoef,
+                                   const Real&                                    a_gamma)
 {
   CH_TIME("VCAMRPoissonOp2Factory::define");
 
@@ -922,6 +933,8 @@ void VCAMRPoissonOp2Factory::define(const ProblemDomain&                        
 
   m_beta  = a_beta;
   m_bCoef = a_bCoef;
+
+  m_gamma = a_gamma;
 }
 //-----------------------------------------------------------------------
 
@@ -956,9 +969,9 @@ define(const ProblemDomain& a_coarseDomain,
         (*bCoef[i])[dit()][idir].setVal(1.0);
     }
   }
-  Real alpha = 1.0, beta = 1.0;
+  Real alpha = 1.0, beta = 1.0, gamma = 1.0;
   define(a_coarseDomain, a_grids, a_refRatios, a_coarsedx, a_bc,
-         alpha, aCoef, beta, bCoef);
+         alpha, aCoef, beta, bCoef, gamma);
 }
 //-----------------------------------------------------------------------
 
@@ -1022,6 +1035,7 @@ MGLevelOp<LevelData<FArrayBox> >* VCAMRPoissonOp2Factory::MGnewOp(const ProblemD
 
   newOp->m_alpha = m_alpha;
   newOp->m_beta  = m_beta;
+  newOp->m_gamma = m_gamma;
 
   if (a_depth == 0)
     {
@@ -1138,6 +1152,7 @@ AMRLevelOp<LevelData<FArrayBox> >* VCAMRPoissonOp2Factory::AMRnewOp(const Proble
 
   newOp->m_alpha = m_alpha;
   newOp->m_beta  = m_beta;
+  newOp->m_gamma = m_gamma;
 
   newOp->m_aCoef = m_aCoef[ref];
   newOp->m_bCoef = m_bCoef[ref];
@@ -1177,6 +1192,7 @@ void VCAMRPoissonOp2Factory::setDefaultValues()
   // Default to Laplacian operator
   m_alpha = 0.0;
   m_beta = -1.0;
+  m_gamma = 1.0;
 
   m_coefficient_average_type = CoarseAverage::arithmetic;
 }

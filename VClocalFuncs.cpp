@@ -267,6 +267,12 @@ void getPoissonParameters(VCPoissonParameters&  a_params)
   pp.get("buffer_size",a_params.bufferSize);
   pp.get("alpha",a_params.alpha);
   pp.get("beta", a_params.beta);
+  pp.get("gamma", a_params.gamma);
+
+  pp.query("probtype", a_params.probtype);
+  pp.query("ACoeftype", a_params.ACoeftype);
+  pp.query("BCoeftype", a_params.BCoeftype);
+  pp.query("CCoeftype", a_params.CCoeftype);
 
   // set to a bogus default value, so we only break from solver
   // default if it's set to something real
@@ -530,23 +536,85 @@ void setRHS(LevelData<FArrayBox>&    a_rhs,
   CH_assert(a_rhs.nComp() == 1);
 
   int comp = 0;
-  const RealVect&  trig = getTrigRV();
 
   for (DataIterator dit = a_rhs.dataIterator(); dit.ok(); ++dit)
     {
       FArrayBox& thisRHS = a_rhs[dit()];
       Box thisBox = thisRHS.box();
-      FORT_GETLOFPHI(CHF_FRA1(thisRHS,comp),
-                     CHF_CONST_REALVECT(trig),
-                     CHF_CONST_REALVECT(a_dx),
-                     CHF_CONST_REALVECT(a_params.probLo),
-                     CHF_CONST_REALVECT(a_params.probHi),
-                     CHF_CONST_REAL(a_params.alpha),
-                     CHF_CONST_REAL(a_params.beta),
-                     CHF_BOX(thisBox));
 
-    }
-}
+      if (a_params.probtype == 0) // original
+        {
+          const RealVect&  trig = getTrigRV();
+          FORT_GETLOFPHI(CHF_FRA1(thisRHS,comp),
+                        CHF_CONST_REALVECT(trig),
+                        CHF_CONST_REALVECT(a_dx),
+                        CHF_CONST_REALVECT(a_params.probLo),
+                        CHF_CONST_REALVECT(a_params.probHi),
+                        CHF_CONST_REAL(a_params.alpha),
+                        CHF_CONST_REAL(a_params.beta),
+                        CHF_CONST_REAL(a_params.gamma),
+                        CHF_BOX(thisBox));
+        } 
+      else if (a_params.probtype == 1) // gaussians
+        {
+          // rhs is cell-centered...
+          RealVect ccOffset = 0.5*a_dx*RealVect::Unit;
+          int numGaussians = 3;
+          Vector<RealVect> center(numGaussians,RealVect::Zero);
+          Vector<Real> scale(numGaussians, 1.0);
+          Vector<Real> strength(numGaussians, 1.0);
+          
+          for (int n=0; n<numGaussians; n++)
+            {
+              if (n==0)
+                {
+                  strength[0] = 1.0;
+                  scale[0] = 1.0e-2;
+                  center[0] = 0.25*RealVect::Unit;
+                }
+              else if (n == 1)
+                {
+                  strength[1] = 3.0;
+                  scale[1] = 1.0e-2;
+                  center[1] = RealVect(D_DECL(0.5,0.75, 0.75));
+                }
+              else if (n == 2)
+                {
+                  strength[2] = 2.0;
+                  scale[2] = 1.0e-2;
+                  center[2] = RealVect(D_DECL(0.75,0.5, 0.5));
+                }
+              else
+                {
+                  MayDay::Error("too many Gaussian sources attempted");
+                }
+            }
+
+          thisRHS.setVal(0,0);
+
+          BoxIterator bit(thisRHS.box());
+          for (bit.begin(); bit.ok(); ++bit)
+            {
+              IntVect iv = bit();
+              RealVect loc(iv);
+              loc *= a_dx;
+              loc += ccOffset;
+
+              for (int n=0; n<numGaussians; n++)
+                {
+                  RealVect dist = loc - center[n];
+                  Real radSqr = D_TERM(dist[0]*dist[0],
+                                        +dist[1]*dist[1],
+                                        +dist[2]*dist[2]);
+
+                    Real val = strength[n]*exp(-radSqr/scale[n]);
+                    thisRHS(iv,0) += val;
+                  }
+              }
+        } // end prob_type
+     }
+
+} // end set_RHS
 
 /********/
 void setRHS_VC(LevelData<FArrayBox>&    a_rhs,
@@ -589,7 +657,8 @@ defineOperatorFactory(
                     a_params.alpha,
                     a_aCoef,
                     a_params.beta,
-                    a_bCoef);
+                    a_bCoef,
+                    a_params.gamma);
 
   if (a_params.coefficient_average_type >= 0)
     {

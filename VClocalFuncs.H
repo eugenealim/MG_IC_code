@@ -26,6 +26,7 @@ using std::cerr;
 ///
 /**
  */
+
 class VCPoissonParameters
 {
 public:
@@ -46,8 +47,13 @@ public:
   RealVect     probHi;
   Real         alpha;
   Real         beta;
+  Real         gamma;
   int          coefficient_average_type;
   int verbosity;
+  int probtype; // problem type
+  int ACoeftype; // ACoef type
+  int BCoeftype; // BCoef type
+  int CCoeftype; // CCoef type
 };
 
 ///

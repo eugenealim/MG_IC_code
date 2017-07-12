@@ -38,6 +38,7 @@ C     ------------------------------------------------------------------
      &     CHF_CONST_FRA[aCoef],
      &     CHF_CONST_REAL[beta],
      &     CHF_CONST_FRA[bCoef0],
+     &     CHF_CONST_REAL[gamma],
      &     CHF_CONST_FRA[lambda],
      &     CHF_CONST_INT[redBlack])
 #elif CH_SPACEDIM == 2
@@ -51,6 +52,7 @@ C     ------------------------------------------------------------------
      &     CHF_CONST_REAL[beta],
      &     CHF_CONST_FRA[bCoef0],
      &     CHF_CONST_FRA[bCoef1],
+     &     CHF_CONST_REAL[gamma],
      &     CHF_CONST_FRA[lambda],
      &     CHF_CONST_INT[redBlack])
 #elif CH_SPACEDIM == 3
@@ -65,13 +67,14 @@ C     ------------------------------------------------------------------
      &     CHF_CONST_FRA[bCoef0],
      &     CHF_CONST_FRA[bCoef1],
      &     CHF_CONST_FRA[bCoef2],
+     &     CHF_CONST_REAL[gamma],
      &     CHF_CONST_FRA[lambda],
      &     CHF_CONST_INT[redBlack])
 #else
       Somthing_that_will_not_compile
 #endif
 
-      REAL_T dxinv,lofphi
+      REAL_T dxinv,lofphi, lphi
       integer n,ncomp,indtot,imin,imax
       integer CHF_DDECL[i;j;k]
 
@@ -139,6 +142,24 @@ C     petermc, 26 april 2001
      &               * (phi(CHF_IX[i  ;j  ;k  ],n)-phi(CHF_IX[i  ;j  ;k-1],n)) ]
      &             ) * dxinv
 
+C laplacian term
+
+        lphi = CHF_DTERM[
+     &     (    phi(chf_ix[i+1;j  ;k  ],n)
+     &     +    phi(chf_ix[i-1;j  ;k  ],n)
+     $     -two*phi(chf_ix[i  ;j  ;k  ],n)) ;
+     $     +(   phi(chf_ix[i  ;j+1;k  ],n)
+     &     +    phi(chf_ix[i  ;j-1;k  ],n)
+     $     -two*phi(chf_ix[i  ;j  ;k  ],n)) ;
+     $     +(   phi(chf_ix[i  ;j  ;k+1],n)
+     &     +    phi(chf_ix[i  ;j  ;k-1],n)
+     $     -two*phi(chf_ix[i  ;j  ;k  ],n)) ]
+
+        lphi = lphi*dxinv
+
+        lofphi = lofphi + gamma*lphi
+C end laplacian term
+
               phi(CHF_IX[i;j;k],n) = phi(CHF_IX[i;j;k],n)
      &          - lambda(CHF_IX[i;j;k],n) * (lofphi - rhs(CHF_IX[i;j;k],n))
             enddo
@@ -180,6 +201,7 @@ C     ------------------------------------------------------------------
      &     CHF_CONST_FRA[aCoef],
      &     CHF_CONST_REAL[beta],
      &     CHF_CONST_FRA[bCoef0],
+     &     CHF_CONST_REAL[gamma],
      &     CHF_BOX[region],
      &     CHF_CONST_REAL[dx])
 #elif CH_SPACEDIM == 2
@@ -191,6 +213,7 @@ C     ------------------------------------------------------------------
      &     CHF_CONST_REAL[beta],
      &     CHF_CONST_FRA[bCoef0],
      &     CHF_CONST_FRA[bCoef1],
+     &     CHF_CONST_REAL[gamma],
      &     CHF_BOX[region],
      &     CHF_CONST_REAL[dx])
 #elif CH_SPACEDIM == 3
@@ -203,13 +226,14 @@ C     ------------------------------------------------------------------
      &     CHF_CONST_FRA[bCoef0],
      &     CHF_CONST_FRA[bCoef1],
      &     CHF_CONST_FRA[bCoef2],
+     &     CHF_CONST_REAL[gamma],
      &     CHF_BOX[region],
      &     CHF_CONST_REAL[dx])
 #else
       Somthing_that_will_not_compile
 #endif
 
-      REAL_T dxinv
+      REAL_T dxinv, lphi
       integer n,ncomp
 
       integer CHF_DDECL[i;j;k]
@@ -257,6 +281,26 @@ C     ------------------------------------------------------------------
      &         - bCoef2(CHF_IX[i  ;j  ;k  ],n)
      &           * (phi(CHF_IX[i  ;j  ;k  ],n) - phi(CHF_IX[i  ;j  ;k-1],n)) ]
      &         ) * dxinv
+
+C laplacian term
+
+        lphi = CHF_DTERM[
+     &     (    phi(chf_ix[i+1;j  ;k  ],n)
+     &     +    phi(chf_ix[i-1;j  ;k  ],n)
+     $     -two*phi(chf_ix[i  ;j  ;k  ],n)) ;
+     $     +(   phi(chf_ix[i  ;j+1;k  ],n)
+     &     +    phi(chf_ix[i  ;j-1;k  ],n)
+     $     -two*phi(chf_ix[i  ;j  ;k  ],n)) ;
+     $     +(   phi(chf_ix[i  ;j  ;k+1],n)
+     &     +    phi(chf_ix[i  ;j  ;k-1],n)
+     $     -two*phi(chf_ix[i  ;j  ;k  ],n)) ]
+
+        lphi = lphi*dxinv*gamma;
+
+        lofphi(CHF_IX[i;j;k],n) =  lofphi(CHF_IX[i;j;k],n) + lphi
+
+C end laplacian term
+
         CHF_ENDDO
       enddo
 
@@ -293,6 +337,7 @@ C     ------------------------------------------------------------------
      &     CHF_CONST_FRA[aCoef],
      &     CHF_CONST_REAL[beta],
      &     CHF_CONST_FRA[bCoef0],
+     &     CHF_CONST_REAL[gamma],
      &     CHF_BOX[region],
      &     CHF_CONST_REAL[dx])
 #elif CH_SPACEDIM == 2
@@ -305,6 +350,7 @@ C     ------------------------------------------------------------------
      &     CHF_CONST_REAL[beta],
      &     CHF_CONST_FRA[bCoef0],
      &     CHF_CONST_FRA[bCoef1],
+     &     CHF_CONST_REAL[gamma],
      &     CHF_BOX[region],
      &     CHF_CONST_REAL[dx])
 #elif CH_SPACEDIM == 3
@@ -318,13 +364,14 @@ C     ------------------------------------------------------------------
      &     CHF_CONST_FRA[bCoef0],
      &     CHF_CONST_FRA[bCoef1],
      &     CHF_CONST_FRA[bCoef2],
+     &     CHF_CONST_REAL[gamma],
      &     CHF_BOX[region],
      &     CHF_CONST_REAL[dx])
 #else
       Somthing_that_will_not_compile
 #endif
 
-      REAL_T dxinv
+      REAL_T dxinv,lphi
       integer n,ncomp
 
       integer CHF_DDECL[i;j;k]
@@ -374,6 +421,25 @@ C     ------------------------------------------------------------------
      &            * (phi(CHF_IX[i  ;j  ;k  ],n) - phi(CHF_IX[i  ;j  ;k-1],n)) ]
      &          ) * dxinv
      &        )
+
+C laplacian term
+
+        lphi = CHF_DTERM[
+     &     (    phi(chf_ix[i+1;j  ;k  ],n)
+     &     +    phi(chf_ix[i-1;j  ;k  ],n)
+     $     -two*phi(chf_ix[i  ;j  ;k  ],n)) ;
+     $     +(   phi(chf_ix[i  ;j+1;k  ],n)
+     &     +    phi(chf_ix[i  ;j-1;k  ],n)
+     $     -two*phi(chf_ix[i  ;j  ;k  ],n)) ;
+     $     +(   phi(chf_ix[i  ;j  ;k+1],n)
+     &     +    phi(chf_ix[i  ;j  ;k-1],n)
+     $     -two*phi(chf_ix[i  ;j  ;k  ],n)) ]
+
+        lphi = lphi*dxinv*gamma
+
+        res(CHF_IX[i;j;k],n) = res(CHF_IX[i;j;k],n) - lphi
+C end laplacian term
+
         CHF_ENDDO
       enddo
 
@@ -404,6 +470,7 @@ C     ------------------------------------------------------------------
      &     CHF_CONST_FRA[aCoef],
      &     CHF_CONST_REAL[beta],
      &     CHF_CONST_FRA[bCoef0],
+     &     CHF_CONST_REAL[gamma],
      &     CHF_BOX[region],
      &     CHF_CONST_REAL[dx])
 #elif CH_SPACEDIM == 2
@@ -416,6 +483,7 @@ C     ------------------------------------------------------------------
      &     CHF_CONST_REAL[beta],
      &     CHF_CONST_FRA[bCoef0],
      &     CHF_CONST_FRA[bCoef1],
+     &     CHF_CONST_REAL[gamma],
      &     CHF_BOX[region],
      &     CHF_CONST_REAL[dx])
 #elif CH_SPACEDIM == 3
@@ -429,13 +497,14 @@ C     ------------------------------------------------------------------
      &     CHF_CONST_FRA[bCoef0],
      &     CHF_CONST_FRA[bCoef1],
      &     CHF_CONST_FRA[bCoef2],
+     &     CHF_CONST_REAL[gamma],
      &     CHF_BOX[region],
      &     CHF_CONST_REAL[dx])
 #else
       Somthing_that_will_not_compile
 #endif
 
-      REAL_T denom,dxinv,lofphi
+      REAL_T denom,dxinv,lofphi,lphi
       integer n,ncomp
 
       integer CHF_DDECL[i;j;k]
@@ -475,6 +544,25 @@ C     ------------------------------------------------------------------
      &         - bCoef2(CHF_IX[i  ;j  ;k  ],n)
      &           * (phi(CHF_IX[i  ;j  ;k  ],n)-phi(CHF_IX[i  ;j  ;k-1],n)) ]
      &         ) * dxinv
+
+C laplacian term
+
+        lphi = CHF_DTERM[
+     &     (    phi(chf_ix[i+1;j  ;k  ],n)
+     &     +    phi(chf_ix[i-1;j  ;k  ],n)
+     $     -two*phi(chf_ix[i  ;j  ;k  ],n)) ;
+     $     +(   phi(chf_ix[i  ;j+1;k  ],n)
+     &     +    phi(chf_ix[i  ;j-1;k  ],n)
+     $     -two*phi(chf_ix[i  ;j  ;k  ],n)) ;
+     $     +(   phi(chf_ix[i  ;j  ;k+1],n)
+     &     +    phi(chf_ix[i  ;j  ;k-1],n)
+     $     -two*phi(chf_ix[i  ;j  ;k  ],n)) ]
+
+        lphi = lphi*dxinv*gamma
+
+        lofphi = lofphi + lphi
+
+C end laplacian term
 
           res(CHF_IX[ii;jj;kk],n) = res(CHF_IX[ii;jj;kk],n)
      &                            + (rhs(CHF_IX[i;j;k],n) - lofphi) / denom
