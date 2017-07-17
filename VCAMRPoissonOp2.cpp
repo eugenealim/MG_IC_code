@@ -272,6 +272,7 @@ void VCAMRPoissonOp2::setAlphaAndBetaAndGamma(const Real& a_alpha,
 
 void VCAMRPoissonOp2::setCoefs(const RefCountedPtr<LevelData<FArrayBox> >& a_aCoef,
                                const RefCountedPtr<LevelData<FluxBox  > >& a_bCoef,
+                               const RefCountedPtr<LevelData<FArrayBox> >& a_cCoef,
                                const Real&                                 a_alpha,
                                const Real&                                 a_beta,
                                const Real&                                 a_gamma)
@@ -282,6 +283,7 @@ void VCAMRPoissonOp2::setCoefs(const RefCountedPtr<LevelData<FArrayBox> >& a_aCo
 
   m_aCoef = a_aCoef;
   m_bCoef = a_bCoef;
+  m_cCoef = a_cCoef;
 
   // Our relaxation parameter is officially out of date!
   m_lambdaNeedsResetting = true;
@@ -289,8 +291,11 @@ void VCAMRPoissonOp2::setCoefs(const RefCountedPtr<LevelData<FArrayBox> >& a_aCo
 
 void VCAMRPoissonOp2::resetLambda()
 {
+
+
   if (m_lambdaNeedsResetting)
   {
+#if 1 // EUGENE DEBUG TURN OFF set lambda
     Real scale = 1.0 / (m_dx*m_dx);
 
     // Compute it box by box, point by point
@@ -317,11 +322,14 @@ void VCAMRPoissonOp2::resetLambda()
 
       // Take its reciprocal
       lambdaFab.invert(1.0);
+
     }
+#endif
 
     // Lambda is reset.
     m_lambdaNeedsResetting = false;
   }
+
 }
 
 // Compute the reciprocal of the diagonal entry of the operator matrix
@@ -890,7 +898,8 @@ void VCAMRPoissonOp2Factory::define(const ProblemDomain&                        
                                    Vector<RefCountedPtr<LevelData<FArrayBox> > >& a_aCoef,
                                    const Real&                                    a_beta,
                                    Vector<RefCountedPtr<LevelData<FluxBox> > >&   a_bCoef,
-                                   const Real&                                    a_gamma)
+                                   const Real&                                    a_gamma,
+                                   Vector<RefCountedPtr<LevelData<FArrayBox> > >& a_cCoef)
 {
   CH_TIME("VCAMRPoissonOp2Factory::define");
 
@@ -935,6 +944,7 @@ void VCAMRPoissonOp2Factory::define(const ProblemDomain&                        
   m_bCoef = a_bCoef;
 
   m_gamma = a_gamma;
+  m_cCoef = a_cCoef;
 }
 //-----------------------------------------------------------------------
 
@@ -954,24 +964,28 @@ define(const ProblemDomain& a_coarseDomain,
   // the other define() method.
   Vector<RefCountedPtr<LevelData<FArrayBox> > > aCoef(a_grids.size());
   Vector<RefCountedPtr<LevelData<FluxBox> > > bCoef(a_grids.size());
+  Vector<RefCountedPtr<LevelData<FArrayBox> > > cCoef(a_grids.size());
   for (int i = 0; i < a_grids.size(); ++i)
   {
     aCoef[i] = RefCountedPtr<LevelData<FArrayBox> >(
                  new LevelData<FArrayBox>(a_grids[i], 1, a_ghostVect));
     bCoef[i] = RefCountedPtr<LevelData<FluxBox> >(
                  new LevelData<FluxBox>(a_grids[i], 1, a_ghostVect));
+    cCoef[i] = RefCountedPtr<LevelData<FArrayBox> >(
+                 new LevelData<FArrayBox>(a_grids[i], 1, a_ghostVect));
 
     // Initialize the a and b coefficients to 1 for starters.
     for (DataIterator dit = aCoef[i]->dataIterator(); dit.ok(); ++dit)
     {
       (*aCoef[i])[dit()].setVal(1.0);
+      (*cCoef[i])[dit()].setVal(1.0);
       for (int idir = 0; idir < SpaceDim; ++idir)
         (*bCoef[i])[dit()][idir].setVal(1.0);
     }
   }
   Real alpha = 1.0, beta = 1.0, gamma = 1.0;
   define(a_coarseDomain, a_grids, a_refRatios, a_coarsedx, a_bc,
-         alpha, aCoef, beta, bCoef, gamma);
+         alpha, aCoef, beta, bCoef, gamma, cCoef);
 }
 //-----------------------------------------------------------------------
 
@@ -1042,32 +1056,40 @@ MGLevelOp<LevelData<FArrayBox> >* VCAMRPoissonOp2Factory::MGnewOp(const ProblemD
       // don't need to coarsen anything for this
       newOp->m_aCoef = m_aCoef[ref];
       newOp->m_bCoef = m_bCoef[ref];
+      newOp->m_cCoef = m_cCoef[ref];
     }
   else
     {
       // need to coarsen coefficients
       RefCountedPtr<LevelData<FArrayBox> > aCoef( new LevelData<FArrayBox> );
       RefCountedPtr<LevelData<FluxBox> > bCoef( new LevelData<FluxBox> );
+      RefCountedPtr<LevelData<FArrayBox> > cCoef( new LevelData<FArrayBox> );
       aCoef->define(layout, m_aCoef[ref]->nComp(), m_aCoef[ref]->ghostVect());
       bCoef->define(layout, m_bCoef[ref]->nComp(), m_bCoef[ref]->ghostVect());
+      cCoef->define(layout, m_cCoef[ref]->nComp(), m_cCoef[ref]->ghostVect());
 
       // average coefficients to coarser level
       // for now, do this with a CoarseAverage --
       // may want to switch to harmonic averaging at some point
-      CoarseAverage averager(m_aCoef[ref]->getBoxes(),
+      CoarseAverage averager_a(m_aCoef[ref]->getBoxes(),
                              layout, aCoef->nComp(), coarsening);
+
+      CoarseAverage averager_c(m_cCoef[ref]->getBoxes(),
+                             layout, cCoef->nComp(), coarsening);
 
       CoarseAverageFace faceAverager(m_bCoef[ref]->getBoxes(),
                                      bCoef->nComp(), coarsening);
 
       if (m_coefficient_average_type == CoarseAverage::arithmetic)
         {
-          averager.averageToCoarse(*aCoef, *(m_aCoef[ref]));
+          averager_a.averageToCoarse(*aCoef, *(m_aCoef[ref]));
+          averager_c.averageToCoarse(*cCoef, *(m_cCoef[ref]));
           faceAverager.averageToCoarse(*bCoef, *(m_bCoef[ref]));
         }
       else if (m_coefficient_average_type == CoarseAverage::harmonic)
         {
-          averager.averageToCoarseHarmonic(*aCoef, *(m_aCoef[ref]));
+          averager_a.averageToCoarseHarmonic(*aCoef, *(m_aCoef[ref]));
+          averager_c.averageToCoarseHarmonic(*cCoef, *(m_cCoef[ref]));
           faceAverager.averageToCoarseHarmonic(*bCoef, *(m_bCoef[ref]));
         }
       else
@@ -1077,6 +1099,7 @@ MGLevelOp<LevelData<FArrayBox> >* VCAMRPoissonOp2Factory::MGnewOp(const ProblemD
 
       newOp->m_aCoef = aCoef;
       newOp->m_bCoef = bCoef;
+      newOp->m_cCoef = cCoef;
     }
 
   newOp->computeLambda();
@@ -1156,6 +1179,7 @@ AMRLevelOp<LevelData<FArrayBox> >* VCAMRPoissonOp2Factory::AMRnewOp(const Proble
 
   newOp->m_aCoef = m_aCoef[ref];
   newOp->m_bCoef = m_bCoef[ref];
+  newOp->m_cCoef = m_cCoef[ref];
 
   newOp->computeLambda();
 
@@ -1210,27 +1234,37 @@ finerOperatorChanged(const MGLevelOp<LevelData<FArrayBox> >& a_operator,
   // Perform multigrid coarsening on the operator data.
   LevelData<FArrayBox>& acoefCoar = *m_aCoef;
   const LevelData<FArrayBox>& acoefFine = *(op.m_aCoef);
+  LevelData<FArrayBox>& ccoefCoar = *m_cCoef;
+  const LevelData<FArrayBox>& ccoefFine = *(op.m_cCoef);
   LevelData<FluxBox>& bcoefCoar = *m_bCoef;
   const LevelData<FluxBox>& bcoefFine = *(op.m_bCoef);
   if (a_coarseningFactor != 1)
   {
-    CoarseAverage cellAverage(acoefFine.disjointBoxLayout(),
-                              acoefCoar.disjointBoxLayout(),
-                              1, a_coarseningFactor);
+    CoarseAverage cellAverage_a(acoefFine.disjointBoxLayout(),
+                                acoefCoar.disjointBoxLayout(),
+                                1, a_coarseningFactor);
     for (DataIterator dit = acoefCoar.disjointBoxLayout().dataIterator(); dit.ok(); ++dit)
       acoefCoar[dit()].setVal(0.);
-    cellAverage.averageToCoarse(acoefCoar, acoefFine);
+    cellAverage_a.averageToCoarse(acoefCoar, acoefFine);
 
     CoarseAverageFace faceAverage(bcoefFine.disjointBoxLayout(),
                                   1, a_coarseningFactor);
     for (DataIterator dit = bcoefCoar.disjointBoxLayout().dataIterator(); dit.ok(); ++dit)
       bcoefCoar[dit()].setVal(0.);
     faceAverage.averageToCoarse(bcoefCoar, bcoefFine);
+
+    CoarseAverage cellAverage_c(ccoefFine.disjointBoxLayout(),
+                                ccoefCoar.disjointBoxLayout(),
+                               1, a_coarseningFactor);
+    for (DataIterator dit = ccoefCoar.disjointBoxLayout().dataIterator(); dit.ok(); ++dit)
+      ccoefCoar[dit()].setVal(0.);
+    cellAverage_c.averageToCoarse(ccoefCoar, ccoefFine);
   }
 
   // Handle inter-box ghost cells.
   acoefCoar.exchange();
   bcoefCoar.exchange();
+  ccoefCoar.exchange();
 
   // Mark the relaxation coefficient dirty.
   m_lambdaNeedsResetting = true;

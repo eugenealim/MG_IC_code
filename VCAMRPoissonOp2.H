@@ -92,6 +92,7 @@ public:
   /// Also calls reset lambda
   virtual void setCoefs(const RefCountedPtr<LevelData<FArrayBox> >& a_aCoef,
                         const RefCountedPtr<LevelData<FluxBox>   >& a_bCoef,
+                        const RefCountedPtr<LevelData<FArrayBox> >& a_cCoef,
                         const Real& a_alpha,
                         const Real& a_beta,
                         const Real& a_gamma);
@@ -151,6 +152,9 @@ public:
 
   /// Laplacian operator spatially varying coefficient storage (face-centered) --- if you change this call resetLambda()
   RefCountedPtr<LevelData<FluxBox> > m_bCoef;
+
+  /// Laplacian operator spatially varying coefficient storage (face-centered) --- if you change this call resetLambda()
+  RefCountedPtr<LevelData<FArrayBox> > m_cCoef;
 
   /// Reciprocal of the diagonal entry of the operator matrix
   LevelData<FArrayBox> m_lambda;
@@ -240,7 +244,8 @@ public:
               Vector<RefCountedPtr<LevelData<FArrayBox> > >& a_aCoef,
               const Real&                                    a_beta,
               Vector<RefCountedPtr<LevelData<FluxBox> > >&   a_bCoef,
-              const Real&                                    a_gamma);
+              const Real&                                    a_gamma,
+              Vector<RefCountedPtr<LevelData<FArrayBox> > >& a_cCoef);
 
   //! Defines a factory for VCAMRPoissonOp2 which allows the operators to
   //! allocate their own coefficient data. \f$\alpha\f$ and \f$\beta\f$
@@ -288,6 +293,7 @@ private:
 
   Vector<RefCountedPtr<LevelData<FArrayBox> > > m_aCoef;
   Vector<RefCountedPtr<LevelData<FluxBox> > >   m_bCoef;
+  Vector<RefCountedPtr<LevelData<FArrayBox> > > m_cCoef;
 
   Vector<RefCountedPtr<LevelData<FArrayBox> > > m_lambda;
 

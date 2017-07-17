@@ -96,6 +96,7 @@ defineOperatorFactory(
                       const Vector<ProblemDomain>&                 a_vectDom,
                       Vector<RefCountedPtr<LevelData<FArrayBox> > >& a_aCoef,
                       Vector<RefCountedPtr<LevelData<FluxBox> > >& a_bCoef,
+                      Vector<RefCountedPtr<LevelData<FArrayBox> > >& a_cCoef,
                       const VCPoissonParameters&                     a_params);
 
 

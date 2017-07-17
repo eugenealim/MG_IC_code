@@ -20,6 +20,7 @@ C     alpha      => contant multiplier of aCoef
 C     aCoef      => spatially varying coef of I
 C     beta       => contant multiplier of bCoef
 C     bCoef[012] => face-centered coefs of Grad
+C     gamma      => contant multiplier of cCoef
 C     lambda     => relaxation coefficient
 C     redBlack   => red or black pass
 C

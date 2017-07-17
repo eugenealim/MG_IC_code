@@ -643,6 +643,7 @@ defineOperatorFactory(
                       const Vector<ProblemDomain>&                 a_vectDomain,
                       Vector<RefCountedPtr<LevelData<FArrayBox> > >& a_aCoef,
                       Vector<RefCountedPtr<LevelData<FluxBox> > >& a_bCoef,
+                      Vector<RefCountedPtr<LevelData<FArrayBox> > >& a_cCoef,
                       const VCPoissonParameters&                     a_params)
 {
   ParmParse pp2;
@@ -658,7 +659,8 @@ defineOperatorFactory(
                     a_aCoef,
                     a_params.beta,
                     a_bCoef,
-                    a_params.gamma);
+                    a_params.gamma,
+                    a_cCoef);
 
   if (a_params.coefficient_average_type >= 0)
     {

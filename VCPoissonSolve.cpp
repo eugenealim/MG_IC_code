@@ -87,7 +87,7 @@ setBCoef(LevelData<FluxBox>& a_bCoef,
          const VCPoissonParameters& a_params,
          const RealVect& a_dx)
 {
-  if (a_params.BCoeftype == 0 ) // original
+  if (a_params.BCoeftype == 0 ) // original B(x)=(x,y,z)
     {
     DataIterator dit = a_bCoef.dataIterator();
     for (dit.begin(); dit.ok(); ++dit)
@@ -140,28 +140,45 @@ setBCoef(LevelData<FluxBox>& a_bCoef,
 
 void
 setCCoef(LevelData<FArrayBox>& a_cCoef,
+         LevelData<FArrayBox>& a_phi,
          const VCPoissonParameters& a_params,
          const RealVect& a_dx)
 {
   RealVect pos;
   int num;
-  DataIterator dit = a_cCoef.dataIterator();
-  for (dit.begin(); dit.ok(); ++dit)
+
+  if (a_params.CCoeftype == 0) // original
     {
-      FArrayBox& cCoef = a_cCoef[dit];
-      ForAllXBNN(Real, cCoef, cCoef.box(), 0, cCoef.nComp());
+    DataIterator dit = a_cCoef.dataIterator();
+    for (dit.begin(); dit.ok(); ++dit)
       {
-        num = nR;
-        D_TERM(pos[0]=a_dx[0]*(iR+0.5);,
-               pos[1]=a_dx[1]*(jR+0.5);,
-               pos[2]=a_dx[2]*(kR+0.5));
-        cCoefR = pos[0];// this just fixed the aCoef to be x (which is what was also set in functionsF.Chf:w
-        // Eugene change 
-//        aCoefR = D_TERM(pos[0]*,pos[1]*,pos[2]);
-        // constant-coefficient
-        //aCoefR = 1.0;
-      }EndFor;
-    } // end loop over grids
+        FArrayBox& cCoef = a_cCoef[dit];
+        ForAllXBNN(Real, cCoef, cCoef.box(), 0, cCoef.nComp());  // Macros in BoxTools/BaseFabMacros.H
+        {
+          num = nR;
+          D_TERM(pos[0]=a_dx[0]*(iR+0.5);,
+                pos[1]=a_dx[1]*(jR+0.5);,
+                pos[2]=a_dx[2]*(kR+0.5));
+          cCoefR = pos[0];// this just fixed the aCoef to be x (which is what was also set in functionsF.Chf:w
+          // Eugene change 
+  //        aCoefR = D_TERM(pos[0]*,pos[1]*,pos[2]);
+          // constant-coefficient
+          //aCoefR = 1.0;
+        }EndFor;
+      } // end loop over grids
+    }
+  else if (a_params.CCoeftype == 1) // CCoef is constant 1
+    {
+      DataIterator dit = a_cCoef.dataIterator();
+      for (dit.begin(); dit.ok(); ++dit)
+        {
+          FArrayBox& cCoef = a_cCoef[dit];
+          ForAllXBNN(Real, cCoef, cCoef.box(), 0, cCoef.nComp());
+          {
+            cCoefR = 1.0; // constant 
+          }
+        }EndFor;
+    } // end ACoeftype
 }
 
 
@@ -243,7 +260,7 @@ int poissonSolve(Vector<LevelData<FArrayBox>* >& a_phi,
       {
         setACoef(*aCoef[ilev], *a_phi[ilev], a_params, vectDx[ilev]);
         setBCoef(*bCoef[ilev], a_params, vectDx[ilev]);
-        setCCoef(*cCoef[ilev], a_params, vectDx[ilev]);
+        setCCoef(*cCoef[ilev], *a_phi[ilev], a_params, vectDx[ilev]);
 
 //        for (DataIterator dit = a_grids[ilev].dataIterator(); dit.ok(); ++dit)
 //          {
@@ -257,7 +274,7 @@ int poissonSolve(Vector<LevelData<FArrayBox>* >& a_phi,
     // set up solver
     RefCountedPtr<AMRLevelOpFactory<LevelData<FArrayBox> > > opFactory
       = RefCountedPtr<AMRLevelOpFactory<LevelData<FArrayBox> > >
-          (defineOperatorFactory(a_grids, vectDomains, aCoef, bCoef, a_params));
+          (defineOperatorFactory(a_grids, vectDomains, aCoef, bCoef, cCoef, a_params));
 
     mlOp.define(a_grids, a_params.refRatio, vectDomains,
                 vectDx, opFactory, lBase);

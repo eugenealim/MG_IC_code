@@ -29,7 +29,7 @@ probtype = 1
 
 # VC Coef type
 ACoeftype = 1 # 0 is A(x) = x, 1 is A(x) = 1
-BCoeftype = 1 # 0 is B(x) = , 1 is B(x) = (1,1,1) 
+BCoeftype = 1 # 0 is B(x) = (x,y,z) , 1 is B(x) = (1,1,1) 
 CCoeftype = 0 #
 
 ###GRID STUFF
