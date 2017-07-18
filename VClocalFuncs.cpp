@@ -268,6 +268,9 @@ void getPoissonParameters(VCPoissonParameters&  a_params)
   pp.get("alpha",a_params.alpha);
   pp.get("beta", a_params.beta);
   pp.get("gamma", a_params.gamma);
+  pp.get("initial_phi", a_params.initial_phi);
+
+  pout() << "alpha beta gamma = " << a_params.alpha << a_params.beta << a_params.gamma << endl;
 
   pp.query("probtype", a_params.probtype);
   pp.query("ACoeftype", a_params.ACoeftype);
@@ -503,6 +506,7 @@ int setGrids(Vector<DisjointBoxLayout>& vectGrids,
   return 0;
 }
 
+// EUGENE TODO : set to phi=1 for now
 void set_initial_phi(LevelData<FArrayBox>&    a_phi,
                      const RealVect&          a_dx,
                      const VCPoissonParameters& a_params)
@@ -521,7 +525,7 @@ void set_initial_phi(LevelData<FArrayBox>&    a_phi,
       IntVect iv = bit ();
       for (int comp =0 ; comp < a_phi.nComp () ; ++comp)
       { 
-        thisPHIbox (iv,comp) = 1.0; // set to 1 for now
+        thisPHIbox (iv,comp) = a_params.initial_phi;
       }
     }
   }
@@ -615,25 +619,6 @@ void setRHS(LevelData<FArrayBox>&    a_rhs,
      }
 
 } // end set_RHS
-
-/********/
-void setRHS_VC(LevelData<FArrayBox>&    a_rhs,
-            LevelData<FArrayBox>&    a_phi,
-            const RealVect&          a_dx,
-            const VCPoissonParameters& a_params)
-{
-  CH_assert(a_rhs.nComp() == 1);
-  int comp = 0;
-
-  for (DataIterator dit = a_rhs.dataIterator(); dit.ok(); ++dit)
-  {
-      FArrayBox& thisRHS = a_rhs[dit()];
-      Box thisBox = thisRHS.box();
-  }
-}
-
-
-
 
 
 extern

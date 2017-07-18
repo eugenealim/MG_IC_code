@@ -20,7 +20,7 @@ C     alpha      => contant multiplier of aCoef
 C     aCoef      => spatially varying coef of I
 C     beta       => contant multiplier of bCoef
 C     bCoef[012] => face-centered coefs of Grad
-C     gamma      => contant multiplier of cCoef
+C     gamma_test      => contant multiplier of cCoef
 C     lambda     => relaxation coefficient
 C     redBlack   => red or black pass
 C
@@ -39,7 +39,7 @@ C     ------------------------------------------------------------------
      &     CHF_CONST_FRA[aCoef],
      &     CHF_CONST_REAL[beta],
      &     CHF_CONST_FRA[bCoef0],
-     &     CHF_CONST_REAL[gamma],
+     &     CHF_CONST_REAL[gamma_test],
      &     CHF_CONST_FRA[lambda],
      &     CHF_CONST_INT[redBlack])
 #elif CH_SPACEDIM == 2
@@ -53,7 +53,7 @@ C     ------------------------------------------------------------------
      &     CHF_CONST_REAL[beta],
      &     CHF_CONST_FRA[bCoef0],
      &     CHF_CONST_FRA[bCoef1],
-     &     CHF_CONST_REAL[gamma],
+     &     CHF_CONST_REAL[gamma_test],
      &     CHF_CONST_FRA[lambda],
      &     CHF_CONST_INT[redBlack])
 #elif CH_SPACEDIM == 3
@@ -68,7 +68,7 @@ C     ------------------------------------------------------------------
      &     CHF_CONST_FRA[bCoef0],
      &     CHF_CONST_FRA[bCoef1],
      &     CHF_CONST_FRA[bCoef2],
-     &     CHF_CONST_REAL[gamma],
+     &     CHF_CONST_REAL[gamma_test],
      &     CHF_CONST_FRA[lambda],
      &     CHF_CONST_INT[redBlack])
 #else
@@ -146,19 +146,19 @@ C     petermc, 26 april 2001
 C laplacian term
 
         lphi = CHF_DTERM[
-     &     (    phi(chf_ix[i+1;j  ;k  ],n)
-     &     +    phi(chf_ix[i-1;j  ;k  ],n)
-     $     -two*phi(chf_ix[i  ;j  ;k  ],n)) ;
-     $     +(   phi(chf_ix[i  ;j+1;k  ],n)
-     &     +    phi(chf_ix[i  ;j-1;k  ],n)
-     $     -two*phi(chf_ix[i  ;j  ;k  ],n)) ;
-     $     +(   phi(chf_ix[i  ;j  ;k+1],n)
-     &     +    phi(chf_ix[i  ;j  ;k-1],n)
-     $     -two*phi(chf_ix[i  ;j  ;k  ],n)) ]
+     &     (    phi(CHF_IX[i+1;j  ;k  ],n)
+     &     +    phi(CHF_IX[i-1;j  ;k  ],n)
+     $     -two*phi(CHF_IX[i  ;j  ;k  ],n)) ;
+     $     +(   phi(CHF_IX[i  ;j+1;k  ],n)
+     &     +    phi(CHF_IX[i  ;j-1;k  ],n)
+     $     -two*phi(CHF_IX[i  ;j  ;k  ],n)) ;
+     $     +(   phi(CHF_IX[i  ;j  ;k+1],n)
+     &     +    phi(CHF_IX[i  ;j  ;k-1],n)
+     $     -two*phi(CHF_IX[i  ;j  ;k  ],n)) ]
 
         lphi = lphi*dxinv
 
-        lofphi = lofphi + gamma*lphi
+        lofphi = lofphi - gamma_test*lphi
 C end laplacian term
 
               phi(CHF_IX[i;j;k],n) = phi(CHF_IX[i;j;k],n)
@@ -202,7 +202,7 @@ C     ------------------------------------------------------------------
      &     CHF_CONST_FRA[aCoef],
      &     CHF_CONST_REAL[beta],
      &     CHF_CONST_FRA[bCoef0],
-     &     CHF_CONST_REAL[gamma],
+     &     CHF_CONST_REAL[gamma_test],
      &     CHF_BOX[region],
      &     CHF_CONST_REAL[dx])
 #elif CH_SPACEDIM == 2
@@ -214,7 +214,7 @@ C     ------------------------------------------------------------------
      &     CHF_CONST_REAL[beta],
      &     CHF_CONST_FRA[bCoef0],
      &     CHF_CONST_FRA[bCoef1],
-     &     CHF_CONST_REAL[gamma],
+     &     CHF_CONST_REAL[gamma_test],
      &     CHF_BOX[region],
      &     CHF_CONST_REAL[dx])
 #elif CH_SPACEDIM == 3
@@ -227,7 +227,7 @@ C     ------------------------------------------------------------------
      &     CHF_CONST_FRA[bCoef0],
      &     CHF_CONST_FRA[bCoef1],
      &     CHF_CONST_FRA[bCoef2],
-     &     CHF_CONST_REAL[gamma],
+     &     CHF_CONST_REAL[gamma_test],
      &     CHF_BOX[region],
      &     CHF_CONST_REAL[dx])
 #else
@@ -286,19 +286,19 @@ C     ------------------------------------------------------------------
 C laplacian term
 
         lphi = CHF_DTERM[
-     &     (    phi(chf_ix[i+1;j  ;k  ],n)
-     &     +    phi(chf_ix[i-1;j  ;k  ],n)
-     $     -two*phi(chf_ix[i  ;j  ;k  ],n)) ;
-     $     +(   phi(chf_ix[i  ;j+1;k  ],n)
-     &     +    phi(chf_ix[i  ;j-1;k  ],n)
-     $     -two*phi(chf_ix[i  ;j  ;k  ],n)) ;
-     $     +(   phi(chf_ix[i  ;j  ;k+1],n)
-     &     +    phi(chf_ix[i  ;j  ;k-1],n)
-     $     -two*phi(chf_ix[i  ;j  ;k  ],n)) ]
+     &     (    phi(CHF_IX[i+1;j  ;k  ],n)
+     &     +    phi(CHF_IX[i-1;j  ;k  ],n)
+     $     -two*phi(CHF_IX[i  ;j  ;k  ],n)) ;
+     $     +(   phi(CHF_IX[i  ;j+1;k  ],n)
+     &     +    phi(CHF_IX[i  ;j-1;k  ],n)
+     $     -two*phi(CHF_IX[i  ;j  ;k  ],n)) ;
+     $     +(   phi(CHF_IX[i  ;j  ;k+1],n)
+     &     +    phi(CHF_IX[i  ;j  ;k-1],n)
+     $     -two*phi(CHF_IX[i  ;j  ;k  ],n)) ]
 
-        lphi = lphi*dxinv*gamma;
+        lphi = lphi*dxinv*gamma_test
 
-        lofphi(CHF_IX[i;j;k],n) =  lofphi(CHF_IX[i;j;k],n) + lphi
+        lofphi(CHF_IX[i;j;k],n) =  lofphi(CHF_IX[i;j;k],n) - lphi
 
 C end laplacian term
 
@@ -338,7 +338,7 @@ C     ------------------------------------------------------------------
      &     CHF_CONST_FRA[aCoef],
      &     CHF_CONST_REAL[beta],
      &     CHF_CONST_FRA[bCoef0],
-     &     CHF_CONST_REAL[gamma],
+     &     CHF_CONST_REAL[gamma_test],
      &     CHF_BOX[region],
      &     CHF_CONST_REAL[dx])
 #elif CH_SPACEDIM == 2
@@ -351,7 +351,7 @@ C     ------------------------------------------------------------------
      &     CHF_CONST_REAL[beta],
      &     CHF_CONST_FRA[bCoef0],
      &     CHF_CONST_FRA[bCoef1],
-     &     CHF_CONST_REAL[gamma],
+     &     CHF_CONST_REAL[gamma_test],
      &     CHF_BOX[region],
      &     CHF_CONST_REAL[dx])
 #elif CH_SPACEDIM == 3
@@ -365,7 +365,7 @@ C     ------------------------------------------------------------------
      &     CHF_CONST_FRA[bCoef0],
      &     CHF_CONST_FRA[bCoef1],
      &     CHF_CONST_FRA[bCoef2],
-     &     CHF_CONST_REAL[gamma],
+     &     CHF_CONST_REAL[gamma_test],
      &     CHF_BOX[region],
      &     CHF_CONST_REAL[dx])
 #else
@@ -426,19 +426,19 @@ C     ------------------------------------------------------------------
 C laplacian term
 
         lphi = CHF_DTERM[
-     &     (    phi(chf_ix[i+1;j  ;k  ],n)
-     &     +    phi(chf_ix[i-1;j  ;k  ],n)
-     $     -two*phi(chf_ix[i  ;j  ;k  ],n)) ;
-     $     +(   phi(chf_ix[i  ;j+1;k  ],n)
-     &     +    phi(chf_ix[i  ;j-1;k  ],n)
-     $     -two*phi(chf_ix[i  ;j  ;k  ],n)) ;
-     $     +(   phi(chf_ix[i  ;j  ;k+1],n)
-     &     +    phi(chf_ix[i  ;j  ;k-1],n)
-     $     -two*phi(chf_ix[i  ;j  ;k  ],n)) ]
+     &     (    phi(CHF_IX[i+1;j  ;k  ],n)
+     &     +    phi(CHF_IX[i-1;j  ;k  ],n)
+     $     -two*phi(CHF_IX[i  ;j  ;k  ],n)) ;
+     $     +(   phi(CHF_IX[i  ;j+1;k  ],n)
+     &     +    phi(CHF_IX[i  ;j-1;k  ],n)
+     $     -two*phi(CHF_IX[i  ;j  ;k  ],n)) ;
+     $     +(   phi(CHF_IX[i  ;j  ;k+1],n)
+     &     +    phi(CHF_IX[i  ;j  ;k-1],n)
+     $     -two*phi(CHF_IX[i  ;j  ;k  ],n)) ]
 
-        lphi = lphi*dxinv*gamma
+        lphi = lphi*dxinv*gamma_test
 
-        res(CHF_IX[i;j;k],n) = res(CHF_IX[i;j;k],n) - lphi
+        res(CHF_IX[i;j;k],n) = res(CHF_IX[i;j;k],n) + lphi
 C end laplacian term
 
         CHF_ENDDO
@@ -471,7 +471,7 @@ C     ------------------------------------------------------------------
      &     CHF_CONST_FRA[aCoef],
      &     CHF_CONST_REAL[beta],
      &     CHF_CONST_FRA[bCoef0],
-     &     CHF_CONST_REAL[gamma],
+     &     CHF_CONST_REAL[gamma_test],
      &     CHF_BOX[region],
      &     CHF_CONST_REAL[dx])
 #elif CH_SPACEDIM == 2
@@ -484,7 +484,7 @@ C     ------------------------------------------------------------------
      &     CHF_CONST_REAL[beta],
      &     CHF_CONST_FRA[bCoef0],
      &     CHF_CONST_FRA[bCoef1],
-     &     CHF_CONST_REAL[gamma],
+     &     CHF_CONST_REAL[gamma_test],
      &     CHF_BOX[region],
      &     CHF_CONST_REAL[dx])
 #elif CH_SPACEDIM == 3
@@ -498,7 +498,7 @@ C     ------------------------------------------------------------------
      &     CHF_CONST_FRA[bCoef0],
      &     CHF_CONST_FRA[bCoef1],
      &     CHF_CONST_FRA[bCoef2],
-     &     CHF_CONST_REAL[gamma],
+     &     CHF_CONST_REAL[gamma_test],
      &     CHF_BOX[region],
      &     CHF_CONST_REAL[dx])
 #else
@@ -549,19 +549,19 @@ C     ------------------------------------------------------------------
 C laplacian term
 
         lphi = CHF_DTERM[
-     &     (    phi(chf_ix[i+1;j  ;k  ],n)
-     &     +    phi(chf_ix[i-1;j  ;k  ],n)
-     $     -two*phi(chf_ix[i  ;j  ;k  ],n)) ;
-     $     +(   phi(chf_ix[i  ;j+1;k  ],n)
-     &     +    phi(chf_ix[i  ;j-1;k  ],n)
-     $     -two*phi(chf_ix[i  ;j  ;k  ],n)) ;
-     $     +(   phi(chf_ix[i  ;j  ;k+1],n)
-     &     +    phi(chf_ix[i  ;j  ;k-1],n)
-     $     -two*phi(chf_ix[i  ;j  ;k  ],n)) ]
+     &     (    phi(CHF_IX[i+1;j  ;k  ],n)
+     &     +    phi(CHF_IX[i-1;j  ;k  ],n)
+     $     -two*phi(CHF_IX[i  ;j  ;k  ],n)) ;
+     $     +(   phi(CHF_IX[i  ;j+1;k  ],n)
+     &     +    phi(CHF_IX[i  ;j-1;k  ],n)
+     $     -two*phi(CHF_IX[i  ;j  ;k  ],n)) ;
+     $     +(   phi(CHF_IX[i  ;j  ;k+1],n)
+     &     +    phi(CHF_IX[i  ;j  ;k-1],n)
+     $     -two*phi(CHF_IX[i  ;j  ;k  ],n)) ]
 
-        lphi = lphi*dxinv*gamma
+        lphi = lphi*dxinv*gamma_test
 
-        lofphi = lofphi + lphi
+        lofphi = lofphi - lphi
 
 C end laplacian term
 

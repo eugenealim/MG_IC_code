@@ -48,6 +48,7 @@ public:
   Real         alpha;
   Real         beta;
   Real         gamma;
+  Real         initial_phi;
   int          coefficient_average_type;
   int verbosity;
   int probtype; // problem type
@@ -79,11 +80,6 @@ extern void setRHS(LevelData<FArrayBox>&    a_rhs,
                    LevelData<FArrayBox>&    a_phi,
                    const RealVect&          a_dx,
                    const VCPoissonParameters& a_params);
-
-extern void setRHS_VC(LevelData<FArrayBox>&    a_rhs,
-                     LevelData<FArrayBox>&    a_phi,
-                     const RealVect&          a_dx,
-                     const VCPoissonParameters& a_params);
 
 extern void set_initial_phi(LevelData<FArrayBox>&    a_phi,
                    const RealVect&          a_dx,

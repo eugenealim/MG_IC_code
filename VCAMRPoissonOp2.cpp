@@ -122,6 +122,7 @@ void VCAMRPoissonOp2::preCond(LevelData<FArrayBox>&       a_phi,
       // approximate inverse
       a_phi[dit].copy(a_rhs[dit]);
       a_phi[dit].mult(m_lambda[dit], gridBox, 0, 0, ncomp);
+
     }
 
   relax(a_phi, a_rhs, 2);
@@ -292,10 +293,9 @@ void VCAMRPoissonOp2::setCoefs(const RefCountedPtr<LevelData<FArrayBox> >& a_aCo
 void VCAMRPoissonOp2::resetLambda()
 {
 
-
   if (m_lambdaNeedsResetting)
   {
-#if 1 // EUGENE DEBUG TURN OFF set lambda
+#if 1 // EUGENE DEBUG TURN OFF set lambda by setting this to 
     Real scale = 1.0 / (m_dx*m_dx);
 
     // Compute it box by box, point by point
@@ -319,6 +319,9 @@ void VCAMRPoissonOp2::resetLambda()
             CHF_CONST_INT(dir),
             CHF_CONST_REAL(scale));
       }
+
+      // EUGENE Add in the Laplacian term 6.0*m_gamma/(m_dx*m_dx)
+      lambdaFab.plus(2.0*SpaceDim*m_gamma/(m_dx*m_dx));
 
       // Take its reciprocal
       lambdaFab.invert(1.0);

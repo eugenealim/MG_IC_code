@@ -181,6 +181,69 @@ setCCoef(LevelData<FArrayBox>& a_cCoef,
     } // end ACoeftype
 }
 
+/***************/
+void outputData(const Vector<LevelData<FArrayBox>* >&   a_phi,
+                const Vector<LevelData<FArrayBox>* >&   a_rhs,
+                const Vector< DisjointBoxLayout >&       a_grids,
+                const VCPoissonParameters&                 a_params,
+                const int iter)
+{
+#ifdef CH_USE_HDF5
+
+#if CH_SPACEDIM==2
+    string fileName("vcPoissonOut.2d");
+#else
+    string fileName("vcPoissonOut.3d");
+#endif
+
+    char suffix[30];
+    sprintf(suffix, "_%d.hdf5",iter);
+    fileName += suffix;
+
+    int nPhiComp = a_phi[0]->nComp();
+    int nRhsComp = a_rhs[0]->nComp();
+    int totalComp = nPhiComp + nRhsComp;
+
+    Vector<string> phiNames(totalComp);
+    // hardwire to single-component
+    CH_assert(totalComp == 2);
+    phiNames[0] = "phi";
+    phiNames[1] = "rhs";
+
+
+    CH_assert(a_phi.size() == a_rhs.size());
+    Vector<LevelData<FArrayBox>* > tempData(a_phi.size(), NULL);
+    for (int level=0; level<a_phi.size(); level++)
+      {
+        tempData[level] = new LevelData<FArrayBox>(a_grids[level], totalComp);
+        Interval phiComps(0, nPhiComp-1);
+        Interval rhsComps(nPhiComp, totalComp-1);
+        a_phi[level]->copyTo(a_phi[level]->interval(),
+                             *tempData[level], phiComps);
+        a_rhs[level]->copyTo(a_rhs[level]->interval(),
+                             *tempData[level], rhsComps);
+      }
+
+
+    Real fakeTime = 1.0;
+    Real fakeDt = 1.0;
+    WriteAMRHierarchyHDF5(fileName, a_grids,
+                          tempData, phiNames,
+                          a_params.coarsestDomain.domainBox(),
+                          a_params.coarsestDx,
+                          fakeDt, fakeTime,
+                          a_params.refRatio,
+                          a_params.numLevels);
+
+    // clean up temporary storage
+    for (int level=0; level<a_phi.size(); level++)
+      {
+        delete tempData[level];
+        tempData[level] = NULL;
+      }
+#endif
+
+}
 
 /******/
 int poissonSolve(Vector<LevelData<FArrayBox>* >& a_phi,
@@ -214,7 +277,7 @@ int poissonSolve(Vector<LevelData<FArrayBox>* >& a_phi,
       vectDomains[ilev] = domLev;
       vectDx[ilev] = dxLev;
 
-      set_initial_phi (*a_phi[ilev], vectDx[ilev], a_params);
+      set_initial_phi (*a_phi[ilev], vectDx[ilev], a_params); // EUGENE currently set to 1 
 
       //prepare dx, domain for next level
       dxLev /=      a_params.refRatio[ilev];
@@ -289,72 +352,15 @@ int poissonSolve(Vector<LevelData<FArrayBox>* >& a_phi,
 
     solver.solve(a_phi, a_rhs);
 
-//    delete opFactory;
-  }
+    outputData(a_phi, a_rhs, a_grids, a_params, NL_iter);
+
+  } // end NL_iter loop
 
 
   int exitStatus = solver.m_exitStatus;
   // note that for AMRMultiGrid, success = 1.
   exitStatus -= 1;
   return exitStatus;
-
-}
-/***************/
-void outputData(const Vector<LevelData<FArrayBox>* >&   a_phi,
-                const Vector<LevelData<FArrayBox>* >&   a_rhs,
-                const Vector< DisjointBoxLayout >&       a_grids,
-                const VCPoissonParameters&                 a_params)
-{
-#ifdef CH_USE_HDF5
-
-#if CH_SPACEDIM==2
-    string fileName("vcPoissonOut.2d.hdf5");
-#else
-    string fileName("vcPoissonOut.3d.hdf5");
-#endif
-
-    int nPhiComp = a_phi[0]->nComp();
-    int nRhsComp = a_rhs[0]->nComp();
-    int totalComp = nPhiComp + nRhsComp;
-
-    Vector<string> phiNames(totalComp);
-    // hardwire to single-component
-    CH_assert(totalComp == 2);
-    phiNames[0] = "phi";
-    phiNames[1] = "rhs";
-
-
-    CH_assert(a_phi.size() == a_rhs.size());
-    Vector<LevelData<FArrayBox>* > tempData(a_phi.size(), NULL);
-    for (int level=0; level<a_phi.size(); level++)
-      {
-        tempData[level] = new LevelData<FArrayBox>(a_grids[level], totalComp);
-        Interval phiComps(0, nPhiComp-1);
-        Interval rhsComps(nPhiComp, totalComp-1);
-        a_phi[level]->copyTo(a_phi[level]->interval(),
-                             *tempData[level], phiComps);
-        a_rhs[level]->copyTo(a_rhs[level]->interval(),
-                             *tempData[level], rhsComps);
-      }
-
-
-    Real fakeTime = 1.0;
-    Real fakeDt = 1.0;
-    WriteAMRHierarchyHDF5(fileName, a_grids,
-                          tempData, phiNames,
-                          a_params.coarsestDomain.domainBox(),
-                          a_params.coarsestDx,
-                          fakeDt, fakeTime,
-                          a_params.refRatio,
-                          a_params.numLevels);
-
-    // clean up temporary storage
-    for (int level=0; level<a_phi.size(); level++)
-      {
-        delete tempData[level];
-        tempData[level] = NULL;
-      }
-#endif
 
 }
 
@@ -394,7 +400,7 @@ int main(int argc, char* argv[])
     pp.get("write_output", dofileout);
     if (dofileout == 1)
       {
-        outputData(phi, rhs, grids, param);
+        outputData(phi, rhs, grids, param, 999);
       }
 
     // clear memory
