@@ -48,7 +48,10 @@ public:
   Real         alpha;
   Real         beta;
   Real         gamma;
-  Real         initial_phi;
+  Real         kappa_sq;
+  Real         initial_phi; // initial constant phi
+  Real         initial_psi; // initial constant psi
+  Real         constant_K; // initial constant K
   int          coefficient_average_type;
   int verbosity;
   int probtype; // problem type
@@ -78,12 +81,21 @@ extern int setGrids(Vector<DisjointBoxLayout>& vectGrids,
 
 extern void setRHS(LevelData<FArrayBox>&    a_rhs,
                    LevelData<FArrayBox>&    a_phi,
+                   LevelData<FArrayBox>&    a_psi,
                    const RealVect&          a_dx,
                    const VCPoissonParameters& a_params);
 
 extern void set_initial_phi(LevelData<FArrayBox>&    a_phi,
                    const RealVect&          a_dx,
                    const VCPoissonParameters& a_params);
+
+extern void set_initial_psi(LevelData<FArrayBox>&    a_psi,
+                   const RealVect&          a_dx,
+                   const VCPoissonParameters& a_params);
+
+extern Real M_value(RealVect&          loc,
+                    Real               constant_k,
+                    Real               kappa_sq);
 
 extern
 AMRLevelOpFactory<LevelData<FArrayBox> >*

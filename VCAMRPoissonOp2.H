@@ -22,6 +22,12 @@
    (alpha * aCoef(x) * I - beta * Div(bCoef(x) . Grad)) phi = rho
    over an AMR hierarchy.
 */
+/**
+   EUGENE : 
+   Operator for solving variable-coefficient
+   (alpha * aCoef(x) * I - beta * Div(bCoef(x) . Grad) - gamma * cCoef(x) * laplacian ) phi = rho
+   over an AMR hierarchy.
+*/
 class VCAMRPoissonOp2 : public AMRPoissonOp
 {
 public:

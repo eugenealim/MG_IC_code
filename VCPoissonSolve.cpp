@@ -78,7 +78,36 @@ setACoef(LevelData<FArrayBox>& a_aCoef,
             aCoefR = 1.0; // constant 
           }
         }EndFor;
-    } // end ACoeftype
+    } 
+  else if (a_params.ACoeftype == 2) // ACoef = -5/8 * phi_0^4 M(phi_0,K) 
+    {
+      DataIterator dit = a_aCoef.dataIterator();
+      for (dit.begin(); dit.ok(); ++dit)
+        {
+          // cell centered
+          RealVect ccOffset = 0.5*a_dx*RealVect::Unit; 
+
+          FArrayBox& aCoef = a_aCoef[dit];
+          FArrayBox& phi = a_phi[dit];
+          Box thisBox = aCoef.box();
+         
+          BoxIterator bit(thisBox);
+          for (bit.begin(); bit.ok(); ++bit)
+          {
+            IntVect iv = bit();
+            RealVect loc(iv);
+            loc *= a_dx;
+            loc += ccOffset;
+
+            Real M = M_value(loc, a_params.constant_K, a_params.kappa_sq);
+
+            Real phi_0 = phi(iv,0);
+
+            aCoef(iv,0) = (-0.625) * M * (phi_0 * phi_0 * phi_0 * phi_0);
+          }
+        }
+    } // end ACoef
+
 }
 
 
@@ -248,6 +277,7 @@ void outputData(const Vector<LevelData<FArrayBox>* >&   a_phi,
 /******/
 int poissonSolve(Vector<LevelData<FArrayBox>* >& a_phi,
                  Vector<LevelData<FArrayBox>* >& a_rhs,
+                 Vector<LevelData<FArrayBox>* >& a_psi,
                  const Vector< DisjointBoxLayout >&   a_grids,
                  const VCPoissonParameters&             a_params)
 {
@@ -271,6 +301,7 @@ int poissonSolve(Vector<LevelData<FArrayBox>* >& a_phi,
     {
       a_rhs[ilev] = new LevelData<FArrayBox>(a_grids[ilev], 1,IntVect::Zero);
       a_phi[ilev] = new LevelData<FArrayBox>(a_grids[ilev], 1,IntVect::Unit);
+      a_psi[ilev] = new LevelData<FArrayBox>(a_grids[ilev], 1,IntVect::Unit);
       aCoef[ilev] = RefCountedPtr<LevelData<FArrayBox> >(new LevelData<FArrayBox>(a_grids[ilev], 1, IntVect::Zero));
       cCoef[ilev] = RefCountedPtr<LevelData<FArrayBox> >(new LevelData<FArrayBox>(a_grids[ilev], 1, IntVect::Zero));
       bCoef[ilev] = RefCountedPtr<LevelData<FluxBox> >(new LevelData<FluxBox>(a_grids[ilev], 1, IntVect::Zero));
@@ -278,6 +309,7 @@ int poissonSolve(Vector<LevelData<FArrayBox>* >& a_phi,
       vectDx[ilev] = dxLev;
 
       set_initial_phi (*a_phi[ilev], vectDx[ilev], a_params); // EUGENE currently set to 1 
+      set_initial_psi (*a_psi[ilev], vectDx[ilev], a_params); // EUGENE set to 1, temporary
 
       //prepare dx, domain for next level
       dxLev /=      a_params.refRatio[ilev];
@@ -330,7 +362,7 @@ int poissonSolve(Vector<LevelData<FArrayBox>* >& a_phi,
 //            (*a_phi[ilev])[dit()].setVal(0.);
 //          }
 
-        setRHS (*a_rhs[ilev], *a_phi[ilev], vectDx[ilev], a_params);
+        setRHS (*a_rhs[ilev], *a_phi[ilev], *a_psi[ilev], vectDx[ilev], a_params);
 
       }
 
@@ -388,13 +420,13 @@ int main(int argc, char* argv[])
     //read params from file
     getPoissonParameters(param);
     int nlevels = param.numLevels;
-    Vector<LevelData<FArrayBox>* > phi(nlevels, NULL); // chi
-//    Vector<LevelData<FArrayBox>* > psi(nlevels, NULL); // scalar field 
+    Vector<LevelData<FArrayBox>* > phi(nlevels, NULL); // really chi -- will fixed eventually EUGENE
+    Vector<LevelData<FArrayBox>* > psi(nlevels, NULL); // scalar field 
     Vector<LevelData<FArrayBox>* > rhs(nlevels, NULL); // rhs
-
+    
     setGrids(grids,  param);
 
-    status = poissonSolve(phi, rhs, grids,  param);
+    status = poissonSolve(phi, rhs, psi, grids,  param);
 
     int dofileout;
     pp.get("write_output", dofileout);

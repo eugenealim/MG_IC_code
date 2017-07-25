@@ -268,7 +268,10 @@ void getPoissonParameters(VCPoissonParameters&  a_params)
   pp.get("alpha",a_params.alpha);
   pp.get("beta", a_params.beta);
   pp.get("gamma", a_params.gamma);
+  pp.get("kappa_sq", a_params.kappa_sq); // this is 8piG
   pp.get("initial_phi", a_params.initial_phi);
+  pp.get("initial_psi", a_params.initial_psi);
+  pp.get("constant_K", a_params.constant_K);
 
   pout() << "alpha beta gamma = " << a_params.alpha << a_params.beta << a_params.gamma << endl;
 
@@ -453,8 +456,18 @@ int setGrids(Vector<DisjointBoxLayout>& vectGrids,
           for (int level=0; level<=topLevel; level++)
             {
               RealVect dxLevel = vectDx[level]*RealVect::Unit;
-              LevelData<FArrayBox> DummyPhi; // REMEMBER TO FIX THIS (not using AMR setGrids at the moment
-              setRHS(*vectRHS[level], DummyPhi, dxLevel, a_params);
+
+              LevelData<FArrayBox> *DummyPhi; // REMEMBER TO FIX THIS 
+              LevelData<FArrayBox> *DummyPsi; // REMEMBER TO FIX THIS 
+      
+              DummyPhi = new LevelData<FArrayBox>(vectGrids[level], ncomps,
+                                            IntVect::Unit);
+              DummyPsi = new LevelData<FArrayBox>(vectGrids[level], ncomps,
+                                            IntVect::Unit);
+
+              set_initial_phi(*DummyPhi, dxLevel, a_params);
+              set_initial_psi(*DummyPsi, dxLevel, a_params);
+              setRHS(*vectRHS[level], *DummyPhi, *DummyPsi, dxLevel, a_params);
             }
 
           Vector<IntVectSet> tagVect(topLevel+1);
@@ -506,7 +519,7 @@ int setGrids(Vector<DisjointBoxLayout>& vectGrids,
   return 0;
 }
 
-// EUGENE TODO : set to phi=1 for now
+// EUGENE TODO : make it more general
 void set_initial_phi(LevelData<FArrayBox>&    a_phi,
                      const RealVect&          a_dx,
                      const VCPoissonParameters& a_params)
@@ -531,9 +544,35 @@ void set_initial_phi(LevelData<FArrayBox>&    a_phi,
   }
 } // end set_initial_phi
 
+// EUGENE : temporary
+void set_initial_psi(LevelData<FArrayBox>&    a_psi,
+                     const RealVect&          a_dx,
+                     const VCPoissonParameters& a_params)
+{
+  CH_assert(a_psi.nComp() == 1);
+  int comp=0;
+//  const RealVect&    trig = getTrigRV();
+
+  for (DataIterator dit = a_psi.dataIterator(); dit.ok(); ++dit)
+  {
+    FArrayBox& thisPSIbox = a_psi[dit()];
+    Box b = thisPSIbox.box ();
+    BoxIterator bit (b);
+    for (bit.begin (); bit.ok (); ++bit)
+    {
+      IntVect iv = bit ();
+      for (int comp =0 ; comp < a_psi.nComp () ; ++comp)
+      { 
+        thisPSIbox (iv,comp) = a_params.initial_psi;
+      }
+    }
+  }
+} // end set_initial_psi
+
 /********/
 void setRHS(LevelData<FArrayBox>&    a_rhs,
             LevelData<FArrayBox>&    a_phi,
+            LevelData<FArrayBox>&    a_psi,
             const RealVect&          a_dx,
             const VCPoissonParameters& a_params)
 {
@@ -611,10 +650,100 @@ void setRHS(LevelData<FArrayBox>&    a_rhs,
                                         +dist[1]*dist[1],
                                         +dist[2]*dist[2]);
 
-                    Real val = strength[n]*exp(-radSqr/scale[n]);
-                    thisRHS(iv,0) += val;
-                  }
-              }
+                  Real val = strength[n]*exp(-radSqr/scale[n]);
+                  thisRHS(iv,0) += val;
+                }
+            }
+        }
+      else if (a_params.probtype == 2) // scalar field
+        {
+          //
+          // first set up the scalar field config
+          //
+          FArrayBox& thisPsi= a_psi[dit()];
+          
+          // rhs is cell-centered...
+          RealVect ccOffset = 0.5*a_dx*RealVect::Unit;
+          
+          // put in a gaussian for now
+          int numGaussians = 1;
+          Vector<RealVect> center(numGaussians,RealVect::Zero);
+          Vector<Real> scale(numGaussians, 1.0);
+          Vector<Real> strength(numGaussians, 1.0);
+          BoxIterator bit(thisRHS.box());
+
+          // one central gaussian 
+          strength[0] = 1.0;
+          scale[0] = 1.0e-2; // variance
+          center[0] = 0.5*RealVect::Unit;
+
+          thisPsi.setVal(0,0);
+          for (bit.begin(); bit.ok(); ++bit)
+            {
+              IntVect iv = bit();
+              RealVect loc(iv);
+              loc *= a_dx;
+              loc += ccOffset;
+
+              for (int n=0; n<numGaussians; n++)
+                {
+                  RealVect dist = loc - center[n];
+                  Real radSqr = D_TERM(dist[0]*dist[0],
+                                        +dist[1]*dist[1],
+                                        +dist[2]*dist[2]);
+
+                  Real val = strength[n]*exp(-radSqr/scale[n]);
+                  thisPsi(iv,0) += val;
+                }
+            }
+
+          // end set up gaussian
+        } // end probtype 2
+      else if (a_params.probtype == 3) // fixed energy density
+        {
+
+          // Total equation is
+          // nabla^2 phi = (1/8)phi^5 (2/3K^2 - 16pi G rho(x))
+          // 
+          // linearized phi^n = (1-n)phi_0^n + n phi_0^(n-1)phi
+          //
+          // linearized equation is then
+          //
+          // L phi_0 = RHS
+          //
+          // L = nabla^2 - (5/8)phi_0^4 * M(rho,K)
+          // RHS = -(1/2)M(rho,K) phi_0^5
+          // M(rho,K) = (2/3K^2 - 16piG rho)
+          // K = constant 
+
+          // cell-centered
+          RealVect ccOffset = 0.5*a_dx*RealVect::Unit;
+
+          FArrayBox& thisPHI = a_phi[dit()]; 
+          Box thisBox = thisRHS.box();
+
+          thisRHS.setVal(0,0); // set everything to zero
+         
+          BoxIterator bit(thisBox);
+          for (bit.begin(); bit.ok(); ++bit)
+            {
+              IntVect iv = bit();
+              RealVect loc(iv);
+              loc *= a_dx;
+              loc += ccOffset;
+
+              // set up M(rho, K)
+
+              Real M = M_value(loc, a_params.constant_K, a_params.kappa_sq); // put this in a function since we use it a lot
+
+              Real phi_0 = thisPHI(iv,0);
+
+              Real val = (-0.5) * M * (phi_0 * phi_0 * phi_0 * phi_0 * phi_0); // -(1/2)M phi_0^5
+
+              thisRHS(iv,0) += val;
+
+            }
+
         } // end prob_type
      }
 
@@ -767,3 +896,33 @@ void TrigValueDiri(Real* pos,
                    CHF_CONST_REALVECT(xval));
   a_values[0] = value;
 }
+
+// M(K, rho) = 2/3K^2 - 16piG rho
+// for now we put rho to be a gaussian with center (0.5,0.5,0.5) and scale 10e-2 
+Real M_value(RealVect&          loc, 
+             Real               constant_K,
+             Real               kappa_sq)
+{
+  Real scale = 10e-2;
+  Real strength = 0.0398; // this is basically 1/kappa_sq so rho=1
+
+  RealVect center;
+  center = RealVect(D_DECL(0.5,0.5,0.5)); // put it in the middle for now
+
+  RealVect dist = loc - center;
+  Real radSqr = D_TERM(dist[0]*dist[0],
+                       +dist[1]*dist[1],
+                       +dist[2]*dist[2]);
+  
+  Real rho = strength * exp(-radSqr/scale);
+
+  return ((2.0/3.0)*(constant_K * constant_K - kappa_sq*rho));
+
+}
+
+
+
+
+
+
+
