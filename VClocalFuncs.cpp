@@ -272,6 +272,8 @@ void getPoissonParameters(VCPoissonParameters&  a_params)
   pp.get("initial_phi", a_params.initial_phi);
   pp.get("initial_psi", a_params.initial_psi);
   pp.get("constant_K", a_params.constant_K);
+  pp.get("rho_scale", a_params.rho_scale);
+  pp.get("rho_strength", a_params.rho_strength);
 
   pout() << "alpha beta gamma = " << a_params.alpha << a_params.beta << a_params.gamma << endl;
 
@@ -734,7 +736,7 @@ void setRHS(LevelData<FArrayBox>&    a_rhs,
 
               // set up M(rho, K)
 
-              Real M = M_value(loc, a_params.constant_K, a_params.kappa_sq); // put this in a function since we use it a lot
+              Real M = M_value(loc, a_params.constant_K, a_params.kappa_sq, a_params.rho_scale, a_params.rho_strength); // put this in a function since we use it a lot
 
               Real phi_0 = thisPHI(iv,0);
 
@@ -898,13 +900,16 @@ void TrigValueDiri(Real* pos,
 }
 
 // M(K, rho) = 2/3K^2 - 16piG rho
-// for now we put rho to be a gaussian with center (0.5,0.5,0.5) and scale 10e-2 
+// for now we put rho to be a gaussian with center (0.5,0.5,0.5)
 Real M_value(RealVect&          loc, 
              Real               constant_K,
-             Real               kappa_sq)
+             Real               kappa_sq,
+             Real               scale,
+             Real               strength)
 {
-  Real scale = 10e-2;
-  Real strength = 0.0398; // this is basically 1/kappa_sq so rho=1
+//  Real scale 
+//  Real strength = 0.0398; // this is basically 1/kappa_sq so max(rho)=1.0
+//  Real strength = 3.98; // this is basically 1/kappa_sq so max(rho)=1.0
 
   RealVect center;
   center = RealVect(D_DECL(0.5,0.5,0.5)); // put it in the middle for now
@@ -916,7 +921,7 @@ Real M_value(RealVect&          loc,
   
   Real rho = strength * exp(-radSqr/scale);
 
-  return ((2.0/3.0)*(constant_K * constant_K - kappa_sq*rho));
+  return ((2.0/3.0)*(constant_K * constant_K)- 2.0*kappa_sq*rho);
 
 }
 

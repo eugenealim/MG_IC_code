@@ -52,6 +52,8 @@ public:
   Real         initial_phi; // initial constant phi
   Real         initial_psi; // initial constant psi
   Real         constant_K; // initial constant K
+  Real         rho_scale; // scale of rho gaussian
+  Real         rho_strength; // strength of rho gaussian, rho = strength*Exp(-r^2/scale)
   int          coefficient_average_type;
   int verbosity;
   int probtype; // problem type
@@ -95,7 +97,9 @@ extern void set_initial_psi(LevelData<FArrayBox>&    a_psi,
 
 extern Real M_value(RealVect&          loc,
                     Real               constant_k,
-                    Real               kappa_sq);
+                    Real               kappa_sq,
+                    Real               rho_scale,
+                    Real               rho_strength);
 
 extern
 AMRLevelOpFactory<LevelData<FArrayBox> >*

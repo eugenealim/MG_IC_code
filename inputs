@@ -4,7 +4,7 @@ refine_threshold = 0.85
 # spatially-varying aCoef and bCoef are set in the example itself (for pure laplacian, alpha = beta=0, gamma=-1)
 alpha = 1.0
 beta  = 0.0
-gamma = 1.0
+gamma = -1.0
 
 # kappa_sq = 8piG 
 kappa_sq = 25.1327412 
@@ -27,16 +27,20 @@ trig = 1.3 2.2 3.1
 #coefficient_average_type = arithmetic
 coefficient_average_type = harmonic
 
-# problem type 0=original 1=gaussians
+# problem type 0=original 1=gaussians 2=scalar(not done) 3=RHS = -1/2 M(rho,K)phi_0^5
 probtype = 3
 
+# central rho properties
+rho_scale = 1.0e-1
+rho_strength = 4.0
+
 # VC Coef type
-ACoeftype = 1 # 0 is A(x) = x, 1 is A(x) = 1
+ACoeftype = 2 # 0 is A(x) = x, 1 is A(x) = 1, 2 = -5/8 M(rho,K)phi_0^4
 BCoeftype = 1 # 0 is B(x) = (x,y,z) , 1 is B(x) = (1,1,1) 
-CCoeftype = 1 #
+CCoeftype = 1 # 0 is C(x) = x, 1 is C(x) = 1
 
 # initial constants
-initial_phi = 0.5
+initial_phi = 1
 initial_psi = 1.0
 constant_K = 0.0
 
@@ -65,7 +69,7 @@ domain_length = 1.0 1.0 1.0
 #bc_hi              = 2 2 2  
 bc_lo              = 0 0 0
 bc_hi              = 0 0 0  
-bc_value = 0.0
+bc_value = 1.0
 
 
 

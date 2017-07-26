@@ -99,7 +99,7 @@ setACoef(LevelData<FArrayBox>& a_aCoef,
             loc *= a_dx;
             loc += ccOffset;
 
-            Real M = M_value(loc, a_params.constant_K, a_params.kappa_sq);
+            Real M = M_value(loc, a_params.constant_K, a_params.kappa_sq, a_params.rho_scale, a_params.rho_strength);
 
             Real phi_0 = phi(iv,0);
 
@@ -308,8 +308,8 @@ int poissonSolve(Vector<LevelData<FArrayBox>* >& a_phi,
       vectDomains[ilev] = domLev;
       vectDx[ilev] = dxLev;
 
-      set_initial_phi (*a_phi[ilev], vectDx[ilev], a_params); // EUGENE currently set to 1 
-      set_initial_psi (*a_psi[ilev], vectDx[ilev], a_params); // EUGENE set to 1, temporary
+      set_initial_phi (*a_phi[ilev], vectDx[ilev], a_params); 
+      set_initial_psi (*a_psi[ilev], vectDx[ilev], a_params); 
 
       //prepare dx, domain for next level
       dxLev /=      a_params.refRatio[ilev];
