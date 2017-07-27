@@ -82,6 +82,7 @@ void VCAMRPoissonOp2::residualI(LevelData<FArrayBox>&       a_lhs,
                           This_will_not_compile!
 #endif
                           CHF_CONST_REAL(m_gamma),
+                          CHF_CONST_FRA((*m_cCoef)[dit]),
                           CHF_BOX(region),
                           CHF_CONST_REAL(m_dx));
     } // end loop over boxes
@@ -190,6 +191,7 @@ void VCAMRPoissonOp2::applyOpNoBoundary(LevelData<FArrayBox>&      a_lhs,
                          This_will_not_compile!
 #endif
                          CHF_CONST_REAL(m_gamma),
+                         CHF_CONST_FRA((*m_cCoef)[dit]),
                          CHF_BOX(region),
                          CHF_CONST_REAL(m_dx));
     } // end loop over boxes
@@ -219,6 +221,7 @@ void VCAMRPoissonOp2::restrictResidual(LevelData<FArrayBox>&       a_resCoarse,
 
       const FArrayBox& thisACoef = (*m_aCoef)[dit];
       const FluxBox&   thisBCoef = (*m_bCoef)[dit];
+      const FArrayBox& thisCCoef = (*m_cCoef)[dit];
 
       Box region = dblFine.get(dit());
       const IntVect& iv = region.smallEnd();
@@ -254,6 +257,7 @@ void VCAMRPoissonOp2::restrictResidual(LevelData<FArrayBox>&       a_resCoarse,
                            This_will_not_compile!
 #endif
                            CHF_CONST_REAL(m_gamma),
+                           CHF_CONST_FRA_SHIFT(thisCCoef, iv),
                            CHF_BOX_SHIFT(region, iv),
                            CHF_CONST_REAL(m_dx));
     }
@@ -304,6 +308,7 @@ void VCAMRPoissonOp2::resetLambda()
       FArrayBox&       lambdaFab = m_lambda[dit];
       const FArrayBox& aCoefFab  = (*m_aCoef)[dit];
       const FluxBox&   bCoefFab  = (*m_bCoef)[dit];
+      const FArrayBox& cCoefFab  = (*m_cCoef)[dit];
       const Box& curBox = lambdaFab.box();
 
       // Compute the diagonal term
@@ -639,6 +644,7 @@ void VCAMRPoissonOp2::levelGSRB(LevelData<FArrayBox>&       a_phi,
                                  This_will_not_compile!
 #endif
                                  CHF_CONST_REAL(m_gamma),
+                                 CHF_CONST_FRA((*m_cCoef)[dit]),
                                  CHF_CONST_FRA(m_lambda[dit]),
                                  CHF_CONST_INT(whichPass));
         } // end loop through grids
@@ -727,6 +733,7 @@ void VCAMRPoissonOp2::looseGSRB(LevelData<FArrayBox>&       a_phi,
                            This_will_not_compile!
 #endif
                            CHF_CONST_REAL(m_gamma),
+                           CHF_CONST_FRA((*m_cCoef)[dit]),
                            CHF_CONST_FRA(m_lambda[dit]),
                            CHF_CONST_INT(whichPass));
 
@@ -761,6 +768,7 @@ void VCAMRPoissonOp2::looseGSRB(LevelData<FArrayBox>&       a_phi,
                            This_will_not_compile!
 #endif
                            CHF_CONST_REAL(m_gamma),
+                           CHF_CONST_FRA((*m_cCoef)[dit]),
                            CHF_CONST_FRA(m_lambda[dit]),
                            CHF_CONST_INT(whichPass));
   } // end loop through grids

@@ -22,6 +22,7 @@ void FORTRAN_NAME( GSRBHELMHOLTZVC1D ,gsrbhelmholtzvc1d )(
       ,CHFp_CONST_REAL(beta)
       ,CHFp_CONST_FRA(bCoef0)
       ,CHFp_CONST_REAL(gamma_test)
+      ,CHFp_CONST_FRA(cCoef)
       ,CHFp_CONST_FRA(lambda)
       ,CHFp_CONST_INT(redBlack) );
 
@@ -38,6 +39,7 @@ inline void FORTRAN_NAME(inlineGSRBHELMHOLTZVC1D, inlineGSRBHELMHOLTZVC1D)(
       ,CHFp_CONST_REAL(beta)
       ,CHFp_CONST_FRA(bCoef0)
       ,CHFp_CONST_REAL(gamma_test)
+      ,CHFp_CONST_FRA(cCoef)
       ,CHFp_CONST_FRA(lambda)
       ,CHFp_CONST_INT(redBlack) )
 {
@@ -52,6 +54,7 @@ inline void FORTRAN_NAME(inlineGSRBHELMHOLTZVC1D, inlineGSRBHELMHOLTZVC1D)(
       ,CHFt_CONST_REAL(beta)
       ,CHFt_CONST_FRA(bCoef0)
       ,CHFt_CONST_REAL(gamma_test)
+      ,CHFt_CONST_FRA(cCoef)
       ,CHFt_CONST_FRA(lambda)
       ,CHFt_CONST_INT(redBlack) );
 }
@@ -72,6 +75,7 @@ void FORTRAN_NAME( GSRBHELMHOLTZVC2D ,gsrbhelmholtzvc2d )(
       ,CHFp_CONST_FRA(bCoef0)
       ,CHFp_CONST_FRA(bCoef1)
       ,CHFp_CONST_REAL(gamma_test)
+      ,CHFp_CONST_FRA(cCoef)
       ,CHFp_CONST_FRA(lambda)
       ,CHFp_CONST_INT(redBlack) );
 
@@ -89,6 +93,7 @@ inline void FORTRAN_NAME(inlineGSRBHELMHOLTZVC2D, inlineGSRBHELMHOLTZVC2D)(
       ,CHFp_CONST_FRA(bCoef0)
       ,CHFp_CONST_FRA(bCoef1)
       ,CHFp_CONST_REAL(gamma_test)
+      ,CHFp_CONST_FRA(cCoef)
       ,CHFp_CONST_FRA(lambda)
       ,CHFp_CONST_INT(redBlack) )
 {
@@ -104,6 +109,7 @@ inline void FORTRAN_NAME(inlineGSRBHELMHOLTZVC2D, inlineGSRBHELMHOLTZVC2D)(
       ,CHFt_CONST_FRA(bCoef0)
       ,CHFt_CONST_FRA(bCoef1)
       ,CHFt_CONST_REAL(gamma_test)
+      ,CHFt_CONST_FRA(cCoef)
       ,CHFt_CONST_FRA(lambda)
       ,CHFt_CONST_INT(redBlack) );
 }
@@ -125,6 +131,7 @@ void FORTRAN_NAME( GSRBHELMHOLTZVC3D ,gsrbhelmholtzvc3d )(
       ,CHFp_CONST_FRA(bCoef1)
       ,CHFp_CONST_FRA(bCoef2)
       ,CHFp_CONST_REAL(gamma_test)
+      ,CHFp_CONST_FRA(cCoef)
       ,CHFp_CONST_FRA(lambda)
       ,CHFp_CONST_INT(redBlack) );
 
@@ -143,6 +150,7 @@ inline void FORTRAN_NAME(inlineGSRBHELMHOLTZVC3D, inlineGSRBHELMHOLTZVC3D)(
       ,CHFp_CONST_FRA(bCoef1)
       ,CHFp_CONST_FRA(bCoef2)
       ,CHFp_CONST_REAL(gamma_test)
+      ,CHFp_CONST_FRA(cCoef)
       ,CHFp_CONST_FRA(lambda)
       ,CHFp_CONST_INT(redBlack) )
 {
@@ -159,6 +167,7 @@ inline void FORTRAN_NAME(inlineGSRBHELMHOLTZVC3D, inlineGSRBHELMHOLTZVC3D)(
       ,CHFt_CONST_FRA(bCoef1)
       ,CHFt_CONST_FRA(bCoef2)
       ,CHFt_CONST_REAL(gamma_test)
+      ,CHFt_CONST_FRA(cCoef)
       ,CHFt_CONST_FRA(lambda)
       ,CHFt_CONST_INT(redBlack) );
 }
@@ -176,6 +185,7 @@ void FORTRAN_NAME( VCCOMPUTEOP1D ,vccomputeop1d )(
       ,CHFp_CONST_REAL(beta)
       ,CHFp_CONST_FRA(bCoef0)
       ,CHFp_CONST_REAL(gamma_test)
+      ,CHFp_CONST_FRA(cCoef)
       ,CHFp_BOX(region)
       ,CHFp_CONST_REAL(dx) );
 
@@ -190,6 +200,7 @@ inline void FORTRAN_NAME(inlineVCCOMPUTEOP1D, inlineVCCOMPUTEOP1D)(
       ,CHFp_CONST_REAL(beta)
       ,CHFp_CONST_FRA(bCoef0)
       ,CHFp_CONST_REAL(gamma_test)
+      ,CHFp_CONST_FRA(cCoef)
       ,CHFp_BOX(region)
       ,CHFp_CONST_REAL(dx) )
 {
@@ -202,6 +213,7 @@ inline void FORTRAN_NAME(inlineVCCOMPUTEOP1D, inlineVCCOMPUTEOP1D)(
       ,CHFt_CONST_REAL(beta)
       ,CHFt_CONST_FRA(bCoef0)
       ,CHFt_CONST_REAL(gamma_test)
+      ,CHFt_CONST_FRA(cCoef)
       ,CHFt_BOX(region)
       ,CHFt_CONST_REAL(dx) );
 }
@@ -220,6 +232,7 @@ void FORTRAN_NAME( VCCOMPUTEOP2D ,vccomputeop2d )(
       ,CHFp_CONST_FRA(bCoef0)
       ,CHFp_CONST_FRA(bCoef1)
       ,CHFp_CONST_REAL(gamma_test)
+      ,CHFp_CONST_FRA(cCoef)
       ,CHFp_BOX(region)
       ,CHFp_CONST_REAL(dx) );
 
@@ -235,6 +248,7 @@ inline void FORTRAN_NAME(inlineVCCOMPUTEOP2D, inlineVCCOMPUTEOP2D)(
       ,CHFp_CONST_FRA(bCoef0)
       ,CHFp_CONST_FRA(bCoef1)
       ,CHFp_CONST_REAL(gamma_test)
+      ,CHFp_CONST_FRA(cCoef)
       ,CHFp_BOX(region)
       ,CHFp_CONST_REAL(dx) )
 {
@@ -248,6 +262,7 @@ inline void FORTRAN_NAME(inlineVCCOMPUTEOP2D, inlineVCCOMPUTEOP2D)(
       ,CHFt_CONST_FRA(bCoef0)
       ,CHFt_CONST_FRA(bCoef1)
       ,CHFt_CONST_REAL(gamma_test)
+      ,CHFt_CONST_FRA(cCoef)
       ,CHFt_BOX(region)
       ,CHFt_CONST_REAL(dx) );
 }
@@ -267,6 +282,7 @@ void FORTRAN_NAME( VCCOMPUTEOP3D ,vccomputeop3d )(
       ,CHFp_CONST_FRA(bCoef1)
       ,CHFp_CONST_FRA(bCoef2)
       ,CHFp_CONST_REAL(gamma_test)
+      ,CHFp_CONST_FRA(cCoef)
       ,CHFp_BOX(region)
       ,CHFp_CONST_REAL(dx) );
 
@@ -283,6 +299,7 @@ inline void FORTRAN_NAME(inlineVCCOMPUTEOP3D, inlineVCCOMPUTEOP3D)(
       ,CHFp_CONST_FRA(bCoef1)
       ,CHFp_CONST_FRA(bCoef2)
       ,CHFp_CONST_REAL(gamma_test)
+      ,CHFp_CONST_FRA(cCoef)
       ,CHFp_BOX(region)
       ,CHFp_CONST_REAL(dx) )
 {
@@ -297,6 +314,7 @@ inline void FORTRAN_NAME(inlineVCCOMPUTEOP3D, inlineVCCOMPUTEOP3D)(
       ,CHFt_CONST_FRA(bCoef1)
       ,CHFt_CONST_FRA(bCoef2)
       ,CHFt_CONST_REAL(gamma_test)
+      ,CHFt_CONST_FRA(cCoef)
       ,CHFt_BOX(region)
       ,CHFt_CONST_REAL(dx) );
 }
@@ -315,6 +333,7 @@ void FORTRAN_NAME( VCCOMPUTERES1D ,vccomputeres1d )(
       ,CHFp_CONST_REAL(beta)
       ,CHFp_CONST_FRA(bCoef0)
       ,CHFp_CONST_REAL(gamma_test)
+      ,CHFp_CONST_FRA(cCoef)
       ,CHFp_BOX(region)
       ,CHFp_CONST_REAL(dx) );
 
@@ -330,6 +349,7 @@ inline void FORTRAN_NAME(inlineVCCOMPUTERES1D, inlineVCCOMPUTERES1D)(
       ,CHFp_CONST_REAL(beta)
       ,CHFp_CONST_FRA(bCoef0)
       ,CHFp_CONST_REAL(gamma_test)
+      ,CHFp_CONST_FRA(cCoef)
       ,CHFp_BOX(region)
       ,CHFp_CONST_REAL(dx) )
 {
@@ -343,6 +363,7 @@ inline void FORTRAN_NAME(inlineVCCOMPUTERES1D, inlineVCCOMPUTERES1D)(
       ,CHFt_CONST_REAL(beta)
       ,CHFt_CONST_FRA(bCoef0)
       ,CHFt_CONST_REAL(gamma_test)
+      ,CHFt_CONST_FRA(cCoef)
       ,CHFt_BOX(region)
       ,CHFt_CONST_REAL(dx) );
 }
@@ -362,6 +383,7 @@ void FORTRAN_NAME( VCCOMPUTERES2D ,vccomputeres2d )(
       ,CHFp_CONST_FRA(bCoef0)
       ,CHFp_CONST_FRA(bCoef1)
       ,CHFp_CONST_REAL(gamma_test)
+      ,CHFp_CONST_FRA(cCoef)
       ,CHFp_BOX(region)
       ,CHFp_CONST_REAL(dx) );
 
@@ -378,6 +400,7 @@ inline void FORTRAN_NAME(inlineVCCOMPUTERES2D, inlineVCCOMPUTERES2D)(
       ,CHFp_CONST_FRA(bCoef0)
       ,CHFp_CONST_FRA(bCoef1)
       ,CHFp_CONST_REAL(gamma_test)
+      ,CHFp_CONST_FRA(cCoef)
       ,CHFp_BOX(region)
       ,CHFp_CONST_REAL(dx) )
 {
@@ -392,6 +415,7 @@ inline void FORTRAN_NAME(inlineVCCOMPUTERES2D, inlineVCCOMPUTERES2D)(
       ,CHFt_CONST_FRA(bCoef0)
       ,CHFt_CONST_FRA(bCoef1)
       ,CHFt_CONST_REAL(gamma_test)
+      ,CHFt_CONST_FRA(cCoef)
       ,CHFt_BOX(region)
       ,CHFt_CONST_REAL(dx) );
 }
@@ -412,6 +436,7 @@ void FORTRAN_NAME( VCCOMPUTERES3D ,vccomputeres3d )(
       ,CHFp_CONST_FRA(bCoef1)
       ,CHFp_CONST_FRA(bCoef2)
       ,CHFp_CONST_REAL(gamma_test)
+      ,CHFp_CONST_FRA(cCoef)
       ,CHFp_BOX(region)
       ,CHFp_CONST_REAL(dx) );
 
@@ -429,6 +454,7 @@ inline void FORTRAN_NAME(inlineVCCOMPUTERES3D, inlineVCCOMPUTERES3D)(
       ,CHFp_CONST_FRA(bCoef1)
       ,CHFp_CONST_FRA(bCoef2)
       ,CHFp_CONST_REAL(gamma_test)
+      ,CHFp_CONST_FRA(cCoef)
       ,CHFp_BOX(region)
       ,CHFp_CONST_REAL(dx) )
 {
@@ -444,6 +470,7 @@ inline void FORTRAN_NAME(inlineVCCOMPUTERES3D, inlineVCCOMPUTERES3D)(
       ,CHFt_CONST_FRA(bCoef1)
       ,CHFt_CONST_FRA(bCoef2)
       ,CHFt_CONST_REAL(gamma_test)
+      ,CHFt_CONST_FRA(cCoef)
       ,CHFt_BOX(region)
       ,CHFt_CONST_REAL(dx) );
 }
@@ -462,6 +489,7 @@ void FORTRAN_NAME( RESTRICTRESVC1D ,restrictresvc1d )(
       ,CHFp_CONST_REAL(beta)
       ,CHFp_CONST_FRA(bCoef0)
       ,CHFp_CONST_REAL(gamma_test)
+      ,CHFp_CONST_FRA(cCoef)
       ,CHFp_BOX(region)
       ,CHFp_CONST_REAL(dx) );
 
@@ -477,6 +505,7 @@ inline void FORTRAN_NAME(inlineRESTRICTRESVC1D, inlineRESTRICTRESVC1D)(
       ,CHFp_CONST_REAL(beta)
       ,CHFp_CONST_FRA(bCoef0)
       ,CHFp_CONST_REAL(gamma_test)
+      ,CHFp_CONST_FRA(cCoef)
       ,CHFp_BOX(region)
       ,CHFp_CONST_REAL(dx) )
 {
@@ -490,6 +519,7 @@ inline void FORTRAN_NAME(inlineRESTRICTRESVC1D, inlineRESTRICTRESVC1D)(
       ,CHFt_CONST_REAL(beta)
       ,CHFt_CONST_FRA(bCoef0)
       ,CHFt_CONST_REAL(gamma_test)
+      ,CHFt_CONST_FRA(cCoef)
       ,CHFt_BOX(region)
       ,CHFt_CONST_REAL(dx) );
 }
@@ -509,6 +539,7 @@ void FORTRAN_NAME( RESTRICTRESVC2D ,restrictresvc2d )(
       ,CHFp_CONST_FRA(bCoef0)
       ,CHFp_CONST_FRA(bCoef1)
       ,CHFp_CONST_REAL(gamma_test)
+      ,CHFp_CONST_FRA(cCoef)
       ,CHFp_BOX(region)
       ,CHFp_CONST_REAL(dx) );
 
@@ -525,6 +556,7 @@ inline void FORTRAN_NAME(inlineRESTRICTRESVC2D, inlineRESTRICTRESVC2D)(
       ,CHFp_CONST_FRA(bCoef0)
       ,CHFp_CONST_FRA(bCoef1)
       ,CHFp_CONST_REAL(gamma_test)
+      ,CHFp_CONST_FRA(cCoef)
       ,CHFp_BOX(region)
       ,CHFp_CONST_REAL(dx) )
 {
@@ -539,6 +571,7 @@ inline void FORTRAN_NAME(inlineRESTRICTRESVC2D, inlineRESTRICTRESVC2D)(
       ,CHFt_CONST_FRA(bCoef0)
       ,CHFt_CONST_FRA(bCoef1)
       ,CHFt_CONST_REAL(gamma_test)
+      ,CHFt_CONST_FRA(cCoef)
       ,CHFt_BOX(region)
       ,CHFt_CONST_REAL(dx) );
 }
@@ -559,6 +592,7 @@ void FORTRAN_NAME( RESTRICTRESVC3D ,restrictresvc3d )(
       ,CHFp_CONST_FRA(bCoef1)
       ,CHFp_CONST_FRA(bCoef2)
       ,CHFp_CONST_REAL(gamma_test)
+      ,CHFp_CONST_FRA(cCoef)
       ,CHFp_BOX(region)
       ,CHFp_CONST_REAL(dx) );
 
@@ -576,6 +610,7 @@ inline void FORTRAN_NAME(inlineRESTRICTRESVC3D, inlineRESTRICTRESVC3D)(
       ,CHFp_CONST_FRA(bCoef1)
       ,CHFp_CONST_FRA(bCoef2)
       ,CHFp_CONST_REAL(gamma_test)
+      ,CHFp_CONST_FRA(cCoef)
       ,CHFp_BOX(region)
       ,CHFp_CONST_REAL(dx) )
 {
@@ -591,6 +626,7 @@ inline void FORTRAN_NAME(inlineRESTRICTRESVC3D, inlineRESTRICTRESVC3D)(
       ,CHFt_CONST_FRA(bCoef1)
       ,CHFt_CONST_FRA(bCoef2)
       ,CHFt_CONST_REAL(gamma_test)
+      ,CHFt_CONST_FRA(cCoef)
       ,CHFt_BOX(region)
       ,CHFt_CONST_REAL(dx) );
 }

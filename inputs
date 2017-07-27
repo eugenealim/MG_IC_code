@@ -15,7 +15,7 @@ numMGsmooth = 4 # number of GSRB smooths before and after MG coarsening
 num_mg     = 1 
 numMGIterations = 2 #this is the number of MG v-cycles in the preconditioner
 max_iterations = 100 #max number of solver iterations
-max_NL_iterations = 10 #non linear outside loop iterations
+max_NL_iterations = 30 #non linear outside loop iterations
 tolerance  = 1.0e-9   #solver tolerance for declaring convergence
 hang       = 1.0e-10  #solver tolerance for deciding when we're hung
 verbosity = 6 # higher number means more verbose output
@@ -31,8 +31,8 @@ coefficient_average_type = harmonic
 probtype = 3
 
 # central rho properties
-rho_scale = 1.0e-1
-rho_strength = 4.0
+rho_scale = 1.0e-2
+rho_strength = 3.5
 
 # VC Coef type
 ACoeftype = 2 # 0 is A(x) = x, 1 is A(x) = 1, 2 = -5/8 M(rho,K)phi_0^4

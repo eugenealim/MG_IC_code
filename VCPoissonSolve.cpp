@@ -47,7 +47,7 @@ setACoef(LevelData<FArrayBox>& a_aCoef,
   RealVect pos;
   int num;
 
-  if (a_params.ACoeftype == 0) // original
+  if (a_params.ACoeftype == 0) // A(x) = x
     {
     DataIterator dit = a_aCoef.dataIterator();
     for (dit.begin(); dit.ok(); ++dit)
@@ -59,11 +59,7 @@ setACoef(LevelData<FArrayBox>& a_aCoef,
           D_TERM(pos[0]=a_dx[0]*(iR+0.5);,
                 pos[1]=a_dx[1]*(jR+0.5);,
                 pos[2]=a_dx[2]*(kR+0.5));
-          aCoefR = pos[0];// this just fixed the aCoef to be x (which is what was also set in functionsF.Chf:w
-          // Eugene change 
-  //        aCoefR = D_TERM(pos[0]*,pos[1]*,pos[2]);
-          // constant-coefficient
-          //aCoefR = 1.0;
+          aCoefR = pos[0];// this just fixed the aCoef to be x (which is what was also set in functionsF.ChF
         }EndFor;
       } // end loop over grids
     }
@@ -176,7 +172,7 @@ setCCoef(LevelData<FArrayBox>& a_cCoef,
   RealVect pos;
   int num;
 
-  if (a_params.CCoeftype == 0) // original
+  if (a_params.CCoeftype == 0) // C(x) = x
     {
     DataIterator dit = a_cCoef.dataIterator();
     for (dit.begin(); dit.ok(); ++dit)
