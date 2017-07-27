@@ -95,7 +95,7 @@ setACoef(LevelData<FArrayBox>& a_aCoef,
             loc *= a_dx;
             loc += ccOffset;
 
-            Real M = M_value(loc, a_params.constant_K, a_params.kappa_sq, a_params.rho_scale, a_params.rho_strength);
+            Real M = M_value(loc, a_params);
 
             Real phi_0 = phi(iv,0);
 

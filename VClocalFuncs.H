@@ -52,14 +52,18 @@ public:
   Real         initial_phi; // initial constant phi
   Real         initial_psi; // initial constant psi
   Real         constant_K; // initial constant K
+  int          rho_type; // 0 = gaussian, 1 = wavemodes
   Real         rho_scale; // scale of rho gaussian
   Real         rho_strength; // strength of rho gaussian, rho = strength*Exp(-r^2/scale)
+  Vector<Real> rho_k; // wave lengths for wave modes
+  Vector<Real> rho_amplitude; // three amplitude for wave modes
+  Real         rho_baseline; // baseline
   int          coefficient_average_type;
-  int verbosity;
-  int probtype; // problem type
-  int ACoeftype; // ACoef type
-  int BCoeftype; // BCoef type
-  int CCoeftype; // CCoef type
+  int          verbosity;
+  int          probtype; // problem type
+  int          ACoeftype; // ACoef type
+  int          BCoeftype; // BCoef type
+  int          CCoeftype; // CCoef type
   Vector<int>  periodic; // 1 1 1 for periodic, 0 0 0 for non-periodic
 };
 
@@ -97,10 +101,7 @@ extern void set_initial_psi(LevelData<FArrayBox>&    a_psi,
                    const VCPoissonParameters& a_params);
 
 extern Real M_value(RealVect&          loc,
-                    Real               constant_k,
-                    Real               kappa_sq,
-                    Real               rho_scale,
-                    Real               rho_strength);
+                    const VCPoissonParameters& a_params);
 
 extern
 AMRLevelOpFactory<LevelData<FArrayBox> >*

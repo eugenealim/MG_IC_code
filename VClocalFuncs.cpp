@@ -285,8 +285,18 @@ void getPoissonParameters(VCPoissonParameters&  a_params)
   pp.get("initial_phi", a_params.initial_phi);
   pp.get("initial_psi", a_params.initial_psi);
   pp.get("constant_K", a_params.constant_K);
+
+  // Get rho params
+
+  pp.get("rho_type", a_params.rho_type); // 0 = gaussian, 1 = waves
+  // Gaussian rho = strength * Exp[-r^2/scale]
   pp.get("rho_scale", a_params.rho_scale);
   pp.get("rho_strength", a_params.rho_strength);
+
+  // waves rho = SUM_i rho_amplitude_i * Sin[2pi rho_k_i x_i]
+  pp.getarr("rho_k", a_params.rho_k, 0, SpaceDim);
+  pp.getarr("rho_amplitude", a_params.rho_amplitude, 0, SpaceDim);
+  pp.get("rho_baseline", a_params.rho_baseline);
 
   pout() << "alpha beta gamma = " << a_params.alpha << a_params.beta << a_params.gamma << endl;
 
@@ -760,7 +770,7 @@ void setRHS(LevelData<FArrayBox>&    a_rhs,
 
               // set up M(rho, K)
 
-              Real M = M_value(loc, a_params.constant_K, a_params.kappa_sq, a_params.rho_scale, a_params.rho_strength); // put this in a function since we use it a lot
+              Real M = M_value(loc, a_params);
 
               Real phi_0 = thisPHI(iv,0);
 
@@ -926,33 +936,39 @@ void TrigValueDiri(Real* pos,
 // M(K, rho) = 2/3K^2 - 16piG rho
 // for now we put rho to be a gaussian with center (0.5,0.5,0.5)
 Real M_value(RealVect&          loc, 
-             Real               constant_K,
-             Real               kappa_sq,
-             Real               scale,
-             Real               strength)
+             const VCPoissonParameters& a_params)
 {
-//  Real scale 
-//  Real strength = 0.0398; // this is basically 1/kappa_sq so max(rho)=1.0
-//  Real strength = 3.98; // this is basically 1/kappa_sq so max(rho)=1.0
+  Real rho;
 
-  /*
   // Gaussian for dirichlet BC
+  if (a_params.rho_type == 0)  // central gaussian rho = strength * Exp[-r^2/scale]
+  {
+    RealVect center;
+    center = RealVect(D_DECL(0.5,0.5,0.5)); // put it in the middle for now
 
-  RealVect center;
-  center = RealVect(D_DECL(0.5,0.5,0.5)); // put it in the middle for now
+    RealVect dist = loc - center;
+    Real radSqr = D_TERM(dist[0]*dist[0],
+                        +dist[1]*dist[1],
+                        +dist[2]*dist[2]);
+    
+    rho = a_params.rho_strength * exp(-radSqr/a_params.rho_scale);
+  }
+  else if (a_params.rho_type == 1)  // wave modes (for periodic) rho = Sum_i a_i sin{2pi k_i x_i) + baseline (to prevent negative rho)
+   
+  {
+    
+    rho = a_params.rho_amplitude[0] * sin(a_params.rho_k[0] * 2.0 * PI * loc[0]) 
+        + a_params.rho_amplitude[1] * sin(a_params.rho_k[1] * 2.0 * PI * loc[1]) 
+        + a_params.rho_amplitude[2] * sin(a_params.rho_k[2] * 2.0 * PI * loc[2]) 
+        + a_params.rho_baseline;
+  }
+  else
+  {
+    rho = 0.0;
+    // probably should put some error handling code here
+  }
 
-  RealVect dist = loc - center;
-  Real radSqr = D_TERM(dist[0]*dist[0],
-                       +dist[1]*dist[1],
-                       +dist[2]*dist[2]);
-  
-  Real rho = strength * exp(-radSqr/scale);
-  */
-
-  // Wave modes for periodic BC
-  Real rho = strength * (sin(2.0 * PI * loc[0]) + sin(2.0 * PI * loc[1]) + sin(2.0 * PI * loc[2]));
-
-  return ((2.0/3.0)*(constant_K * constant_K)- 2.0*kappa_sq*rho);
+  return ((2.0/3.0)*(a_params.constant_K * a_params.constant_K)- 2.0*a_params.kappa_sq*rho);
 
 }
 
