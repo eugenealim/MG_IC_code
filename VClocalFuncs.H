@@ -60,6 +60,7 @@ public:
   int ACoeftype; // ACoef type
   int BCoeftype; // BCoef type
   int CCoeftype; // CCoef type
+  Vector<int>  periodic; // 1 1 1 for periodic, 0 0 0 for non-periodic
 };
 
 ///

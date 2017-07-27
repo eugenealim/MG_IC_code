@@ -20,6 +20,7 @@
 #include "computeNorm.H"
 #include "BCFunc.H"
 #include "CoarseAverage.H"
+#include "CONSTANTS.H"
 
 #include "UsingNamespace.H"
 
@@ -32,6 +33,9 @@ bool              GlobalBCRS::s_areBCsParsed= false;
 bool              GlobalBCRS::s_valueParsed= false;
 bool              GlobalBCRS::s_trigParsed= false;
 
+// BCValueHolder class, which is a pointer to a void-type function with the 4 arguements
+// given pos [x,y,z] position on center of cell edge int dir direction, x being 0 int side -1 for low, +1 = high, fill in the a_values array
+
 void ParseValue(Real* pos,
                 int* dir,
                 Side::LoHiSide* side,
@@ -42,7 +46,6 @@ void ParseValue(Real* pos,
   pp.get("bc_value",bcVal);
   a_values[0]=bcVal;
 }
-
 
 
 void ParseBC(FArrayBox& a_state,
@@ -63,8 +66,15 @@ void ParseBC(FArrayBox& a_state,
         }
 
       Box valid = a_valid;
+
       for (int i=0; i<CH_SPACEDIM; ++i)
         {
+
+      // periodic?
+          if ( !a_domain.isPeriodic(i))
+          {
+      // periodic?
+
           Box ghostBoxLo = adjCellBox(valid, i, Side::Lo, 1);
           Box ghostBoxHi = adjCellBox(valid, i, Side::Hi, 1);
           if (!a_domain.domainBox().contains(ghostBoxLo))
@@ -80,7 +90,7 @@ void ParseBC(FArrayBox& a_state,
                          valid,
                          a_dx,
                          a_homogeneous,
-                         ParseValue,
+                         ParseValue, //BCValueHolder class
                          i,
                          Side::Lo);
                 }
@@ -221,6 +231,9 @@ void ParseBC(FArrayBox& a_state,
                   MayDay::Error("bogus bc flag hi");
                 }
             }
+          // is periodic
+        }
+          // is periodic
         }
     }
 }
@@ -314,6 +327,17 @@ void getPoissonParameters(VCPoissonParameters&  a_params)
   hi -= IntVect::Unit;
 
   Box crseDomBox(lo,hi);
+
+  // Eugene : let's read in the periodic info first, implement later
+  //  bool is_periodic[SpaceDim];
+  Vector<int> is_periodic_int;
+  pp.getarr("is_periodic", is_periodic_int, 0, SpaceDim);
+  for (int dir=0; dir<SpaceDim; dir++)
+  {
+    is_periodic[dir] = (is_periodic_int[dir] == 1);
+  }
+  a_params.periodic = is_periodic_int;
+
   ProblemDomain crseDom(crseDomBox);
   for (int dir=0; dir<SpaceDim; dir++)
     {
@@ -911,6 +935,9 @@ Real M_value(RealVect&          loc,
 //  Real strength = 0.0398; // this is basically 1/kappa_sq so max(rho)=1.0
 //  Real strength = 3.98; // this is basically 1/kappa_sq so max(rho)=1.0
 
+  /*
+  // Gaussian for dirichlet BC
+
   RealVect center;
   center = RealVect(D_DECL(0.5,0.5,0.5)); // put it in the middle for now
 
@@ -920,6 +947,10 @@ Real M_value(RealVect&          loc,
                        +dist[2]*dist[2]);
   
   Real rho = strength * exp(-radSqr/scale);
+  */
+
+  // Wave modes for periodic BC
+  Real rho = strength * (sin(2.0 * PI * loc[0]) + sin(2.0 * PI * loc[1]) + sin(2.0 * PI * loc[2]));
 
   return ((2.0/3.0)*(constant_K * constant_K)- 2.0*kappa_sq*rho);
 
