@@ -75,164 +75,164 @@ void ParseBC(FArrayBox& a_state,
           {
       // periodic?
 
-          Box ghostBoxLo = adjCellBox(valid, i, Side::Lo, 1);
-          Box ghostBoxHi = adjCellBox(valid, i, Side::Hi, 1);
-          if (!a_domain.domainBox().contains(ghostBoxLo))
-            {
-              if (GlobalBCRS::s_bcLo[i] == 1)
-                {
-                  if (!GlobalBCRS::s_printedThatLo[i])
-                    {
-                      GlobalBCRS::s_printedThatLo[i] = true;
-                      pout() << "const neum bcs lo for direction " << i << endl;
-                    }
-                  NeumBC(a_state,
-                         valid,
-                         a_dx,
-                         a_homogeneous,
-                         ParseValue, //BCValueHolder class
-                         i,
-                         Side::Lo);
-                }
-              else if (GlobalBCRS::s_bcLo[i] == 2)
-                {
-                  if (!GlobalBCRS::s_printedThatLo[i])
-                    {
-                      GlobalBCRS::s_printedThatLo[i] = true;
-                      pout() << "trig neum bcs lo for direction " << i << endl;
-                    }
-                  NeumBC(a_state,
-                         valid,
-                         a_dx,
-                         a_homogeneous,
-                         TrigValueNeum,
-                         i,
-                         Side::Lo);
-                }
-              else if (GlobalBCRS::s_bcLo[i] == 0)
-                {
-                  if (!GlobalBCRS::s_printedThatLo[i])
-                    {
-                      GlobalBCRS::s_printedThatLo[i] = true;
-                      pout() << "const diri bcs lo for direction " << i << endl;
-                    }
-                  DiriBC(a_state,
-                         valid,
-                         a_dx,
-                         a_homogeneous,
-                         ParseValue,
-                         i,
-                         Side::Lo);
+            Box ghostBoxLo = adjCellBox(valid, i, Side::Lo, 1);
+            Box ghostBoxHi = adjCellBox(valid, i, Side::Hi, 1);
+            if (!a_domain.domainBox().contains(ghostBoxLo))
+              {
+                if (GlobalBCRS::s_bcLo[i] == 1)
+                  {
+                    if (!GlobalBCRS::s_printedThatLo[i])
+                      {
+                        GlobalBCRS::s_printedThatLo[i] = true;
+                        pout() << "const neum bcs lo for direction " << i << endl;
+                      }
+                    NeumBC(a_state,
+                          valid,
+                          a_dx,
+                          a_homogeneous,
+                          ParseValue, //BCValueHolder class
+                          i,
+                          Side::Lo);
+                  }
+                else if (GlobalBCRS::s_bcLo[i] == 2)
+                  {
+                    if (!GlobalBCRS::s_printedThatLo[i])
+                      {
+                        GlobalBCRS::s_printedThatLo[i] = true;
+                        pout() << "trig neum bcs lo for direction " << i << endl;
+                      }
+                    NeumBC(a_state,
+                          valid,
+                          a_dx,
+                          a_homogeneous,
+                          TrigValueNeum,
+                          i,
+                          Side::Lo);
+                  }
+                else if (GlobalBCRS::s_bcLo[i] == 0)
+                  {
+                    if (!GlobalBCRS::s_printedThatLo[i])
+                      {
+                        GlobalBCRS::s_printedThatLo[i] = true;
+                        pout() << "const diri bcs lo for direction " << i << endl;
+                      }
+                    DiriBC(a_state,
+                          valid,
+                          a_dx,
+                          a_homogeneous,
+                          ParseValue,
+                          i,
+                          Side::Lo);
 
-                }
-              else if (GlobalBCRS::s_bcLo[i] == 3)
-                {
-                  if (!GlobalBCRS::s_printedThatLo[i])
-                    {
-                      GlobalBCRS::s_printedThatLo[i] = true;
-                      pout() << "trig diri bcs lo for direction " << i << endl;
-                    }
-                  DiriBC(a_state,
-                         valid,
-                         a_dx,
-                         a_homogeneous,
-                         TrigValueDiri,
-                         i,
-                         Side::Lo);
+                  }
+                else if (GlobalBCRS::s_bcLo[i] == 3)
+                  {
+                    if (!GlobalBCRS::s_printedThatLo[i])
+                      {
+                        GlobalBCRS::s_printedThatLo[i] = true;
+                        pout() << "trig diri bcs lo for direction " << i << endl;
+                      }
+                    DiriBC(a_state,
+                          valid,
+                          a_dx,
+                          a_homogeneous,
+                          TrigValueDiri,
+                          i,
+                          Side::Lo);
 
-                }
-              else if (GlobalBCRS::s_bcLo[i] == 4)
-                {
-                  if (!GlobalBCRS::s_printedThatLo[i])
-                    {
-                      GlobalBCRS::s_printedThatLo[i] = true;
-                      pout() << "periodic bcs lo for direction " << i << endl;
-                    }
+                  }
+                else if (GlobalBCRS::s_bcLo[i] == 4)
+                  {
+                    if (!GlobalBCRS::s_printedThatLo[i])
+                      {
+                        GlobalBCRS::s_printedThatLo[i] = true;
+                        pout() << "periodic bcs lo for direction " << i << endl;
+                      }
 
-                }
-              else
-                {
-                  MayDay::Error("bogus bc flag lo");
-                }
-            }
+                  }
+                else
+                  {
+                    MayDay::Error("bogus bc flag lo");
+                  }
+              }
 
-          if (!a_domain.domainBox().contains(ghostBoxHi))
-            {
-              if (GlobalBCRS::s_bcHi[i] == 1)
-                {
-                  if (!GlobalBCRS::s_printedThatHi[i])
-                    {
-                      GlobalBCRS::s_printedThatHi[i] = true;
-                      pout() << "const neum bcs hi for direction " << i << endl;
-                    }
-                  NeumBC(a_state,
-                         valid,
-                         a_dx,
-                         a_homogeneous,
-                         ParseValue,
-                         i,
-                         Side::Hi);
-                }
-              else if (GlobalBCRS::s_bcHi[i] == 2)
-                {
-                  if (!GlobalBCRS::s_printedThatHi[i])
-                    {
-                      GlobalBCRS::s_printedThatHi[i] = true;
-                      pout() << "trig neum bcs hi for direction " << i << endl;
-                    }
-                  NeumBC(a_state,
-                         valid,
-                         a_dx,
-                         a_homogeneous,
-                         TrigValueNeum,
-                         i,
-                         Side::Hi);
-                }
-              else if (GlobalBCRS::s_bcHi[i] == 0)
-                {
-                  if (!GlobalBCRS::s_printedThatHi[i])
-                    {
-                      GlobalBCRS::s_printedThatHi[i] = true;
-                      pout() << "const diri bcs hi for direction " << i << endl;
-                    }
-                  DiriBC(a_state,
-                         valid,
-                         a_dx,
-                         a_homogeneous,
-                         ParseValue,
-                         i,
-                         Side::Hi);
-                }
-              else if (GlobalBCRS::s_bcHi[i] == 3)
-                {
-                  if (!GlobalBCRS::s_printedThatHi[i])
-                    {
-                      GlobalBCRS::s_printedThatHi[i] = true;
-                      pout() << "trig diri bcs hi for direction " << i << endl;
-                    }
-                  DiriBC(a_state,
-                         valid,
-                         a_dx,
-                         a_homogeneous,
-                         TrigValueDiri,
-                         i,
-                         Side::Hi);
-                }
-              else if (GlobalBCRS::s_bcHi[i] == 4)
-                {
-                  if (!GlobalBCRS::s_printedThatHi[i])
-                    {
-                      GlobalBCRS::s_printedThatHi[i] = true;
-                      pout() << "periodic bcs hi for direction " << i << endl;
-                    }
-                }
-              else
-                {
-                  MayDay::Error("bogus bc flag hi");
-                }
-            }
+            if (!a_domain.domainBox().contains(ghostBoxHi))
+              {
+                if (GlobalBCRS::s_bcHi[i] == 1)
+                  {
+                    if (!GlobalBCRS::s_printedThatHi[i])
+                      {
+                        GlobalBCRS::s_printedThatHi[i] = true;
+                        pout() << "const neum bcs hi for direction " << i << endl;
+                      }
+                    NeumBC(a_state,
+                          valid,
+                          a_dx,
+                          a_homogeneous,
+                          ParseValue,
+                          i,
+                          Side::Hi);
+                  }
+                else if (GlobalBCRS::s_bcHi[i] == 2)
+                  {
+                    if (!GlobalBCRS::s_printedThatHi[i])
+                      {
+                        GlobalBCRS::s_printedThatHi[i] = true;
+                        pout() << "trig neum bcs hi for direction " << i << endl;
+                      }
+                    NeumBC(a_state,
+                          valid,
+                          a_dx,
+                          a_homogeneous,
+                          TrigValueNeum,
+                          i,
+                          Side::Hi);
+                  }
+                else if (GlobalBCRS::s_bcHi[i] == 0)
+                  {
+                    if (!GlobalBCRS::s_printedThatHi[i])
+                      {
+                        GlobalBCRS::s_printedThatHi[i] = true;
+                        pout() << "const diri bcs hi for direction " << i << endl;
+                      }
+                    DiriBC(a_state,
+                          valid,
+                          a_dx,
+                          a_homogeneous,
+                          ParseValue,
+                          i,
+                          Side::Hi);
+                  }
+                else if (GlobalBCRS::s_bcHi[i] == 3)
+                  {
+                    if (!GlobalBCRS::s_printedThatHi[i])
+                      {
+                        GlobalBCRS::s_printedThatHi[i] = true;
+                        pout() << "trig diri bcs hi for direction " << i << endl;
+                      }
+                    DiriBC(a_state,
+                          valid,
+                          a_dx,
+                          a_homogeneous,
+                          TrigValueDiri,
+                          i,
+                          Side::Hi);
+                  }
+                else if (GlobalBCRS::s_bcHi[i] == 4)
+                  {
+                    if (!GlobalBCRS::s_printedThatHi[i])
+                      {
+                        GlobalBCRS::s_printedThatHi[i] = true;
+                        pout() << "periodic bcs hi for direction " << i << endl;
+                      }
+                  }
+                else
+                  {
+                    MayDay::Error("bogus bc flag hi");
+                  }
+              }
           // is periodic
-        }
+           }
           // is periodic
         }
     }
@@ -292,6 +292,9 @@ void getPoissonParameters(VCPoissonParameters&  a_params)
   // Gaussian rho = strength * Exp[-r^2/scale]
   pp.get("rho_scale", a_params.rho_scale);
   pp.get("rho_strength", a_params.rho_strength);
+  pp.getarr("rho_center_1", a_params.rho_center_1, 0, SpaceDim);
+  pp.getarr("rho_center_2", a_params.rho_center_2, 0, SpaceDim);
+  pp.getarr("rho_center_3", a_params.rho_center_3, 0, SpaceDim);
 
   // waves rho = SUM_i rho_amplitude_i * Sin[2pi rho_k_i x_i]
   pp.getarr("rho_k", a_params.rho_k, 0, SpaceDim);
@@ -944,7 +947,8 @@ Real M_value(RealVect&          loc,
   if (a_params.rho_type == 0)  // central gaussian rho = strength * Exp[-r^2/scale]
   {
     RealVect center;
-    center = RealVect(D_DECL(0.5,0.5,0.5)); // put it in the middle for now
+    center = RealVect(D_DECL(a_params.rho_center_1[0], a_params.rho_center_1[1], a_params.rho_center_1[2])); // put it in the middle for now
+
 
     RealVect dist = loc - center;
     Real radSqr = D_TERM(dist[0]*dist[0],
@@ -962,13 +966,44 @@ Real M_value(RealVect&          loc,
         + a_params.rho_amplitude[2] * sin(a_params.rho_k[2] * 2.0 * PI * loc[2]) 
         + a_params.rho_baseline;
   }
+  else if (a_params.rho_type == 2) // 3 gaussians
+  {
+    RealVect center;
+
+    center = RealVect(D_DECL(a_params.rho_center_1[0], a_params.rho_center_1[1], a_params.rho_center_1[2])); // put it in the middle for now
+
+    RealVect dist = loc - center;
+    Real radSqr = D_TERM(dist[0]*dist[0],
+                        +dist[1]*dist[1],
+                        +dist[2]*dist[2]);
+    
+    rho = a_params.rho_strength * exp(-radSqr/a_params.rho_scale);
+
+    center = RealVect(D_DECL(a_params.rho_center_2[0], a_params.rho_center_2[1], a_params.rho_center_2[2])); // put it in the middle for now
+
+    dist = loc - center;
+    radSqr = D_TERM(dist[0]*dist[0],
+                    +dist[1]*dist[1],
+                    +dist[2]*dist[2]);
+
+    rho += a_params.rho_strength * exp(-radSqr/a_params.rho_scale);
+
+    center = RealVect(D_DECL(a_params.rho_center_3[0], a_params.rho_center_3[1], a_params.rho_center_3[2])); // put it in the middle for now
+
+    dist = loc - center;
+    radSqr = D_TERM(dist[0]*dist[0],
+                    +dist[1]*dist[1],
+                    +dist[2]*dist[2]);
+
+    rho += a_params.rho_strength * exp(-radSqr/a_params.rho_scale);
+  }
   else
   {
     rho = 0.0;
     // probably should put some error handling code here
   }
 
-  return ((2.0/3.0)*(a_params.constant_K * a_params.constant_K)- 2.0*a_params.kappa_sq*rho);
+  return ((2.0/3.0)*(a_params.constant_K * a_params.constant_K)- 2.0*(a_params.kappa_sq)*rho);
 
 }
 

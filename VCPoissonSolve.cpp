@@ -378,9 +378,11 @@ int poissonSolve(Vector<LevelData<FArrayBox>* >& a_phi,
     solver.m_eps = tolerance;
     solver.m_imax = max_iter;
 
+    outputData(a_phi, a_rhs, a_grids, a_params, NL_iter);
+
     solver.solve(a_phi, a_rhs);
 
-    outputData(a_phi, a_rhs, a_grids, a_params, NL_iter);
+
 
   } // end NL_iter loop
 
