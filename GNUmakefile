@@ -9,7 +9,7 @@ makefiles += releasedExamples_AMRPoisson_execVariableCoefficient
 ebase = VCPoissonSolve
 
 # the location of the Chombo "lib" directory
-CHOMBO_HOME = /home/cosmos/users/eal40/Chombo2/Chombo-3.2/lib
+#CHOMBO_HOME = /home/cosmos/users/eal40/Chombo2/Chombo-3.2/lib
 
 # names of Chombo libraries needed by this program, in order of search.
 LibNames = AMRElliptic AMRTools BoxTools
