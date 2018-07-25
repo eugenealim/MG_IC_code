@@ -40,7 +40,7 @@ using std::cerr;
 /* see BoxTools/BaseFabMacros.H  for ForAllXBNN loop macro */
 void
 setACoef(LevelData<FArrayBox>& a_aCoef,
-         LevelData<FArrayBox>& a_phi,
+         LevelData<FArrayBox>& a_chi,
          const VCPoissonParameters& a_params,
          const RealVect& a_dx)
 {
@@ -75,7 +75,7 @@ setACoef(LevelData<FArrayBox>& a_aCoef,
           }
         }EndFor;
     } 
-  else if (a_params.ACoeftype == 2) // ACoef = -5/8 * phi_0^4 M(phi_0,K) 
+  else if (a_params.ACoeftype == 2) // ACoef = -5/8 * chi_0^4 M(chi_0,K) 
     {
       DataIterator dit = a_aCoef.dataIterator();
       for (dit.begin(); dit.ok(); ++dit)
@@ -84,7 +84,7 @@ setACoef(LevelData<FArrayBox>& a_aCoef,
           RealVect ccOffset = 0.5*a_dx*RealVect::Unit; 
 
           FArrayBox& aCoef = a_aCoef[dit];
-          FArrayBox& phi = a_phi[dit];
+          FArrayBox& chi = a_chi[dit];
           Box thisBox = aCoef.box();
          
           BoxIterator bit(thisBox);
@@ -97,9 +97,9 @@ setACoef(LevelData<FArrayBox>& a_aCoef,
 
             Real M = M_value(loc, a_params);
 
-            Real phi_0 = phi(iv,0);
+            Real chi_0 = chi(iv,0);
 
-            aCoef(iv,0) = (-0.625) * M * (phi_0 * phi_0 * phi_0 * phi_0);
+            aCoef(iv,0) = (-0.625) * M * (chi_0 * chi_0 * chi_0 * chi_0);
           }
         }
     } // end ACoef
@@ -165,7 +165,7 @@ setBCoef(LevelData<FluxBox>& a_bCoef,
 
 void
 setCCoef(LevelData<FArrayBox>& a_cCoef,
-         LevelData<FArrayBox>& a_phi,
+         LevelData<FArrayBox>& a_chi,
          const VCPoissonParameters& a_params,
          const RealVect& a_dx)
 {
@@ -207,10 +207,10 @@ setCCoef(LevelData<FArrayBox>& a_cCoef,
 }
 
 /***************/
-void outputData(const Vector<LevelData<FArrayBox>* >&   a_phi,
+void outputData(const Vector<LevelData<FArrayBox>* >&   a_chi,
                 const Vector<LevelData<FArrayBox>* >&   a_rhs,
-                const Vector< DisjointBoxLayout >&       a_grids,
-                const VCPoissonParameters&                 a_params,
+                const Vector< DisjointBoxLayout >&      a_grids,
+                const VCPoissonParameters&              a_params,
                 const int iter)
 {
 #ifdef CH_USE_HDF5
@@ -225,35 +225,35 @@ void outputData(const Vector<LevelData<FArrayBox>* >&   a_phi,
     sprintf(suffix, "_%d.hdf5",iter);
     fileName += suffix;
 
-    int nPhiComp = a_phi[0]->nComp();
+    int nChiComp = a_chi[0]->nComp();
     int nRhsComp = a_rhs[0]->nComp();
-    int totalComp = nPhiComp + nRhsComp;
+    int totalComp = nChiComp + nRhsComp;
 
-    Vector<string> phiNames(totalComp);
+    Vector<string> variable_names(totalComp);
     // hardwire to single-component
     CH_assert(totalComp == 2);
-    phiNames[0] = "phi";
-    phiNames[1] = "rhs";
+    variable_names[0] = "chi";
+    variable_names[1] = "rhs";
 
 
-    CH_assert(a_phi.size() == a_rhs.size());
-    Vector<LevelData<FArrayBox>* > tempData(a_phi.size(), NULL);
-    for (int level=0; level<a_phi.size(); level++)
+    CH_assert(a_chi.size() == a_rhs.size());
+    Vector<LevelData<FArrayBox>* > tempData(a_chi.size(), NULL);
+    for (int level=0; level<a_chi.size(); level++)
       {
         tempData[level] = new LevelData<FArrayBox>(a_grids[level], totalComp);
-        Interval phiComps(0, nPhiComp-1);
-        Interval rhsComps(nPhiComp, totalComp-1);
-        a_phi[level]->copyTo(a_phi[level]->interval(),
-                             *tempData[level], phiComps);
+        Interval chiComps(0, nChiComp-1);
+        Interval rhsComps(nChiComp, totalComp-1);
+        a_chi[level]->copyTo(a_chi[level]->interval(),
+                             *tempData[level], chiComps);
         a_rhs[level]->copyTo(a_rhs[level]->interval(),
                              *tempData[level], rhsComps);
       }
 
 
-    Real fakeTime = 1.0;
+    Real fakeTime = 0.0;
     Real fakeDt = 1.0;
     WriteAMRHierarchyHDF5(fileName, a_grids,
-                          tempData, phiNames,
+                          tempData, variable_names,
                           a_params.coarsestDomain.domainBox(),
                           a_params.coarsestDx,
                           fakeDt, fakeTime,
@@ -261,7 +261,7 @@ void outputData(const Vector<LevelData<FArrayBox>* >&   a_phi,
                           a_params.numLevels);
 
     // clean up temporary storage
-    for (int level=0; level<a_phi.size(); level++)
+    for (int level=0; level<a_chi.size(); level++)
       {
         delete tempData[level];
         tempData[level] = NULL;
@@ -271,7 +271,7 @@ void outputData(const Vector<LevelData<FArrayBox>* >&   a_phi,
 }
 
 /******/
-int poissonSolve(Vector<LevelData<FArrayBox>* >& a_phi,
+int poissonSolve(Vector<LevelData<FArrayBox>* >& a_chi,
                  Vector<LevelData<FArrayBox>* >& a_rhs,
                  Vector<LevelData<FArrayBox>* >& a_psi,
                  const Vector< DisjointBoxLayout >&   a_grids,
@@ -280,7 +280,7 @@ int poissonSolve(Vector<LevelData<FArrayBox>* >& a_phi,
   ParmParse pp;
 
   int nlevels = a_params.numLevels;
-  a_phi.resize(nlevels);
+  a_chi.resize(nlevels);
   a_rhs.resize(nlevels);
   Vector<RefCountedPtr<LevelData<FArrayBox> > > aCoef(nlevels);
   Vector<RefCountedPtr<LevelData<FArrayBox> > > cCoef(nlevels);
@@ -296,7 +296,7 @@ int poissonSolve(Vector<LevelData<FArrayBox>* >& a_phi,
   for (int ilev = 0; ilev < nlevels; ilev++)
     {
       a_rhs[ilev] = new LevelData<FArrayBox>(a_grids[ilev], 1,IntVect::Zero);
-      a_phi[ilev] = new LevelData<FArrayBox>(a_grids[ilev], 1,IntVect::Unit);
+      a_chi[ilev] = new LevelData<FArrayBox>(a_grids[ilev], 1,IntVect::Unit);
       a_psi[ilev] = new LevelData<FArrayBox>(a_grids[ilev], 1,IntVect::Unit);
       aCoef[ilev] = RefCountedPtr<LevelData<FArrayBox> >(new LevelData<FArrayBox>(a_grids[ilev], 1, IntVect::Zero));
       cCoef[ilev] = RefCountedPtr<LevelData<FArrayBox> >(new LevelData<FArrayBox>(a_grids[ilev], 1, IntVect::Zero));
@@ -304,7 +304,7 @@ int poissonSolve(Vector<LevelData<FArrayBox>* >& a_phi,
       vectDomains[ilev] = domLev;
       vectDx[ilev] = dxLev;
 
-      set_initial_phi (*a_phi[ilev], vectDx[ilev], a_params); 
+      set_initial_chi (*a_chi[ilev], vectDx[ilev], a_params); 
       set_initial_psi (*a_psi[ilev], vectDx[ilev], a_params); 
 
       //prepare dx, domain for next level
@@ -349,16 +349,16 @@ int poissonSolve(Vector<LevelData<FArrayBox>* >& a_phi,
     // Assign values here
     for (int ilev = 0; ilev < nlevels; ilev++)
       {
-        setACoef(*aCoef[ilev], *a_phi[ilev], a_params, vectDx[ilev]);
+        setACoef(*aCoef[ilev], *a_chi[ilev], a_params, vectDx[ilev]);
         setBCoef(*bCoef[ilev], a_params, vectDx[ilev]);
-        setCCoef(*cCoef[ilev], *a_phi[ilev], a_params, vectDx[ilev]);
+        setCCoef(*cCoef[ilev], *a_chi[ilev], a_params, vectDx[ilev]);
 
 //        for (DataIterator dit = a_grids[ilev].dataIterator(); dit.ok(); ++dit)
 //          {
-//            (*a_phi[ilev])[dit()].setVal(0.);
+//            (*a_chi[ilev])[dit()].setVal(0.);
 //          }
 
-        setRHS (*a_rhs[ilev], *a_phi[ilev], *a_psi[ilev], vectDx[ilev], a_params);
+        setRHS (*a_rhs[ilev], *a_chi[ilev], *a_psi[ilev], vectDx[ilev], a_params);
 
       }
 
@@ -378,9 +378,9 @@ int poissonSolve(Vector<LevelData<FArrayBox>* >& a_phi,
     solver.m_eps = tolerance;
     solver.m_imax = max_iter;
 
-    outputData(a_phi, a_rhs, a_grids, a_params, NL_iter);
+    outputData(a_chi, a_rhs, a_grids, a_params, NL_iter);
 
-    solver.solve(a_phi, a_rhs);
+    solver.solve(a_chi, a_rhs);
 
   } // end NL_iter loop
 
@@ -416,28 +416,28 @@ int main(int argc, char* argv[])
     //read params from file
     getPoissonParameters(param);
     int nlevels = param.numLevels;
-    Vector<LevelData<FArrayBox>* > phi(nlevels, NULL); // really chi -- will fixed eventually EUGENE
+    Vector<LevelData<FArrayBox>* > chi(nlevels, NULL); // really chi -- will fixed eventually EUGENE
     Vector<LevelData<FArrayBox>* > psi(nlevels, NULL); // scalar field 
     Vector<LevelData<FArrayBox>* > rhs(nlevels, NULL); // rhs
     
     setGrids(grids,  param);
 
-    status = poissonSolve(phi, rhs, psi, grids,  param);
+    status = poissonSolve(chi, rhs, psi, grids,  param);
 
     int dofileout;
     pp.get("write_output", dofileout);
     if (dofileout == 1)
       {
-        outputData(phi, rhs, grids, param, 999);
+        outputData(chi, rhs, grids, param, 999);
       }
 
     // clear memory
-    for (int level = 0; level<phi.size(); level++)
+    for (int level = 0; level<chi.size(); level++)
       {
-        if (phi[level] != NULL)
+        if (chi[level] != NULL)
           {
-            delete phi[level];
-            phi[level] = NULL;
+            delete chi[level];
+            chi[level] = NULL;
           }
         if (rhs[level] != NULL)
           {

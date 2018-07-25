@@ -8,37 +8,37 @@
 extern "C"
 {
 
-#ifndef GUARDGETPHIPOINT 
-#define GUARDGETPHIPOINT 
-// Prototype for Fortran procedure getphipoint ...
+#ifndef GUARDGETCHIPOINT 
+#define GUARDGETCHIPOINT 
+// Prototype for Fortran procedure getchipoint ...
 //
-void FORTRAN_NAME( GETPHIPOINT ,getphipoint )(
-      CHFp_REAL(phi)
+void FORTRAN_NAME( GETCHIPOINT ,getchipoint )(
+      CHFp_REAL(chi)
       ,CHFp_CONST_REALVECT(freq)
       ,CHFp_CONST_REALVECT(x) );
 
-#define FORT_GETPHIPOINT FORTRAN_NAME( inlineGETPHIPOINT, inlineGETPHIPOINT)
-#define FORTNT_GETPHIPOINT FORTRAN_NAME( GETPHIPOINT, getphipoint)
+#define FORT_GETCHIPOINT FORTRAN_NAME( inlineGETCHIPOINT, inlineGETCHIPOINT)
+#define FORTNT_GETCHIPOINT FORTRAN_NAME( GETCHIPOINT, getchipoint)
 
-inline void FORTRAN_NAME(inlineGETPHIPOINT, inlineGETPHIPOINT)(
-      CHFp_REAL(phi)
+inline void FORTRAN_NAME(inlineGETCHIPOINT, inlineGETCHIPOINT)(
+      CHFp_REAL(chi)
       ,CHFp_CONST_REALVECT(freq)
       ,CHFp_CONST_REALVECT(x) )
 {
- CH_TIMELEAF("FORT_GETPHIPOINT");
- FORTRAN_NAME( GETPHIPOINT ,getphipoint )(
-      CHFt_REAL(phi)
+ CH_TIMELEAF("FORT_GETCHIPOINT");
+ FORTRAN_NAME( GETCHIPOINT ,getchipoint )(
+      CHFt_REAL(chi)
       ,CHFt_CONST_REALVECT(freq)
       ,CHFt_CONST_REALVECT(x) );
 }
-#endif  // GUARDGETPHIPOINT 
+#endif  // GUARDGETCHIPOINT 
 
-#ifndef GUARDGETLOFPHI 
-#define GUARDGETLOFPHI 
-// Prototype for Fortran procedure getlofphi ...
+#ifndef GUARDGETLOFCHI 
+#define GUARDGETLOFCHI 
+// Prototype for Fortran procedure getlofchi ...
 //
-void FORTRAN_NAME( GETLOFPHI ,getlofphi )(
-      CHFp_FRA1(lofphi)
+void FORTRAN_NAME( GETLOFCHI ,getlofchi )(
+      CHFp_FRA1(lofchi)
       ,CHFp_CONST_REALVECT(freq)
       ,CHFp_CONST_REALVECT(dx)
       ,CHFp_CONST_REALVECT(problo)
@@ -48,11 +48,11 @@ void FORTRAN_NAME( GETLOFPHI ,getlofphi )(
       ,CHFp_CONST_REAL(cCoef)
       ,CHFp_BOX(box) );
 
-#define FORT_GETLOFPHI FORTRAN_NAME( inlineGETLOFPHI, inlineGETLOFPHI)
-#define FORTNT_GETLOFPHI FORTRAN_NAME( GETLOFPHI, getlofphi)
+#define FORT_GETLOFCHI FORTRAN_NAME( inlineGETLOFCHI, inlineGETLOFCHI)
+#define FORTNT_GETLOFCHI FORTRAN_NAME( GETLOFCHI, getlofchi)
 
-inline void FORTRAN_NAME(inlineGETLOFPHI, inlineGETLOFPHI)(
-      CHFp_FRA1(lofphi)
+inline void FORTRAN_NAME(inlineGETLOFCHI, inlineGETLOFCHI)(
+      CHFp_FRA1(lofchi)
       ,CHFp_CONST_REALVECT(freq)
       ,CHFp_CONST_REALVECT(dx)
       ,CHFp_CONST_REALVECT(problo)
@@ -62,9 +62,9 @@ inline void FORTRAN_NAME(inlineGETLOFPHI, inlineGETLOFPHI)(
       ,CHFp_CONST_REAL(cCoef)
       ,CHFp_BOX(box) )
 {
- CH_TIMELEAF("FORT_GETLOFPHI");
- FORTRAN_NAME( GETLOFPHI ,getlofphi )(
-      CHFt_FRA1(lofphi)
+ CH_TIMELEAF("FORT_GETLOFCHI");
+ FORTRAN_NAME( GETLOFCHI ,getlofchi )(
+      CHFt_FRA1(lofchi)
       ,CHFt_CONST_REALVECT(freq)
       ,CHFt_CONST_REALVECT(dx)
       ,CHFt_CONST_REALVECT(problo)
@@ -74,66 +74,66 @@ inline void FORTRAN_NAME(inlineGETLOFPHI, inlineGETLOFPHI)(
       ,CHFt_CONST_REAL(cCoef)
       ,CHFt_BOX(box) );
 }
-#endif  // GUARDGETLOFPHI 
+#endif  // GUARDGETLOFCHI 
 
-#ifndef GUARDGETLOFPHIPOINT 
-#define GUARDGETLOFPHIPOINT 
-// Prototype for Fortran procedure getlofphipoint ...
+#ifndef GUARDGETLOFCHIPOINT 
+#define GUARDGETLOFCHIPOINT 
+// Prototype for Fortran procedure getlofchipoint ...
 //
-void FORTRAN_NAME( GETLOFPHIPOINT ,getlofphipoint )(
-      CHFp_REAL(lofphi)
+void FORTRAN_NAME( GETLOFCHIPOINT ,getlofchipoint )(
+      CHFp_REAL(lofchi)
       ,CHFp_CONST_REALVECT(freq)
       ,CHFp_CONST_REALVECT(x)
       ,CHFp_CONST_REAL(aCoefmult)
       ,CHFp_CONST_REAL(bCoefmult)
       ,CHFp_CONST_REAL(cCoefmult) );
 
-#define FORT_GETLOFPHIPOINT FORTRAN_NAME( inlineGETLOFPHIPOINT, inlineGETLOFPHIPOINT)
-#define FORTNT_GETLOFPHIPOINT FORTRAN_NAME( GETLOFPHIPOINT, getlofphipoint)
+#define FORT_GETLOFCHIPOINT FORTRAN_NAME( inlineGETLOFCHIPOINT, inlineGETLOFCHIPOINT)
+#define FORTNT_GETLOFCHIPOINT FORTRAN_NAME( GETLOFCHIPOINT, getlofchipoint)
 
-inline void FORTRAN_NAME(inlineGETLOFPHIPOINT, inlineGETLOFPHIPOINT)(
-      CHFp_REAL(lofphi)
+inline void FORTRAN_NAME(inlineGETLOFCHIPOINT, inlineGETLOFCHIPOINT)(
+      CHFp_REAL(lofchi)
       ,CHFp_CONST_REALVECT(freq)
       ,CHFp_CONST_REALVECT(x)
       ,CHFp_CONST_REAL(aCoefmult)
       ,CHFp_CONST_REAL(bCoefmult)
       ,CHFp_CONST_REAL(cCoefmult) )
 {
- CH_TIMELEAF("FORT_GETLOFPHIPOINT");
- FORTRAN_NAME( GETLOFPHIPOINT ,getlofphipoint )(
-      CHFt_REAL(lofphi)
+ CH_TIMELEAF("FORT_GETLOFCHIPOINT");
+ FORTRAN_NAME( GETLOFCHIPOINT ,getlofchipoint )(
+      CHFt_REAL(lofchi)
       ,CHFt_CONST_REALVECT(freq)
       ,CHFt_CONST_REALVECT(x)
       ,CHFt_CONST_REAL(aCoefmult)
       ,CHFt_CONST_REAL(bCoefmult)
       ,CHFt_CONST_REAL(cCoefmult) );
 }
-#endif  // GUARDGETLOFPHIPOINT 
+#endif  // GUARDGETLOFCHIPOINT 
 
-#ifndef GUARDGETGRADPHIPOINT 
-#define GUARDGETGRADPHIPOINT 
-// Prototype for Fortran procedure getgradphipoint ...
+#ifndef GUARDGETGRADCHIPOINT 
+#define GUARDGETGRADCHIPOINT 
+// Prototype for Fortran procedure getgradchipoint ...
 //
-void FORTRAN_NAME( GETGRADPHIPOINT ,getgradphipoint )(
-      CHFp_REALVECT(gradphi)
+void FORTRAN_NAME( GETGRADCHIPOINT ,getgradchipoint )(
+      CHFp_REALVECT(gradchi)
       ,CHFp_CONST_REALVECT(freq)
       ,CHFp_CONST_REALVECT(x) );
 
-#define FORT_GETGRADPHIPOINT FORTRAN_NAME( inlineGETGRADPHIPOINT, inlineGETGRADPHIPOINT)
-#define FORTNT_GETGRADPHIPOINT FORTRAN_NAME( GETGRADPHIPOINT, getgradphipoint)
+#define FORT_GETGRADCHIPOINT FORTRAN_NAME( inlineGETGRADCHIPOINT, inlineGETGRADCHIPOINT)
+#define FORTNT_GETGRADCHIPOINT FORTRAN_NAME( GETGRADCHIPOINT, getgradchipoint)
 
-inline void FORTRAN_NAME(inlineGETGRADPHIPOINT, inlineGETGRADPHIPOINT)(
-      CHFp_REALVECT(gradphi)
+inline void FORTRAN_NAME(inlineGETGRADCHIPOINT, inlineGETGRADCHIPOINT)(
+      CHFp_REALVECT(gradchi)
       ,CHFp_CONST_REALVECT(freq)
       ,CHFp_CONST_REALVECT(x) )
 {
- CH_TIMELEAF("FORT_GETGRADPHIPOINT");
- FORTRAN_NAME( GETGRADPHIPOINT ,getgradphipoint )(
-      CHFt_REALVECT(gradphi)
+ CH_TIMELEAF("FORT_GETGRADCHIPOINT");
+ FORTRAN_NAME( GETGRADCHIPOINT ,getgradchipoint )(
+      CHFt_REALVECT(gradchi)
       ,CHFt_CONST_REALVECT(freq)
       ,CHFt_CONST_REALVECT(x) );
 }
-#endif  // GUARDGETGRADPHIPOINT 
+#endif  // GUARDGETGRADCHIPOINT 
 
 }
 

@@ -49,7 +49,7 @@ public:
   Real         beta;
   Real         gamma;
   Real         kappa_sq;
-  Real         initial_phi; // initial constant phi
+  Real         initial_chi; // initial constant chi
   Real         initial_psi; // initial constant psi
   Real         constant_K; // initial constant K
   int          rho_type; // 0 = gaussian, 1 = wavemodes
@@ -90,12 +90,12 @@ extern int setGrids(Vector<DisjointBoxLayout>& vectGrids,
                     VCPoissonParameters&         a_params);
 
 extern void setRHS(LevelData<FArrayBox>&    a_rhs,
-                   LevelData<FArrayBox>&    a_phi,
+                   LevelData<FArrayBox>&    a_chi,
                    LevelData<FArrayBox>&    a_psi,
                    const RealVect&          a_dx,
                    const VCPoissonParameters& a_params);
 
-extern void set_initial_phi(LevelData<FArrayBox>&    a_phi,
+extern void set_initial_chi(LevelData<FArrayBox>&    a_chi,
                    const RealVect&          a_dx,
                    const VCPoissonParameters& a_params);
 

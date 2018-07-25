@@ -6,30 +6,30 @@ C    Please refer to Copyright.txt, in Chombo's root directory.
 
 #include "CONSTANTS.H"
 
-        subroutine getphipoint(
-     &    chf_real[phi],
+        subroutine getchipoint(
+     &    chf_real[chi],
      &    chf_const_realvect[freq],
      &    chf_const_realvect[x])
 
 c
-c       set phi to a trig function at the spatial coordinates
+c       set chi to a trig function at the spatial coordinates
 c
-        phi = CHF_DTERM[sin(freq(0)*x(0));
+        chi = CHF_DTERM[sin(freq(0)*x(0));
      &                * sin(freq(1)*x(1));
      &                * sin(freq(2)*x(2))]
 
 
 c     debug
-c        phi = x(0)*x(0) + x(1)*x(1)
-c        phi = x(0)*x(0)
+c        chi = x(0)*x(0) + x(1)*x(1)
+c        chi = x(0)*x(0)
 c     end debug
 
         return
         end
 
 
-        subroutine getlofphi(
-     &    chf_fra1[lofphi],
+        subroutine getlofchi(
+     &    chf_fra1[lofchi],
      &    chf_const_realvect[freq],
      &    chf_const_realvect[dx],
      &    chf_const_realvect[problo],
@@ -43,7 +43,7 @@ c     end debug
 
         real_t x(0:CH_SPACEDIM-1)
 c
-c       set lofphi to l(a trig function at the spatial coordinates)
+c       set lofchi to l(a trig function at the spatial coordinates)
 c
         chf_multido[box;i;j;k]
           chf_dterm[
@@ -51,15 +51,15 @@ c
           x(1) = (j+half)*dx(1) + problo(1);
           x(2) = (k+half)*dx(2) + problo(2)]
 
-          call getlofphipoint(lofphi(chf_ix[i;j;k]),freq,x,aCoef,bCoef,cCoef)
+          call getlofchipoint(lofchi(chf_ix[i;j;k]),freq,x,aCoef,bCoef,cCoef)
         chf_enddo
 
         return
         end
 
 
-        subroutine getlofphipoint(
-     &    chf_real[lofphi],
+        subroutine getlofchipoint(
+     &    chf_real[lofchi],
      &    chf_const_realvect[freq],
      &    chf_const_realvect[x],
      &    chf_const_real[aCoefmult],
@@ -67,9 +67,9 @@ c
      &    chf_const_real[cCoefmult])
 
         integer dir
-        real_t fac,phi, temp
+        real_t fac,chi, temp
 c
-c       set lofphi to l(a trig function at the spatial coordinates)
+c       set lofchi to l(a trig function at the spatial coordinates)
 c       aCoef = aCoefmult*x
 c       bCoef = bCoefmult*(x+y+z)
 c       cCoef is the laplacian term NEED TO ADD (eugene)
@@ -80,11 +80,11 @@ c
 
         fac = fac *(CHF_DTERM[x(0); +x(1); +x(2)])
 
-        phi = (chf_dterm[sin(freq(0)*x(0));
+        chi = (chf_dterm[sin(freq(0)*x(0));
      &                 * sin(freq(1)*x(1));
      &                 * sin(freq(2)*x(2))])
 
-        lofphi = fac*phi
+        lofchi = fac*chi
 
         temp = 0.0
         do dir=0, CH_SPACEDIM-1
@@ -106,43 +106,43 @@ c
 #endif
            endif
 
-           lofphi = lofphi + temp
+           lofchi = lofchi + temp
         enddo
 
 
-        lofphi = aCoefmult*x(0)*phi + bCoefmult*lofphi
+        lofchi = aCoefmult*x(0)*chi + bCoefmult*lofchi
 
 c     debug
-c        lofphi = four
-c        lofphi = two
+c        lofchi = four
+c        lofchi = two
 
 c     end debug
         return
         end
 
 
-        subroutine getgradphipoint(
-     &    chf_realvect[gradphi],
+        subroutine getgradchipoint(
+     &    chf_realvect[gradchi],
      &    chf_const_realvect[freq],
      &    chf_const_realvect[x])
 
-c       set gradphi to grad(a trig function at the spatial coordinates)
+c       set gradchi to grad(a trig function at the spatial coordinates)
 c
         chf_dselect[
-        gradphi(0) = freq(0) * cos(freq(0)*x(0))                                       ;
+        gradchi(0) = freq(0) * cos(freq(0)*x(0))                                       ;
 
-        gradphi(0) = freq(0) * cos(freq(0)*x(0)) * sin(freq(1)*x(1))
-        gradphi(1) = freq(1) * sin(freq(0)*x(0)) * cos(freq(1)*x(1))                   ;
+        gradchi(0) = freq(0) * cos(freq(0)*x(0)) * sin(freq(1)*x(1))
+        gradchi(1) = freq(1) * sin(freq(0)*x(0)) * cos(freq(1)*x(1))                   ;
 
-        gradphi(0) = freq(0) * cos(freq(0)*x(0)) * sin(freq(1)*x(1)) * sin(freq(2)*x(2))
-        gradphi(1) = freq(1) * sin(freq(0)*x(0)) * cos(freq(1)*x(1)) * sin(freq(2)*x(2))
-        gradphi(2) = freq(2) * sin(freq(0)*x(0)) * sin(freq(1)*x(1)) * cos(freq(2)*x(2))]
+        gradchi(0) = freq(0) * cos(freq(0)*x(0)) * sin(freq(1)*x(1)) * sin(freq(2)*x(2))
+        gradchi(1) = freq(1) * sin(freq(0)*x(0)) * cos(freq(1)*x(1)) * sin(freq(2)*x(2))
+        gradchi(2) = freq(2) * sin(freq(0)*x(0)) * sin(freq(1)*x(1)) * cos(freq(2)*x(2))]
 
 
 c     debug
-c        gradphi(0) = two*x(0)
-c       gradphi(1) = two*x(1)
-c        gradphi(1) = zero
+c        gradchi(0) = two*x(0)
+c       gradchi(1) = two*x(1)
+c        gradchi(1) = zero
 c     end debug
         return
         end

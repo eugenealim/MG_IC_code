@@ -1,0 +1,19 @@
+#!/bin/sh
+#BSUB -q smp-upsw
+#BSUB -n 24
+#BSUB -R scratch2
+#BSUB -W 24:00
+#BSUB -a intelmpi
+#BSUB -R span[ptile='!']
+#BSUB -R same[model]
+#BSUB -R "intel>=3"
+
+module load gcc
+module load intel/compiler
+module load intel/mpi/64/5.1.3/2016.4.258
+module load hdf5/parallel
+module load intel/mkl
+
+export OMP_NUM_THREADS=1
+
+mpirun ./Main_PoissonSolver3d.Linux.64.mpiicpc.ifort.DEBUG.OPT.MPI.OPENMPCC.ex params.txt

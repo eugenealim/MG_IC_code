@@ -282,7 +282,7 @@ void getPoissonParameters(VCPoissonParameters&  a_params)
   pp.get("beta", a_params.beta);
   pp.get("gamma", a_params.gamma);
   pp.get("kappa_sq", a_params.kappa_sq); // this is 8piG
-  pp.get("initial_phi", a_params.initial_phi);
+  pp.get("initial_chi", a_params.initial_chi);
   pp.get("initial_psi", a_params.initial_psi);
   pp.get("constant_K", a_params.constant_K);
 
@@ -496,17 +496,17 @@ int setGrids(Vector<DisjointBoxLayout>& vectGrids,
             {
               RealVect dxLevel = vectDx[level]*RealVect::Unit;
 
-              LevelData<FArrayBox> *DummyPhi; // REMEMBER TO FIX THIS 
+              LevelData<FArrayBox> *DummyChi; // REMEMBER TO FIX THIS 
               LevelData<FArrayBox> *DummyPsi; // REMEMBER TO FIX THIS 
       
-              DummyPhi = new LevelData<FArrayBox>(vectGrids[level], ncomps,
+              DummyChi = new LevelData<FArrayBox>(vectGrids[level], ncomps,
                                             IntVect::Unit);
               DummyPsi = new LevelData<FArrayBox>(vectGrids[level], ncomps,
                                             IntVect::Unit);
 
-              set_initial_phi(*DummyPhi, dxLevel, a_params);
+              set_initial_chi(*DummyChi, dxLevel, a_params);
               set_initial_psi(*DummyPsi, dxLevel, a_params);
-              setRHS(*vectRHS[level], *DummyPhi, *DummyPsi, dxLevel, a_params);
+              setRHS(*vectRHS[level], *DummyChi, *DummyPsi, dxLevel, a_params);
             }
 
           Vector<IntVectSet> tagVect(topLevel+1);
@@ -559,29 +559,30 @@ int setGrids(Vector<DisjointBoxLayout>& vectGrids,
 }
 
 // EUGENE TODO : make it more general
-void set_initial_phi(LevelData<FArrayBox>&    a_phi,
+void set_initial_chi(LevelData<FArrayBox>&    a_chi,
+
                      const RealVect&          a_dx,
                      const VCPoissonParameters& a_params)
 {
-  CH_assert(a_phi.nComp() == 1);
+  CH_assert(a_chi.nComp() == 1);
   int comp=0;
 //  const RealVect&    trig = getTrigRV();
 
-  for (DataIterator dit = a_phi.dataIterator(); dit.ok(); ++dit)
+  for (DataIterator dit = a_chi.dataIterator(); dit.ok(); ++dit)
   {
-    FArrayBox& thisPHIbox = a_phi[dit()];
-    Box b = thisPHIbox.box ();
+    FArrayBox& thisCHIbox = a_chi[dit()];
+    Box b = thisCHIbox.box ();
     BoxIterator bit (b);
     for (bit.begin (); bit.ok (); ++bit)
     {
       IntVect iv = bit ();
-      for (int comp =0 ; comp < a_phi.nComp () ; ++comp)
+      for (int comp =0 ; comp < a_chi.nComp () ; ++comp)
       { 
-        thisPHIbox (iv,comp) = a_params.initial_phi;
+        thisCHIbox (iv,comp) = a_params.initial_chi;
       }
     }
   }
-} // end set_initial_phi
+} // end set_initial_chi
 
 // EUGENE : temporary
 void set_initial_psi(LevelData<FArrayBox>&    a_psi,
@@ -610,7 +611,7 @@ void set_initial_psi(LevelData<FArrayBox>&    a_psi,
 
 /********/
 void setRHS(LevelData<FArrayBox>&    a_rhs,
-            LevelData<FArrayBox>&    a_phi,
+            LevelData<FArrayBox>&    a_chi,
             LevelData<FArrayBox>&    a_psi,
             const RealVect&          a_dx,
             const VCPoissonParameters& a_params)
@@ -627,7 +628,7 @@ void setRHS(LevelData<FArrayBox>&    a_rhs,
       if (a_params.probtype == 0) // original
         {
           const RealVect&  trig = getTrigRV();
-          FORT_GETLOFPHI(CHF_FRA1(thisRHS,comp),
+          FORT_GETLOFCHI(CHF_FRA1(thisRHS,comp),
                         CHF_CONST_REALVECT(trig),
                         CHF_CONST_REALVECT(a_dx),
                         CHF_CONST_REALVECT(a_params.probLo),
@@ -742,23 +743,23 @@ void setRHS(LevelData<FArrayBox>&    a_rhs,
         {
 
           // Total equation is
-          // nabla^2 phi = (1/8)phi^5 (2/3K^2 - 16pi G rho(x))
+          // nabla^2 chi = (1/8)chi^5 (2/3K^2 - 16pi G rho(x))
           // 
-          // linearized phi^n = (1-n)phi_0^n + n phi_0^(n-1)phi
+          // linearized chi^n = (1-n)chi_0^n + n chi_0^(n-1)chi
           //
           // linearized equation is then
           //
-          // L phi_0 = RHS
+          // L chi_0 = RHS
           //
-          // L = nabla^2 - (5/8)phi_0^4 * M(rho,K)
-          // RHS = -(1/2)M(rho,K) phi_0^5
+          // L = nabla^2 - (5/8)chi_0^4 * M(rho,K)
+          // RHS = -(1/2)M(rho,K) chi_0^5
           // M(rho,K) = (2/3K^2 - 16piG rho)
           // K = constant 
 
           // cell-centered
           RealVect ccOffset = 0.5*a_dx*RealVect::Unit;
 
-          FArrayBox& thisPHI = a_phi[dit()]; 
+          FArrayBox& thisCHI = a_chi[dit()]; 
           Box thisBox = thisRHS.box();
 
           thisRHS.setVal(0,0); // set everything to zero
@@ -775,9 +776,9 @@ void setRHS(LevelData<FArrayBox>&    a_rhs,
 
               Real M = M_value(loc, a_params);
 
-              Real phi_0 = thisPHI(iv,0);
+              Real chi_0 = thisCHI(iv,0);
 
-              Real val = (-0.5) * M * (phi_0 * phi_0 * phi_0 * phi_0 * phi_0); // -(1/2)M phi_0^5
+              Real val = (-0.5) * M * (chi_0 * chi_0 * chi_0 * chi_0 * chi_0); // -(1/2)M chi_0^5
 
               thisRHS(iv,0) += val;
 
@@ -911,12 +912,12 @@ void TrigValueNeum(Real* pos,
     {
       xval[idir] = pos[idir];
     }
-  RealVect gradPhi;
-  FORT_GETGRADPHIPOINT(CHF_REALVECT(gradPhi),
+  RealVect gradChi;
+  FORT_GETGRADCHIPOINT(CHF_REALVECT(gradChi),
                        CHF_CONST_REALVECT(trig),
                        CHF_CONST_REALVECT(xval));
 
-  a_values[0] = gradPhi[*dir];
+  a_values[0] = gradChi[*dir];
 }
 void TrigValueDiri(Real* pos,
                    int* dir,
@@ -930,7 +931,7 @@ void TrigValueDiri(Real* pos,
       xval[idir] = pos[idir];
     }
   Real value;
-  FORT_GETPHIPOINT(CHF_REAL(value),
+  FORT_GETCHIPOINT(CHF_REAL(value),
                    CHF_CONST_REALVECT(trig),
                    CHF_CONST_REALVECT(xval));
   a_values[0] = value;
