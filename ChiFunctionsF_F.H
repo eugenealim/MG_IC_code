@@ -1,5 +1,5 @@
-#ifndef _FUNCTIONSF_F_H_
-#define _FUNCTIONSF_F_H_
+#ifndef _CHIFUNCTIONSF_F_H_
+#define _CHIFUNCTIONSF_F_H_
 
 #include "FORT_PROTO.H"
 #include "CH_Timer.H"

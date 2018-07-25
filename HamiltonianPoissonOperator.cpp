@@ -21,25 +21,25 @@
 
 #include "AMRPoissonOpF_F.H"
 
-#include "VCAMRPoissonOp2.H"
-#include "VCAMRPoissonOpF_F.H"
+#include "HamiltonianPoissonOperator.H"
+#include "HamiltonianPoissonOperatorF_F.H"
 #include "DebugOut.H"
 
 #include "NamespaceHeader.H"
 
-void VCAMRPoissonOp2::residualI(LevelData<FArrayBox>&       a_lhs,
+void HamiltonianPoissonOperator::residualI(LevelData<FArrayBox>&       a_lhs,
                                const LevelData<FArrayBox>& a_phi,
                                const LevelData<FArrayBox>& a_rhs,
                                bool                        a_homogeneous)
 {
-  CH_TIME("VCAMRPoissonOp2::residualI");
+  CH_TIME("HamiltonianPoissonOperator::residualI");
 
   LevelData<FArrayBox>& phi = (LevelData<FArrayBox>&)a_phi;
   Real dx = m_dx;
   const DisjointBoxLayout& dbl = a_lhs.disjointBoxLayout();
   DataIterator dit = phi.dataIterator();
   {
-    CH_TIME("VCAMRPoissonOp2::residualIBC");
+    CH_TIME("HamiltonianPoissonOperator::residualIBC");
 
     for (dit.begin(); dit.ok(); ++dit)
     {
@@ -92,10 +92,10 @@ void VCAMRPoissonOp2::residualI(LevelData<FArrayBox>&       a_lhs,
 // this preconditioner first initializes phihat to (IA)phihat = rhshat
 // (diagonization of L -- A is the matrix version of L)
 // then smooths with a couple of passes of levelGSRB
-void VCAMRPoissonOp2::preCond(LevelData<FArrayBox>&       a_phi,
+void HamiltonianPoissonOperator::preCond(LevelData<FArrayBox>&       a_phi,
                               const LevelData<FArrayBox>& a_rhs)
 {
-  CH_TIME("VCAMRPoissonOp2::preCond");
+  CH_TIME("HamiltonianPoissonOperator::preCond");
 
   // diagonal term of this operator in:
   //
@@ -129,11 +129,11 @@ void VCAMRPoissonOp2::preCond(LevelData<FArrayBox>&       a_phi,
   relax(a_phi, a_rhs, 2);
 }
 
-void VCAMRPoissonOp2::applyOpI(LevelData<FArrayBox>&      a_lhs,
+void HamiltonianPoissonOperator::applyOpI(LevelData<FArrayBox>&      a_lhs,
                              const LevelData<FArrayBox>& a_phi,
                              bool                        a_homogeneous )
 {
-  CH_TIME("VCAMRPoissonOp2::applyOpI");
+  CH_TIME("HamiltonianPoissonOperator::applyOpI");
   LevelData<FArrayBox>& phi = (LevelData<FArrayBox>&)a_phi;
   Real dx = m_dx;
   const DisjointBoxLayout& dbl = a_lhs.disjointBoxLayout();
@@ -147,10 +147,10 @@ void VCAMRPoissonOp2::applyOpI(LevelData<FArrayBox>&      a_lhs,
   applyOpNoBoundary(a_lhs, a_phi);
 }
 
-void VCAMRPoissonOp2::applyOpNoBoundary(LevelData<FArrayBox>&      a_lhs,
+void HamiltonianPoissonOperator::applyOpNoBoundary(LevelData<FArrayBox>&      a_lhs,
                                         const LevelData<FArrayBox>& a_phi)
 {
-  CH_TIME("VCAMRPoissonOp2::applyOpNoBoundary");
+  CH_TIME("HamiltonianPoissonOperator::applyOpNoBoundary");
 
   LevelData<FArrayBox>& phi = (LevelData<FArrayBox>&)a_phi;
 
@@ -197,11 +197,11 @@ void VCAMRPoissonOp2::applyOpNoBoundary(LevelData<FArrayBox>&      a_lhs,
     } // end loop over boxes
 }
 
-void VCAMRPoissonOp2::restrictResidual(LevelData<FArrayBox>&       a_resCoarse,
+void HamiltonianPoissonOperator::restrictResidual(LevelData<FArrayBox>&       a_resCoarse,
                                       LevelData<FArrayBox>&       a_phiFine,
                                       const LevelData<FArrayBox>& a_rhsFine)
 {
-  CH_TIME("VCAMRPoissonOp2::restrictResidual");
+  CH_TIME("HamiltonianPoissonOperator::restrictResidual");
 
   homogeneousCFInterp(a_phiFine);
   const DisjointBoxLayout& dblFine = a_phiFine.disjointBoxLayout();
@@ -263,7 +263,7 @@ void VCAMRPoissonOp2::restrictResidual(LevelData<FArrayBox>&       a_resCoarse,
     }
 }
 
-void VCAMRPoissonOp2::setAlphaAndBetaAndGamma(const Real& a_alpha,
+void HamiltonianPoissonOperator::setAlphaAndBetaAndGamma(const Real& a_alpha,
                                               const Real& a_beta,
                                               const Real& a_gamma)
 {
@@ -275,7 +275,7 @@ void VCAMRPoissonOp2::setAlphaAndBetaAndGamma(const Real& a_alpha,
   m_lambdaNeedsResetting = true;
 }
 
-void VCAMRPoissonOp2::setCoefs(const RefCountedPtr<LevelData<FArrayBox> >& a_aCoef,
+void HamiltonianPoissonOperator::setCoefs(const RefCountedPtr<LevelData<FArrayBox> >& a_aCoef,
                                const RefCountedPtr<LevelData<FluxBox  > >& a_bCoef,
                                const RefCountedPtr<LevelData<FArrayBox> >& a_cCoef,
                                const Real&                                 a_alpha,
@@ -294,7 +294,7 @@ void VCAMRPoissonOp2::setCoefs(const RefCountedPtr<LevelData<FArrayBox> >& a_aCo
   m_lambdaNeedsResetting = true;
 }
 
-void VCAMRPoissonOp2::resetLambda()
+void HamiltonianPoissonOperator::resetLambda()
 {
 
   if (m_lambdaNeedsResetting)
@@ -341,9 +341,9 @@ void VCAMRPoissonOp2::resetLambda()
 }
 
 // Compute the reciprocal of the diagonal entry of the operator matrix
-void VCAMRPoissonOp2::computeLambda()
+void HamiltonianPoissonOperator::computeLambda()
 {
-  CH_TIME("VCAMRPoissonOp2::computeLambda");
+  CH_TIME("HamiltonianPoissonOperator::computeLambda");
 
   CH_assert(!m_lambda.isDefined());
 
@@ -354,22 +354,22 @@ void VCAMRPoissonOp2::computeLambda()
 
 #if 1
 //
-// VCAMRPoissonOp2::reflux()
+// HamiltonianPoissonOperator::reflux()
 //   There are currently the new version (first) and the old version (second)
 //   in this file.  Brian asked to preserve the old version in this way for
 //   now. - TJL (12/10/2007)
 //
-void VCAMRPoissonOp2::reflux(const LevelData<FArrayBox>&        a_phiFine,
+void HamiltonianPoissonOperator::reflux(const LevelData<FArrayBox>&        a_phiFine,
                             const LevelData<FArrayBox>&        a_phi,
                             LevelData<FArrayBox>&              a_residual,
                             AMRLevelOp<LevelData<FArrayBox> >* a_finerOp)
 {
-  CH_TIMERS("VCAMRPoissonOp2::reflux");
+  CH_TIMERS("HamiltonianPoissonOperator::reflux");
 
   m_levfluxreg.setToZero();
   Interval interv(0,a_phi.nComp()-1);
 
-  CH_TIMER("VCAMRPoissonOp2::reflux::incrementCoarse", t2);
+  CH_TIMER("HamiltonianPoissonOperator::reflux::incrementCoarse", t2);
   CH_START(t2);
 
   DataIterator dit = a_phi.dataIterator();
@@ -400,7 +400,7 @@ void VCAMRPoissonOp2::reflux(const LevelData<FArrayBox>&        a_phiFine,
   // const cast:  OK because we're changing ghost cells only
   LevelData<FArrayBox>& phiFineRef = ( LevelData<FArrayBox>&)a_phiFine;
 
-  VCAMRPoissonOp2* finerAMRPOp = (VCAMRPoissonOp2*) a_finerOp;
+  HamiltonianPoissonOperator* finerAMRPOp = (HamiltonianPoissonOperator*) a_finerOp;
   QuadCFInterp& quadCFI = finerAMRPOp->m_interpWithCoarser;
 
   quadCFI.coarseFineInterp(phiFineRef, a_phi);
@@ -410,7 +410,7 @@ void VCAMRPoissonOp2::reflux(const LevelData<FArrayBox>&        a_phiFine,
   IntVect phiGhost = phiFineRef.ghostVect();
   int ncomps = a_phiFine.nComp();
 
-  CH_TIMER("VCAMRPoissonOp2::reflux::incrementFine", t3);
+  CH_TIMER("HamiltonianPoissonOperator::reflux::incrementFine", t3);
   CH_START(t3);
 
   DataIterator ditf = a_phiFine.dataIterator();
@@ -452,12 +452,12 @@ void VCAMRPoissonOp2::reflux(const LevelData<FArrayBox>&        a_phiFine,
 
 #else
 
-void VCAMRPoissonOp2::reflux(const LevelData<FArrayBox>&        a_phiFine,
+void HamiltonianPoissonOperator::reflux(const LevelData<FArrayBox>&        a_phiFine,
                             const LevelData<FArrayBox>&        a_phi,
                             LevelData<FArrayBox>&              a_residual,
                             AMRLevelOp<LevelData<FArrayBox> >* a_finerOp)
 {
-  CH_TIME("VCAMRPoissonOp2::reflux");
+  CH_TIME("HamiltonianPoissonOperator::reflux");
 
   int ncomp = 1;
   ProblemDomain fineDomain = refine(m_domain, m_refToFiner);
@@ -492,7 +492,7 @@ void VCAMRPoissonOp2::reflux(const LevelData<FArrayBox>&        a_phiFine,
 
   // has to be its own object because the finer operator
   // owns an interpolator and we have no way of getting to it
-  VCAMRPoissonOp2* finerAMRPOp = (VCAMRPoissonOp2*) a_finerOp;
+  HamiltonianPoissonOperator* finerAMRPOp = (HamiltonianPoissonOperator*) a_finerOp;
   QuadCFInterp& quadCFI = finerAMRPOp->m_interpWithCoarser;
 
   quadCFI.coarseFineInterp(p, a_phi);
@@ -567,10 +567,10 @@ void VCAMRPoissonOp2::reflux(const LevelData<FArrayBox>&        a_phiFine,
 
 #endif
 
-void VCAMRPoissonOp2::levelGSRB(LevelData<FArrayBox>&       a_phi,
+void HamiltonianPoissonOperator::levelGSRB(LevelData<FArrayBox>&       a_phi,
                                const LevelData<FArrayBox>& a_rhs)
 {
-  CH_TIME("VCAMRPoissonOp2::levelGSRB");
+  CH_TIME("HamiltonianPoissonOperator::levelGSRB");
 
   CH_assert(a_phi.isDefined());
   CH_assert(a_rhs.isDefined());
@@ -587,21 +587,21 @@ void VCAMRPoissonOp2::levelGSRB(LevelData<FArrayBox>&       a_phi,
   // do first red, then black passes
   for (int whichPass = 0; whichPass <= 1; whichPass++)
     {
-      CH_TIMERS("VCAMRPoissonOp2::levelGSRB::Compute");
+      CH_TIMERS("HamiltonianPoissonOperator::levelGSRB::Compute");
 
       // fill in intersection of ghostcells and a_phi's boxes
       {
-        CH_TIME("VCAMRPoissonOp2::levelGSRB::homogeneousCFInterp");
+        CH_TIME("HamiltonianPoissonOperator::levelGSRB::homogeneousCFInterp");
         homogeneousCFInterp(a_phi);
       }
 
       {
-        CH_TIME("VCAMRPoissonOp2::levelGSRB::exchange");
+        CH_TIME("HamiltonianPoissonOperator::levelGSRB::exchange");
         a_phi.exchange(a_phi.interval(), m_exchangeCopier);
       }
 
       {
-        CH_TIME("VCAMRPoissonOp2::levelGSRB::BCs");
+        CH_TIME("HamiltonianPoissonOperator::levelGSRB::BCs");
         // now step through grids...
         for (dit.begin(); dit.ok(); ++dit)
           {
@@ -651,19 +651,19 @@ void VCAMRPoissonOp2::levelGSRB(LevelData<FArrayBox>&       a_phi,
     } // end loop through red-black
 }
 
-void VCAMRPoissonOp2::levelMultiColor(LevelData<FArrayBox>&       a_phi,
+void HamiltonianPoissonOperator::levelMultiColor(LevelData<FArrayBox>&       a_phi,
                                      const LevelData<FArrayBox>& a_rhs)
 {
-  CH_TIME("VCAMRPoissonOp2::levelMultiColor");
-  MayDay::Abort("VCAMRPoissonOp2::levelMultiColor - Not implemented");
+  CH_TIME("HamiltonianPoissonOperator::levelMultiColor");
+  MayDay::Abort("HamiltonianPoissonOperator::levelMultiColor - Not implemented");
 }
 
-void VCAMRPoissonOp2::looseGSRB(LevelData<FArrayBox>&       a_phi,
+void HamiltonianPoissonOperator::looseGSRB(LevelData<FArrayBox>&       a_phi,
                                const LevelData<FArrayBox>& a_rhs)
 {
-  CH_TIME("VCAMRPoissonOp2::looseGSRB");
+  CH_TIME("HamiltonianPoissonOperator::looseGSRB");
 #if 1
-  MayDay::Abort("VCAMRPoissonOp2::looseGSRB - Not implemented");
+  MayDay::Abort("HamiltonianPoissonOperator::looseGSRB - Not implemented");
 #else
   // This implementation converges at half the rate of "levelGSRB" in
   // multigrid solves
@@ -681,12 +681,12 @@ void VCAMRPoissonOp2::looseGSRB(LevelData<FArrayBox>&       a_phi,
 
   // fill in intersection of ghostcells and a_phi's boxes
   {
-    CH_TIME("VCAMRPoissonOp2::looseGSRB::homogeneousCFInterp");
+    CH_TIME("HamiltonianPoissonOperator::looseGSRB::homogeneousCFInterp");
     homogeneousCFInterp(a_phi);
   }
 
   {
-    CH_TIME("VCAMRPoissonOp2::looseGSRB::exchange");
+    CH_TIME("HamiltonianPoissonOperator::looseGSRB::exchange");
     a_phi.exchange(a_phi.interval(), m_exchangeCopier);
   }
 
@@ -695,7 +695,7 @@ void VCAMRPoissonOp2::looseGSRB(LevelData<FArrayBox>&       a_phi,
   {
     // invoke physical BC's where necessary
     {
-      CH_TIME("VCAMRPoissonOp2::looseGSRB::BCs");
+      CH_TIME("HamiltonianPoissonOperator::looseGSRB::BCs");
       m_bc(a_phi[dit], dbl[dit()], m_domain, m_dx, true);
     }
 
@@ -775,24 +775,24 @@ void VCAMRPoissonOp2::looseGSRB(LevelData<FArrayBox>&       a_phi,
 #endif
 }
 
-void VCAMRPoissonOp2::overlapGSRB(LevelData<FArrayBox>&       a_phi,
+void HamiltonianPoissonOperator::overlapGSRB(LevelData<FArrayBox>&       a_phi,
                                  const LevelData<FArrayBox>& a_rhs)
 {
-  CH_TIME("VCAMRPoissonOp2::overlapGSRB");
-  MayDay::Abort("VCAMRPoissonOp2::overlapGSRB - Not implemented");
+  CH_TIME("HamiltonianPoissonOperator::overlapGSRB");
+  MayDay::Abort("HamiltonianPoissonOperator::overlapGSRB - Not implemented");
 }
 
-void VCAMRPoissonOp2::levelGSRBLazy(LevelData<FArrayBox>&       a_phi,
+void HamiltonianPoissonOperator::levelGSRBLazy(LevelData<FArrayBox>&       a_phi,
                                    const LevelData<FArrayBox>& a_rhs)
 {
-  CH_TIME("VCAMRPoissonOp2::levelGSRBLazy");
-  MayDay::Abort("VCAMRPoissonOp2::levelGSRBLazy - Not implemented");
+  CH_TIME("HamiltonianPoissonOperator::levelGSRBLazy");
+  MayDay::Abort("HamiltonianPoissonOperator::levelGSRBLazy - Not implemented");
 }
 
-void VCAMRPoissonOp2::levelJacobi(LevelData<FArrayBox>&       a_phi,
+void HamiltonianPoissonOperator::levelJacobi(LevelData<FArrayBox>&       a_phi,
                                  const LevelData<FArrayBox>& a_rhs)
 {
-  CH_TIME("VCAMRPoissonOp2::levelJacobi");
+  CH_TIME("HamiltonianPoissonOperator::levelJacobi");
 
   // Recompute the relaxation coefficient if needed.
   resetLambda();
@@ -814,14 +814,14 @@ void VCAMRPoissonOp2::levelJacobi(LevelData<FArrayBox>&       a_phi,
   incr(a_phi, resid, 0.5);
 }
 
-void VCAMRPoissonOp2::getFlux(FArrayBox&       a_flux,
+void HamiltonianPoissonOperator::getFlux(FArrayBox&       a_flux,
                              const FArrayBox& a_data,
                              const FluxBox&   a_bCoef,
                              const Box&       a_facebox,
                              int              a_dir,
                              int              a_ref) const
 {
-  CH_TIME("VCAMRPoissonOp2::getFlux");
+  CH_TIME("HamiltonianPoissonOperator::getFlux");
 
   CH_assert(a_dir >= 0);
   CH_assert(a_dir <  SpaceDim);
@@ -867,7 +867,7 @@ void VCAMRPoissonOp2::getFlux(FArrayBox&       a_flux,
 
 //-----------------------------------------------------------------------
 void
-VCAMRPoissonOp2::
+HamiltonianPoissonOperator::
 setTime(Real a_time)
 {
   // Jot down the time.
@@ -893,14 +893,14 @@ setTime(Real a_time)
 //-----------------------------------------------------------------------
 
 // Factory
-VCAMRPoissonOp2Factory::VCAMRPoissonOp2Factory()
+HamiltonianPoissonOperatorFactory::HamiltonianPoissonOperatorFactory()
 {
   setDefaultValues();
 }
 
 //-----------------------------------------------------------------------
 //  AMR Factory define function
-void VCAMRPoissonOp2Factory::define(const ProblemDomain&                           a_coarseDomain,
+void HamiltonianPoissonOperatorFactory::define(const ProblemDomain&                           a_coarseDomain,
                                    const Vector<DisjointBoxLayout>&               a_grids,
                                    const Vector<int>&                             a_refRatios,
                                    const Real&                                    a_coarsedx,
@@ -912,7 +912,7 @@ void VCAMRPoissonOp2Factory::define(const ProblemDomain&                        
                                    const Real&                                    a_gamma,
                                    Vector<RefCountedPtr<LevelData<FArrayBox> > >& a_cCoef)
 {
-  CH_TIME("VCAMRPoissonOp2Factory::define");
+  CH_TIME("HamiltonianPoissonOperatorFactory::define");
 
   setDefaultValues();
 
@@ -963,7 +963,7 @@ void VCAMRPoissonOp2Factory::define(const ProblemDomain&                        
 // AMR Factory define function, with coefficient data allocated automagically
 // for operators.
 void
-VCAMRPoissonOp2Factory::
+HamiltonianPoissonOperatorFactory::
 define(const ProblemDomain& a_coarseDomain,
        const Vector<DisjointBoxLayout>& a_grids,
        const Vector<int>& a_refRatios,
@@ -1000,11 +1000,11 @@ define(const ProblemDomain& a_coarseDomain,
 }
 //-----------------------------------------------------------------------
 
-MGLevelOp<LevelData<FArrayBox> >* VCAMRPoissonOp2Factory::MGnewOp(const ProblemDomain& a_indexSpace,
+MGLevelOp<LevelData<FArrayBox> >* HamiltonianPoissonOperatorFactory::MGnewOp(const ProblemDomain& a_indexSpace,
                                                                   int                  a_depth,
                                                                   bool                 a_homoOnly)
 {
-  CH_TIME("VCAMRPoissonOp2Factory::MGnewOp");
+  CH_TIME("HamiltonianPoissonOperatorFactory::MGnewOp");
 
   Real dxCrse = -1.0;
 
@@ -1035,7 +1035,7 @@ MGLevelOp<LevelData<FArrayBox> >* VCAMRPoissonOp2Factory::MGnewOp(const ProblemD
       domain.coarsen(2);
     }
 
-  if (coarsening > 1 && !m_boxes[ref].coarsenable(coarsening*VCAMRPoissonOp2::s_maxCoarse))
+  if (coarsening > 1 && !m_boxes[ref].coarsenable(coarsening*HamiltonianPoissonOperator::s_maxCoarse))
   {
     return NULL;
   }
@@ -1054,7 +1054,7 @@ MGLevelOp<LevelData<FArrayBox> >* VCAMRPoissonOp2Factory::MGnewOp(const ProblemD
     cfregion.coarsen(coarsening);
   }
 
-  VCAMRPoissonOp2* newOp = new VCAMRPoissonOp2;
+  HamiltonianPoissonOperator* newOp = new HamiltonianPoissonOperator;
 
   newOp->define(layout, dx, domain, m_bc, ex, cfregion);
 
@@ -1105,7 +1105,7 @@ MGLevelOp<LevelData<FArrayBox> >* VCAMRPoissonOp2Factory::MGnewOp(const ProblemD
         }
       else
         {
-          MayDay::Abort("VCAMRPoissonOp2Factory::MGNewOp -- bad averagetype");
+          MayDay::Abort("HamiltonianPoissonOperatorFactory::MGNewOp -- bad averagetype");
         }
 
       newOp->m_aCoef = aCoef;
@@ -1120,11 +1120,11 @@ MGLevelOp<LevelData<FArrayBox> >* VCAMRPoissonOp2Factory::MGnewOp(const ProblemD
   return (MGLevelOp<LevelData<FArrayBox> >*)newOp;
 }
 
-AMRLevelOp<LevelData<FArrayBox> >* VCAMRPoissonOp2Factory::AMRnewOp(const ProblemDomain& a_indexSpace)
+AMRLevelOp<LevelData<FArrayBox> >* HamiltonianPoissonOperatorFactory::AMRnewOp(const ProblemDomain& a_indexSpace)
 {
-  CH_TIME("VCAMRPoissonOp2Factory::AMRnewOp");
+  CH_TIME("HamiltonianPoissonOperatorFactory::AMRnewOp");
 
-  VCAMRPoissonOp2* newOp = new VCAMRPoissonOp2;
+  HamiltonianPoissonOperator* newOp = new HamiltonianPoissonOperator;
   Real dxCrse = -1.0;
 
   int ref;
@@ -1199,7 +1199,7 @@ AMRLevelOp<LevelData<FArrayBox> >* VCAMRPoissonOp2Factory::AMRnewOp(const Proble
   return (AMRLevelOp<LevelData<FArrayBox> >*)newOp;
 }
 
-int VCAMRPoissonOp2Factory::refToFiner(const ProblemDomain& a_domain) const
+int HamiltonianPoissonOperatorFactory::refToFiner(const ProblemDomain& a_domain) const
 {
   int retval = -1;
   bool found = false;
@@ -1222,7 +1222,7 @@ int VCAMRPoissonOp2Factory::refToFiner(const ProblemDomain& a_domain) const
 }
 
 //-----------------------------------------------------------------------
-void VCAMRPoissonOp2Factory::setDefaultValues()
+void HamiltonianPoissonOperatorFactory::setDefaultValues()
 {
   // Default to Laplacian operator
   m_alpha = 0.0;
@@ -1235,12 +1235,12 @@ void VCAMRPoissonOp2Factory::setDefaultValues()
 
 //-----------------------------------------------------------------------
 void
-VCAMRPoissonOp2::
+HamiltonianPoissonOperator::
 finerOperatorChanged(const MGLevelOp<LevelData<FArrayBox> >& a_operator,
                      int a_coarseningFactor)
 {
-  const VCAMRPoissonOp2& op =
-    dynamic_cast<const VCAMRPoissonOp2&>(a_operator);
+  const HamiltonianPoissonOperator& op =
+    dynamic_cast<const HamiltonianPoissonOperator&>(a_operator);
 
   // Perform multigrid coarsening on the operator data.
   LevelData<FArrayBox>& acoefCoar = *m_aCoef;

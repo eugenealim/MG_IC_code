@@ -8,13 +8,14 @@
  */
 #endif
 
-#ifndef _VCLOCALFUNCS_H_
-#define _VCLOCALFUNCS_H_
+#ifndef _POISSONPARAMETERS_H_
+#define _POISSONPARAMETERS_H_
 
 #include <iostream>
 using std::cerr;
 
 #include "DisjointBoxLayout.H"
+#include "VClocalFuncs.H"
 #include "AMRMultiGrid.H"
 #include "HamiltonianPoissonOperator.H"
 #include "ParmParse.H"
@@ -27,7 +28,7 @@ using std::cerr;
 /**
  */
 
-/*class VCPoissonParameters
+class PoissonParameters
 {
 public:
   IntVect      nCells;
@@ -70,45 +71,28 @@ public:
   Vector<int>  periodic; // 1 1 1 for periodic, 0 0 0 for non-periodic
 };
 
-*/
-
-extern RealVect& getTrigRV();
-
-///
-/**
- */
-class GlobalBCRS
-{
-public:
-  static std::vector<bool> s_printedThatLo, s_printedThatHi;
-  static std::vector<int> s_bcLo, s_bcHi;
-  static RealVect s_trigvec;
-  static bool s_areBCsParsed, s_valueParsed, s_trigParsed;
-};
-
-/*
 ///get stuff from input file
-extern void getPoissonParameters (VCPoissonParameters&  a_params);
+extern void getPoissonParameters (PoissonParameters&  a_params);
 
 extern int setGrids(Vector<DisjointBoxLayout>& vectGrids,
-                    VCPoissonParameters&         a_params);
+                    PoissonParameters&         a_params);
 
 extern void setRHS(LevelData<FArrayBox>&    a_rhs,
                    LevelData<FArrayBox>&    a_chi,
                    LevelData<FArrayBox>&    a_psi,
                    const RealVect&          a_dx,
-                   const VCPoissonParameters& a_params);
+                   const PoissonParameters& a_params);
 
 extern void set_initial_chi(LevelData<FArrayBox>&    a_chi,
                    const RealVect&          a_dx,
-                   const VCPoissonParameters& a_params);
+                   const PoissonParameters& a_params);
 
 extern void set_initial_psi(LevelData<FArrayBox>&    a_psi,
                    const RealVect&          a_dx,
-                   const VCPoissonParameters& a_params);
+                   const PoissonParameters& a_params);
 
 extern Real M_value(RealVect&          loc,
-                    const VCPoissonParameters& a_params);
+                    const PoissonParameters& a_params);
 
 extern
 AMRLevelOpFactory<LevelData<FArrayBox> >*
@@ -118,46 +102,10 @@ defineOperatorFactory(
                       Vector<RefCountedPtr<LevelData<FArrayBox> > >& a_aCoef,
                       Vector<RefCountedPtr<LevelData<FluxBox> > >& a_bCoef,
                       Vector<RefCountedPtr<LevelData<FArrayBox> > >& a_cCoef,
-                      const VCPoissonParameters&                     a_params);
-
-
+                      const PoissonParameters&                     a_params);
 
 void getDomainsAndDxes(  Vector<ProblemDomain>&     vectDomain,
                          Vector<Real>&              vectDx,
-                         VCPoissonParameters&         a_params);
-
-*/
-
-extern void
-tagCells(Vector<LevelData<FArrayBox>* >& vectRHS,
-         Vector<IntVectSet>& tagVect,
-         Vector<Real>& vectDx,
-         Vector<ProblemDomain>& vectDomain,
-         const Real refine_thresh,
-         const int tags_grow,
-         const int baseLevel,
-         int numLevels) ;
-
-
-extern void TrigValueNeum(Real* pos,
-                          int* dir,
-                          Side::LoHiSide* side,
-                          Real* a_values);
-extern void TrigValueDiri(Real* pos,
-                          int* dir,
-                          Side::LoHiSide* side,
-                          Real* a_values);
-
-extern void ParseValue(Real* pos,
-                       int* dir,
-                       Side::LoHiSide* side,
-                       Real* a_values);
-
-extern void ParseBC(FArrayBox& a_state,
-                    const Box& a_valid,
-                    const ProblemDomain& a_domain,
-                    Real a_dx,
-                    bool a_homogeneous);
-
+                         PoissonParameters&         a_params);
 
 #endif

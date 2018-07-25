@@ -138,14 +138,5 @@ c
         gradchi(1) = freq(1) * sin(freq(0)*x(0)) * cos(freq(1)*x(1)) * sin(freq(2)*x(2))
         gradchi(2) = freq(2) * sin(freq(0)*x(0)) * sin(freq(1)*x(1)) * cos(freq(2)*x(2))]
 
-
-c     debug
-c        gradchi(0) = two*x(0)
-c       gradchi(1) = two*x(1)
-c        gradchi(1) = zero
-c     end debug
         return
         end
-
-
-

@@ -8,8 +8,8 @@
  */
 #endif
 
-#ifndef _VCAMRPOISSONOP2_H_
-#define _VCAMRPOISSONOP2_H_
+#ifndef _HAMILTONIANPOISSONOPERATOR_H_
+#define _HAMILTONIANPOISSONOPERATOR_H_
 
 #include "AMRPoissonOp.H"
 #include "CoefficientInterpolator.H"
@@ -19,26 +19,20 @@
 ///
 /**
    Operator for solving variable-coefficient
-   (alpha * aCoef(x) * I - beta * Div(bCoef(x) . Grad)) phi = rho
-   over an AMR hierarchy.
-*/
-/**
-   EUGENE : 
-   Operator for solving variable-coefficient
    (alpha * aCoef(x) * I - beta * Div(bCoef(x) . Grad) - gamma * cCoef(x) * laplacian ) phi = rho
    over an AMR hierarchy.
 */
-class VCAMRPoissonOp2 : public AMRPoissonOp
+class HamiltonianPoissonOperator : public AMRPoissonOp
 {
 public:
   /**
-     \name VCAMRPoissonOp2 functions */
+     \name HamiltonianPoissonOperator functions */
   /*@{*/
 
   ///
   /**
    */
-  VCAMRPoissonOp2()
+  HamiltonianPoissonOperator()
   {
     m_lambdaNeedsResetting = true;
   }
@@ -46,7 +40,7 @@ public:
   ///
   /**
    */
-  virtual ~VCAMRPoissonOp2()
+  virtual ~HamiltonianPoissonOperator()
   {
   }
 
@@ -71,7 +65,7 @@ public:
   /*@}*/
 
   /**
-<<<<<<< VCAMRPoissonOp2.H
+<<<<<<< HamiltonianPoissonOperator.H
 =======
      \name MGLevelOp functions */
   /*@{*/
@@ -88,7 +82,7 @@ public:
   /*@}*/
 
   /**
-     \name VCAMRPoissonOp2 functions */
+     \name HamiltonianPoissonOperator functions */
   /*@{*/
 
   /// For tga stuff
@@ -215,14 +209,14 @@ protected:
 
 ///
 /**
-   Factory to create VCAMRPoissonOp2s
+   Factory to create HamiltonianPoissonOperators
 */
-class VCAMRPoissonOp2Factory: public AMRLevelOpFactory<LevelData<FArrayBox> >
+class HamiltonianPoissonOperatorFactory: public AMRLevelOpFactory<LevelData<FArrayBox> >
 {
 public:
-  VCAMRPoissonOp2Factory();
+  HamiltonianPoissonOperatorFactory();
 
-  virtual ~VCAMRPoissonOp2Factory()
+  virtual ~HamiltonianPoissonOperatorFactory()
   {
   }
 
@@ -253,7 +247,7 @@ public:
               const Real&                                    a_gamma,
               Vector<RefCountedPtr<LevelData<FArrayBox> > >& a_cCoef);
 
-  //! Defines a factory for VCAMRPoissonOp2 which allows the operators to
+  //! Defines a factory for HamiltonianPoissonOperator which allows the operators to
   //! allocate their own coefficient data. \f$\alpha\f$ and \f$\beta\f$
   //! coefficients are initialized to 1.
   //! \param a_coarseDomain The domain at the coarsest level.

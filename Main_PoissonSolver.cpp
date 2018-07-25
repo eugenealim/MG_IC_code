@@ -17,6 +17,7 @@
 #include "FABView.H"
 #include "DebugDump.H"
 #include "VClocalFuncs.H"
+#include "PoissonParameters.H"
 #include "MultilevelLinearOp.H"
 #include "BiCGStabSolver.H"
 #include "AMRIO.H"
@@ -41,7 +42,7 @@ using std::cerr;
 void
 setACoef(LevelData<FArrayBox>& a_aCoef,
          LevelData<FArrayBox>& a_chi,
-         const VCPoissonParameters& a_params,
+         const PoissonParameters& a_params,
          const RealVect& a_dx)
 {
   RealVect pos;
@@ -59,7 +60,7 @@ setACoef(LevelData<FArrayBox>& a_aCoef,
           D_TERM(pos[0]=a_dx[0]*(iR+0.5);,
                 pos[1]=a_dx[1]*(jR+0.5);,
                 pos[2]=a_dx[2]*(kR+0.5));
-          aCoefR = pos[0];// this just fixed the aCoef to be x (which is what was also set in functionsF.ChF
+          aCoefR = pos[0];// this just fixed the aCoef to be x (which is what was also set in ChiFunctionsF.ChF
         }EndFor;
       } // end loop over grids
     }
@@ -109,7 +110,7 @@ setACoef(LevelData<FArrayBox>& a_aCoef,
 
 void
 setBCoef(LevelData<FluxBox>& a_bCoef,
-         const VCPoissonParameters& a_params,
+         const PoissonParameters& a_params,
          const RealVect& a_dx)
 {
   if (a_params.BCoeftype == 0 ) // original B(x)=(x,y,z)
@@ -166,7 +167,7 @@ setBCoef(LevelData<FluxBox>& a_bCoef,
 void
 setCCoef(LevelData<FArrayBox>& a_cCoef,
          LevelData<FArrayBox>& a_chi,
-         const VCPoissonParameters& a_params,
+         const PoissonParameters& a_params,
          const RealVect& a_dx)
 {
   RealVect pos;
@@ -184,7 +185,7 @@ setCCoef(LevelData<FArrayBox>& a_cCoef,
           D_TERM(pos[0]=a_dx[0]*(iR+0.5);,
                 pos[1]=a_dx[1]*(jR+0.5);,
                 pos[2]=a_dx[2]*(kR+0.5));
-          cCoefR = pos[0];// this just fixed the aCoef to be x (which is what was also set in functionsF.Chf:w
+          cCoefR = pos[0];// this just fixed the aCoef to be x (which is what was also set in ChiFunctionsF.Chf:w
           // Eugene change 
   //        aCoefR = D_TERM(pos[0]*,pos[1]*,pos[2]);
           // constant-coefficient
@@ -210,7 +211,7 @@ setCCoef(LevelData<FArrayBox>& a_cCoef,
 void outputData(const Vector<LevelData<FArrayBox>* >&   a_chi,
                 const Vector<LevelData<FArrayBox>* >&   a_rhs,
                 const Vector< DisjointBoxLayout >&      a_grids,
-                const VCPoissonParameters&              a_params,
+                const PoissonParameters&              a_params,
                 const int iter)
 {
 #ifdef CH_USE_HDF5
@@ -275,7 +276,7 @@ int poissonSolve(Vector<LevelData<FArrayBox>* >& a_chi,
                  Vector<LevelData<FArrayBox>* >& a_rhs,
                  Vector<LevelData<FArrayBox>* >& a_psi,
                  const Vector< DisjointBoxLayout >&   a_grids,
-                 const VCPoissonParameters&             a_params)
+                 const PoissonParameters&             a_params)
 {
   ParmParse pp;
 
@@ -410,7 +411,7 @@ int main(int argc, char* argv[])
     char* inFile = argv[1];
     ParmParse pp(argc-2,argv+2,NULL,inFile);
 
-    VCPoissonParameters param;
+    PoissonParameters param;
     Vector<DisjointBoxLayout> grids;
 
     //read params from file

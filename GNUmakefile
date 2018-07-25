@@ -18,7 +18,7 @@ LibNames = AMRElliptic AMRTools BoxTools
 base_dir = .
 
 # input file for 'run' target
-INPUT = inputs
+INPUT = params.txt
 
 # shared code for building example programs
 include $(CHOMBO_HOME)/mk/Make.example
