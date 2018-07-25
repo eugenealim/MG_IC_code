@@ -382,8 +382,6 @@ int poissonSolve(Vector<LevelData<FArrayBox>* >& a_phi,
 
     solver.solve(a_phi, a_rhs);
 
-
-
   } // end NL_iter loop
 
 

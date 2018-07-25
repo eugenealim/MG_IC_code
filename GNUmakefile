@@ -6,7 +6,7 @@ makefiles += releasedExamples_AMRPoisson_execVariableCoefficient
 ## Define the variables needed by Make.example
 
 # the base name(s) of the application(s) in this directory
-ebase = VCPoissonSolve
+ebase = Main_PoissonSolver
 
 # the location of the Chombo "lib" directory
 #CHOMBO_HOME = /home/cosmos/users/eal40/Chombo2/Chombo-3.2/lib
