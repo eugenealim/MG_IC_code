@@ -20,9 +20,8 @@ base_dir = .
 # input file for 'run' target
 INPUT = params.txt
 
+# application-specific targets
+src_dirs := Source
+
 # shared code for building example programs
 include $(CHOMBO_HOME)/mk/Make.example
-
-# application-specific variables
-
-# application-specific targets

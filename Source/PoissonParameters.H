@@ -18,6 +18,7 @@ using std::cerr;
 #include "VClocalFuncs.H"
 #include "AMRMultiGrid.H"
 #include "HamiltonianPoissonOperator.H"
+#include "HamiltonianPoissonOperatorFactory.H"
 #include "ParmParse.H"
 #include "FArrayBox.H"
 #include "ChiFunctionsF_F.H"
@@ -48,10 +49,9 @@ public:
   RealVect     probHi;
   Real         alpha;
   Real         beta;
-  Real         gamma;
   Real         kappa_sq;
   Real         initial_chi; // initial constant chi
-  Real         initial_psi; // initial constant psi
+  Real         initial_phi; // initial constant phi
   Real         constant_K; // initial constant K
   int          rho_type; // 0 = gaussian, 1 = wavemodes
   Real         rho_scale; // scale of rho gaussian
@@ -67,7 +67,6 @@ public:
   int          probtype; // problem type
   int          ACoeftype; // ACoef type
   int          BCoeftype; // BCoef type
-  int          CCoeftype; // CCoef type
   Vector<int>  periodic; // 1 1 1 for periodic, 0 0 0 for non-periodic
 };
 
@@ -79,7 +78,7 @@ extern int setGrids(Vector<DisjointBoxLayout>& vectGrids,
 
 extern void setRHS(LevelData<FArrayBox>&    a_rhs,
                    LevelData<FArrayBox>&    a_chi,
-                   LevelData<FArrayBox>&    a_psi,
+                   LevelData<FArrayBox>&    a_phi,
                    const RealVect&          a_dx,
                    const PoissonParameters& a_params);
 
@@ -87,7 +86,7 @@ extern void set_initial_chi(LevelData<FArrayBox>&    a_chi,
                    const RealVect&          a_dx,
                    const PoissonParameters& a_params);
 
-extern void set_initial_psi(LevelData<FArrayBox>&    a_psi,
+extern void set_initial_phi(LevelData<FArrayBox>&    a_phi,
                    const RealVect&          a_dx,
                    const PoissonParameters& a_params);
 
@@ -100,8 +99,7 @@ defineOperatorFactory(
                       const Vector<DisjointBoxLayout>&             a_grids,
                       const Vector<ProblemDomain>&                 a_vectDom,
                       Vector<RefCountedPtr<LevelData<FArrayBox> > >& a_aCoef,
-                      Vector<RefCountedPtr<LevelData<FluxBox> > >& a_bCoef,
-                      Vector<RefCountedPtr<LevelData<FArrayBox> > >& a_cCoef,
+                      Vector<RefCountedPtr<LevelData<FArrayBox> > >& a_bCoef,
                       const PoissonParameters&                     a_params);
 
 void getDomainsAndDxes(  Vector<ProblemDomain>&     vectDomain,
