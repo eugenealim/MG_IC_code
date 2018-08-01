@@ -76,6 +76,6 @@ BCoeftype = 1 # 0 is B(x) = (x,y,z) , 1 is B(x) = (1,1,1)
 CCoeftype = 1 # 0 is C(x) = x, 1 is C(x) = 1
 
 # initial constants
+initial_chi = 1.0
 initial_phi = 1.0
-initial_psi = 1.0
 constant_K = 0 # K=0 for dirichlet, K= -\sqrt{ < 24 pi G rho + (3/2chi)A^2>} for periodic 

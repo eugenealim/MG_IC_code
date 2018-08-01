@@ -339,6 +339,7 @@ void setRHS(LevelData<FArrayBox> &a_rhs, LevelData<FArrayBox> &a_chi,
 
   for (DataIterator dit = a_rhs.dataIterator(); dit.ok(); ++dit) {
     FArrayBox &thisRHS = a_rhs[dit()];
+    thisRHS.setVal(0,0);
     Box thisBox = thisRHS.box();
 
     // first set up the scalar field config
@@ -373,6 +374,7 @@ void setRHS(LevelData<FArrayBox> &a_rhs, LevelData<FArrayBox> &a_chi,
 
         Real val = strength[n] * exp(-radSqr / scale[n]);
         thisPhi(iv, 0) += val;
+        thisRHS(iv, 0) += val;
       }
     }
   }
