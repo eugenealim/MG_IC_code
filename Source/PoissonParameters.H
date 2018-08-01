@@ -15,13 +15,10 @@
 using std::cerr;
 
 #include "DisjointBoxLayout.H"
-#include "VClocalFuncs.H"
 #include "AMRMultiGrid.H"
 #include "HamiltonianPoissonOperator.H"
-#include "HamiltonianPoissonOperatorFactory.H"
 #include "ParmParse.H"
 #include "FArrayBox.H"
-#include "ChiFunctionsF_F.H"
 
 #include "UsingNamespace.H"
 
@@ -64,46 +61,10 @@ public:
   Real         rho_baseline; // baseline
   int          coefficient_average_type;
   int          verbosity;
-  int          probtype; // problem type
-  int          ACoeftype; // ACoef type
-  int          BCoeftype; // BCoef type
   Vector<int>  periodic; // 1 1 1 for periodic, 0 0 0 for non-periodic
 };
 
 ///get stuff from input file
 extern void getPoissonParameters (PoissonParameters&  a_params);
-
-extern int setGrids(Vector<DisjointBoxLayout>& vectGrids,
-                    PoissonParameters&         a_params);
-
-extern void setRHS(LevelData<FArrayBox>&    a_rhs,
-                   LevelData<FArrayBox>&    a_chi,
-                   LevelData<FArrayBox>&    a_phi,
-                   const RealVect&          a_dx,
-                   const PoissonParameters& a_params);
-
-extern void set_initial_chi(LevelData<FArrayBox>&    a_chi,
-                   const RealVect&          a_dx,
-                   const PoissonParameters& a_params);
-
-extern void set_initial_phi(LevelData<FArrayBox>&    a_phi,
-                   const RealVect&          a_dx,
-                   const PoissonParameters& a_params);
-
-extern Real M_value(RealVect&          loc,
-                    const PoissonParameters& a_params);
-
-extern
-AMRLevelOpFactory<LevelData<FArrayBox> >*
-defineOperatorFactory(
-                      const Vector<DisjointBoxLayout>&             a_grids,
-                      const Vector<ProblemDomain>&                 a_vectDom,
-                      Vector<RefCountedPtr<LevelData<FArrayBox> > >& a_aCoef,
-                      Vector<RefCountedPtr<LevelData<FArrayBox> > >& a_bCoef,
-                      const PoissonParameters&                     a_params);
-
-void getDomainsAndDxes(  Vector<ProblemDomain>&     vectDomain,
-                         Vector<Real>&              vectDx,
-                         PoissonParameters&         a_params);
 
 #endif

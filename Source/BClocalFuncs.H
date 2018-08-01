@@ -8,26 +8,21 @@
  */
 #endif
 
-#ifndef _VCLOCALFUNCS_H_
-#define _VCLOCALFUNCS_H_
+#ifndef _BCLOCALFUNCS_H_
+#define _BCLOCALFUNCS_H_
 
 #include <iostream>
 using std::cerr;
 
 #include "DisjointBoxLayout.H"
 #include "AMRMultiGrid.H"
+#include "GridFuncs.H"
 #include "HamiltonianPoissonOperator.H"
-#include "HamiltonianPoissonOperatorFactory.H"
 #include "ParmParse.H"
 #include "FArrayBox.H"
-#include "ChiFunctionsF_F.H"
 #include "UsingNamespace.H"
 
-extern RealVect& getTrigRV();
-
-///
-/**
- */
+// BC class
 class GlobalBCRS
 {
 public:
@@ -36,25 +31,6 @@ public:
   static RealVect s_trigvec;
   static bool s_areBCsParsed, s_valueParsed, s_trigParsed;
 };
-
-extern void
-tagCells(Vector<LevelData<FArrayBox>* >& vectRHS,
-         Vector<IntVectSet>& tagVect,
-         Vector<Real>& vectDx,
-         Vector<ProblemDomain>& vectDomain,
-         const Real refine_thresh,
-         const int tags_grow,
-         const int baseLevel,
-         int numLevels) ;
-
-extern void TrigValueNeum(Real* pos,
-                          int* dir,
-                          Side::LoHiSide* side,
-                          Real* a_values);
-extern void TrigValueDiri(Real* pos,
-                          int* dir,
-                          Side::LoHiSide* side,
-                          Real* a_values);
 
 extern void ParseValue(Real* pos,
                        int* dir,

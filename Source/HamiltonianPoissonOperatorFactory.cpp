@@ -25,6 +25,29 @@
 #include "Misc.H"
 #include "NamespaceHeader.H"
 
+// function to define op factory
+AMRLevelOpFactory<LevelData<FArrayBox>> *
+defineOperatorFactory(const Vector<DisjointBoxLayout> &a_grids,
+                      const Vector<ProblemDomain> &a_vectDomain,
+                      Vector<RefCountedPtr<LevelData<FArrayBox>>> &a_aCoef,
+                      Vector<RefCountedPtr<LevelData<FArrayBox>>> &a_bCoef,
+                      const PoissonParameters &a_params) {
+  ParmParse pp2;
+
+  HamiltonianPoissonOperatorFactory *opFactory =
+      new HamiltonianPoissonOperatorFactory;
+
+  opFactory->define(a_params.coarsestDomain, a_grids, a_params.refRatio,
+                    a_params.coarsestDx, &ParseBC, a_params.alpha, a_aCoef,
+                    a_params.beta, a_bCoef);
+
+  if (a_params.coefficient_average_type >= 0) {
+    opFactory->m_coefficient_average_type = a_params.coefficient_average_type;
+  }
+
+  return (AMRLevelOpFactory<LevelData<FArrayBox>> *)opFactory;
+}
+
 //-----------------------------------------------------------------------
 
 // Default constructor

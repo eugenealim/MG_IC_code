@@ -19,12 +19,10 @@
 #include "BRMeshRefine.H"
 #include "FABView.H"
 #include "DebugDump.H"
-#include "VClocalFuncs.H"
 #include "PoissonParameters.H"
 #include "MultilevelLinearOp.H"
 #include "BiCGStabSolver.H"
 #include "AMRIO.H"
-#include "SetOperatorCoefficients.H"
 #include "UsingNamespace.H"
 
 #ifdef CH_Linux

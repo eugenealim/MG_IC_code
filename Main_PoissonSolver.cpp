@@ -14,14 +14,15 @@
 #include "DebugDump.H"
 #include "FABView.H"
 #include "FArrayBox.H"
+#include "GridFuncs.H"
+#include "HamiltonianPoissonOperatorFactory.H"
 #include "LevelData.H"
 #include "LoadBalance.H"
 #include "MultilevelLinearOp.H"
 #include "ParmParse.H"
 #include "PoissonParameters.H"
-#include "SetOperatorCoefficients.H"
 #include "UsingNamespace.H"
-#include "VClocalFuncs.H"
+#include "BClocalFuncs.H"
 #include "WriteOutput.H"
 #include <iostream>
 

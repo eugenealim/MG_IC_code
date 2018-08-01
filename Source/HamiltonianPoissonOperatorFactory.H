@@ -11,10 +11,22 @@
 #ifndef _HAMILTONIANPOISSONOPERATORFACTORY_H_
 #define _HAMILTONIANPOISSONOPERATORFACTORY_H_
 
+#include "PoissonParameters.H"
 #include "AMRPoissonOp.H"
+#include "BClocalFuncs.H"
 #include "HamiltonianPoissonOperator.H"
 #include "CoefficientInterpolator.H"
 #include "NamespaceHeader.H"
+
+// function to define operator factory
+extern
+AMRLevelOpFactory<LevelData<FArrayBox> >*
+defineOperatorFactory(
+                      const Vector<DisjointBoxLayout>&             a_grids,
+                      const Vector<ProblemDomain>&                 a_vectDom,
+                      Vector<RefCountedPtr<LevelData<FArrayBox> > >& a_aCoef,
+                      Vector<RefCountedPtr<LevelData<FArrayBox> > >& a_bCoef,
+                      const PoissonParameters&                     a_params);
 
 /**
    Factory to create HamiltonianPoissonOperators

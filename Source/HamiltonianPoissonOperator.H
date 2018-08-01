@@ -162,15 +162,6 @@ protected:
   virtual void levelJacobi(LevelData<FArrayBox>&       a_chi,
                            const LevelData<FArrayBox>& a_rhs);
 
-// KC TODO: Not needed?
-/*  /// computes flux over face-centered a_facebox.
-  virtual void getFlux(FArrayBox&       a_flux,
-                       const FArrayBox& a_data,
-                       const FluxBox&   a_bCoef,
-                       const Box&       a_facebox,
-                       int              a_dir,
-                       int              a_ref = 1) const ;
-*/
 };
 
 #include "NamespaceFooter.H"
