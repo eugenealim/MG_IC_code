@@ -42,7 +42,7 @@ void getPoissonParameters(PoissonParameters &a_params) {
   pp.get("alpha", a_params.alpha);
   pp.get("beta", a_params.beta);
   pp.get("kappa_sq", a_params.kappa_sq); // this is 8piG
-  pp.get("initial_chi", a_params.initial_chi);
+  pp.get("initial_psi", a_params.initial_psi);
   pp.get("initial_phi", a_params.initial_phi);
   pp.get("constant_K", a_params.constant_K);
 

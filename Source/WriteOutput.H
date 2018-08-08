@@ -39,7 +39,7 @@ static void enableFpExceptions();
 using std::cerr;
 
 /***************/
-void outputData(const Vector<LevelData<FArrayBox>* >&   a_chi,
+void outputData(const Vector<LevelData<FArrayBox>* >&   a_dpsi,
                 const Vector<LevelData<FArrayBox>* >&   a_rhs,
                 const Vector< DisjointBoxLayout >&      a_grids,
                 const PoissonParameters&              a_params,
@@ -57,26 +57,26 @@ void outputData(const Vector<LevelData<FArrayBox>* >&   a_chi,
     sprintf(suffix, "_%d.hdf5",iter);
     fileName += suffix;
 
-    int nChiComp = a_chi[0]->nComp();
+    int ndpsiComp = a_dpsi[0]->nComp();
     int nRhsComp = a_rhs[0]->nComp();
-    int totalComp = nChiComp + nRhsComp;
+    int totalComp = ndpsiComp + nRhsComp;
 
     Vector<string> variable_names(totalComp);
     // hardwire to single-component
     CH_assert(totalComp == 2);
-    variable_names[0] = "chi";
+    variable_names[0] = "dpsi";
     variable_names[1] = "rhs";
 
 
-    CH_assert(a_chi.size() == a_rhs.size());
-    Vector<LevelData<FArrayBox>* > tempData(a_chi.size(), NULL);
-    for (int level=0; level<a_chi.size(); level++)
+    CH_assert(a_dpsi.size() == a_rhs.size());
+    Vector<LevelData<FArrayBox>* > tempData(a_dpsi.size(), NULL);
+    for (int level=0; level<a_dpsi.size(); level++)
       {
         tempData[level] = new LevelData<FArrayBox>(a_grids[level], totalComp);
-        Interval chiComps(0, nChiComp-1);
-        Interval rhsComps(nChiComp, totalComp-1);
-        a_chi[level]->copyTo(a_chi[level]->interval(),
-                             *tempData[level], chiComps);
+        Interval dpsiComps(0, ndpsiComp-1);
+        Interval rhsComps(ndpsiComp, totalComp-1);
+        a_dpsi[level]->copyTo(a_dpsi[level]->interval(),
+                             *tempData[level], dpsiComps);
         a_rhs[level]->copyTo(a_rhs[level]->interval(),
                              *tempData[level], rhsComps);
       }
@@ -93,7 +93,7 @@ void outputData(const Vector<LevelData<FArrayBox>* >&   a_chi,
                           a_params.numLevels);
 
     // clean up temporary storage
-    for (int level=0; level<a_chi.size(); level++)
+    for (int level=0; level<a_dpsi.size(); level++)
       {
         delete tempData[level];
         tempData[level] = NULL;

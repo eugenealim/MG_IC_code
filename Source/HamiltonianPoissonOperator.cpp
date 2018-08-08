@@ -26,24 +26,24 @@
 #include "NamespaceHeader.H"
 
 void HamiltonianPoissonOperator::residualI(LevelData<FArrayBox> &a_lhs,
-                                           const LevelData<FArrayBox> &a_chi,
+                                           const LevelData<FArrayBox> &a_dpsi,
                                            const LevelData<FArrayBox> &a_rhs,
                                            bool a_homogeneous) {
   CH_TIME("HamiltonianPoissonOperator::residualI");
 
-  LevelData<FArrayBox> &chi = (LevelData<FArrayBox> &)a_chi;
+  LevelData<FArrayBox> &dpsi = (LevelData<FArrayBox> &)a_dpsi;
   Real dx = m_dx;
   const DisjointBoxLayout &dbl = a_lhs.disjointBoxLayout();
-  DataIterator dit = chi.dataIterator();
+  DataIterator dit = dpsi.dataIterator();
   {
     CH_TIME("HamiltonianPoissonOperator::residualIBC");
 
     for (dit.begin(); dit.ok(); ++dit) {
-      m_bc(chi[dit], dbl[dit()], m_domain, dx, a_homogeneous);
+      m_bc(dpsi[dit], dbl[dit()], m_domain, dx, a_homogeneous);
     }
   }
 
-  chi.exchange(chi.interval(), m_exchangeCopier);
+  dpsi.exchange(dpsi.interval(), m_exchangeCopier);
 
   for (dit.begin(); dit.ok(); ++dit) {
     const Box &region = dbl[dit()];
@@ -57,7 +57,7 @@ void HamiltonianPoissonOperator::residualI(LevelData<FArrayBox> &a_lhs,
 #else
     This_will_not_compile !
 #endif
-        (CHF_FRA(a_lhs[dit]), CHF_CONST_FRA(chi[dit]),
+        (CHF_FRA(a_lhs[dit]), CHF_CONST_FRA(dpsi[dit]),
          CHF_CONST_FRA(a_rhs[dit]), CHF_CONST_REAL(m_alpha),
          CHF_CONST_FRA((*m_aCoef)[dit]), CHF_CONST_REAL(m_beta),
          CHF_CONST_FRA((*m_bCoef)[dit]), CHF_BOX(region), CHF_CONST_REAL(m_dx));
@@ -65,10 +65,10 @@ void HamiltonianPoissonOperator::residualI(LevelData<FArrayBox> &a_lhs,
 }
 
 /**************************/
-// this preconditioner first initializes chihat to (IA)chihat = rhshat
+// this preconditioner first initializes dpsihat to (IA)dpsihat = rhshat
 // (diagonization of L -- A is the matrix version of L)
 // then smooths with a couple of passes of levelGSRB
-void HamiltonianPoissonOperator::preCond(LevelData<FArrayBox> &a_chi,
+void HamiltonianPoissonOperator::preCond(LevelData<FArrayBox> &a_dpsi,
                                          const LevelData<FArrayBox> &a_rhs) {
   CH_TIME("HamiltonianPoissonOperator::preCond");
 
@@ -79,7 +79,7 @@ void HamiltonianPoissonOperator::preCond(LevelData<FArrayBox> &a_chi,
   //
   // The inverse of this is our initial multiplier.
 
-  int ncomp = a_chi.nComp();
+  int ncomp = a_dpsi.nComp();
 
   CH_assert(m_lambda.isDefined());
   CH_assert(a_rhs.nComp() == ncomp);
@@ -89,45 +89,45 @@ void HamiltonianPoissonOperator::preCond(LevelData<FArrayBox> &a_chi,
   resetLambda();
 
   // don't need to use a Copier -- plain copy will do
-  DataIterator dit = a_chi.dataIterator();
+  DataIterator dit = a_dpsi.dataIterator();
   for (dit.begin(); dit.ok(); ++dit) {
     // also need to average and sum face-centered bCoefs to cell-centers
     Box gridBox = a_rhs[dit].box();
 
     // approximate inverse
-    a_chi[dit].copy(a_rhs[dit]);
-    a_chi[dit].mult(m_lambda[dit], gridBox, 0, 0, ncomp);
+    a_dpsi[dit].copy(a_rhs[dit]);
+    a_dpsi[dit].mult(m_lambda[dit], gridBox, 0, 0, ncomp);
   }
 
-  relax(a_chi, a_rhs, 2);
+  relax(a_dpsi, a_rhs, 2);
 }
 
 void HamiltonianPoissonOperator::applyOpI(LevelData<FArrayBox> &a_lhs,
-                                          const LevelData<FArrayBox> &a_chi,
+                                          const LevelData<FArrayBox> &a_dpsi,
                                           bool a_homogeneous) {
   CH_TIME("HamiltonianPoissonOperator::applyOpI");
-  LevelData<FArrayBox> &chi = (LevelData<FArrayBox> &)a_chi;
+  LevelData<FArrayBox> &dpsi = (LevelData<FArrayBox> &)a_dpsi;
   Real dx = m_dx;
   const DisjointBoxLayout &dbl = a_lhs.disjointBoxLayout();
-  DataIterator dit = chi.dataIterator();
+  DataIterator dit = dpsi.dataIterator();
 
   for (dit.begin(); dit.ok(); ++dit) {
-    m_bc(chi[dit], dbl[dit()], m_domain, dx, a_homogeneous);
+    m_bc(dpsi[dit], dbl[dit()], m_domain, dx, a_homogeneous);
   }
 
-  applyOpNoBoundary(a_lhs, a_chi);
+  applyOpNoBoundary(a_lhs, a_dpsi);
 }
 
 void HamiltonianPoissonOperator::applyOpNoBoundary(
-    LevelData<FArrayBox> &a_lhs, const LevelData<FArrayBox> &a_chi) {
+    LevelData<FArrayBox> &a_lhs, const LevelData<FArrayBox> &a_dpsi) {
   CH_TIME("HamiltonianPoissonOperator::applyOpNoBoundary");
 
-  LevelData<FArrayBox> &chi = (LevelData<FArrayBox> &)a_chi;
+  LevelData<FArrayBox> &dpsi = (LevelData<FArrayBox> &)a_dpsi;
 
   const DisjointBoxLayout &dbl = a_lhs.disjointBoxLayout();
-  DataIterator dit = chi.dataIterator();
+  DataIterator dit = dpsi.dataIterator();
 
-  chi.exchange(chi.interval(), m_exchangeCopier);
+  dpsi.exchange(dpsi.interval(), m_exchangeCopier);
 
   for (dit.begin(); dit.ok(); ++dit) {
     const Box &region = dbl[dit()];
@@ -141,28 +141,28 @@ void HamiltonianPoissonOperator::applyOpNoBoundary(
 #else
     This_will_not_compile !
 #endif
-        (CHF_FRA(a_lhs[dit]), CHF_CONST_FRA(chi[dit]), CHF_CONST_REAL(m_alpha),
+        (CHF_FRA(a_lhs[dit]), CHF_CONST_FRA(dpsi[dit]), CHF_CONST_REAL(m_alpha),
          CHF_CONST_FRA((*m_aCoef)[dit]), CHF_CONST_REAL(m_beta),
          CHF_CONST_FRA((*m_bCoef)[dit]), CHF_BOX(region), CHF_CONST_REAL(m_dx));
   } // end loop over boxes
 }
 
 void HamiltonianPoissonOperator::restrictResidual(
-    LevelData<FArrayBox> &a_resCoarse, LevelData<FArrayBox> &a_chiFine,
+    LevelData<FArrayBox> &a_resCoarse, LevelData<FArrayBox> &a_dpsiFine,
     const LevelData<FArrayBox> &a_rhsFine) {
   CH_TIME("HamiltonianPoissonOperator::restrictResidual");
 
-  homogeneousCFInterp(a_chiFine);
-  const DisjointBoxLayout &dblFine = a_chiFine.disjointBoxLayout();
-  for (DataIterator dit = a_chiFine.dataIterator(); dit.ok(); ++dit) {
-    FArrayBox &chi = a_chiFine[dit];
-    m_bc(chi, dblFine[dit()], m_domain, m_dx, true);
+  homogeneousCFInterp(a_dpsiFine);
+  const DisjointBoxLayout &dblFine = a_dpsiFine.disjointBoxLayout();
+  for (DataIterator dit = a_dpsiFine.dataIterator(); dit.ok(); ++dit) {
+    FArrayBox &dpsi = a_dpsiFine[dit];
+    m_bc(dpsi, dblFine[dit()], m_domain, m_dx, true);
   }
 
-  a_chiFine.exchange(a_chiFine.interval(), m_exchangeCopier);
+  a_dpsiFine.exchange(a_dpsiFine.interval(), m_exchangeCopier);
 
-  for (DataIterator dit = a_chiFine.dataIterator(); dit.ok(); ++dit) {
-    FArrayBox &chi = a_chiFine[dit];
+  for (DataIterator dit = a_dpsiFine.dataIterator(); dit.ok(); ++dit) {
+    FArrayBox &dpsi = a_dpsiFine[dit];
     const FArrayBox &rhs = a_rhsFine[dit];
     FArrayBox &res = a_resCoarse[dit];
 
@@ -184,7 +184,7 @@ void HamiltonianPoissonOperator::restrictResidual(
 #else
     This_will_not_compile !
 #endif
-        (CHF_FRA_SHIFT(res, civ), CHF_CONST_FRA_SHIFT(chi, iv),
+        (CHF_FRA_SHIFT(res, civ), CHF_CONST_FRA_SHIFT(dpsi, iv),
          CHF_CONST_FRA_SHIFT(rhs, iv), CHF_CONST_REAL(m_alpha),
          CHF_CONST_FRA_SHIFT(thisACoef, iv), CHF_CONST_REAL(m_beta),
          CHF_CONST_FRA_SHIFT(thisBCoef, iv), CHF_BOX_SHIFT(region, iv),
@@ -233,13 +233,6 @@ void HamiltonianPoissonOperator::resetLambda() {
       lambdaFab.copy(aCoefFab);
       lambdaFab.mult(m_alpha);
 
-      // KC TODO: remove this as no more fluxbox
-      // for (int dir = 0; dir < SpaceDim; dir++) {
-      //  FORT_SUMFACES(CHF_FRA(lambdaFab), CHF_CONST_REAL(m_beta),
-      //                CHF_CONST_FRA(bCoefFab[dir]), CHF_BOX(curBox),
-      //                CHF_CONST_INT(dir), CHF_CONST_REAL(scale));
-      //}
-
       // EUGENE: Add in the Laplacian term 6.0*m_beta/(m_dx*m_dx)
       lambdaFab.plus(2.0 * SpaceDim * m_beta / (m_dx * m_dx));
 
@@ -266,23 +259,23 @@ void HamiltonianPoissonOperator::computeLambda() {
 // KC TODO: Don't need this any more?
 // reflux operator
 void HamiltonianPoissonOperator::reflux(
-    const LevelData<FArrayBox> &a_chiFine, const LevelData<FArrayBox> &a_chi,
+    const LevelData<FArrayBox> &a_dpsiFine, const LevelData<FArrayBox> &a_dpsi,
     LevelData<FArrayBox> &a_residual,
     AMRLevelOp<LevelData<FArrayBox>> *a_finerOp) {}
 /*
   CH_TIMERS("HamiltonianPoissonOperator::reflux");
 
   m_levfluxreg.setToZero();
-  Interval interv(0, a_chi.nComp() - 1);
+  Interval interv(0, a_dpsi.nComp() - 1);
 
   CH_TIMER("HamiltonianPoissonOperator::reflux::incrementCoarse", t2);
   CH_START(t2);
 
-  DataIterator dit = a_chi.dataIterator();
+  DataIterator dit = a_dpsi.dataIterator();
   for (dit.reset(); dit.ok(); ++dit) {
-    const FArrayBox &coarfab = a_chi[dit];
+    const FArrayBox &coarfab = a_dpsi[dit];
     const FluxBox &coarBCoef = (*m_bCoef)[dit];
-    const Box &gridBox = a_chi.getBoxes()[dit];
+    const Box &gridBox = a_dpsi.getBoxes()[dit];
 
     if (m_levfluxreg.hasCF(dit())) {
       for (int idir = 0; idir < SpaceDim; idir++) {
@@ -301,31 +294,31 @@ void HamiltonianPoissonOperator::reflux(
   CH_STOP(t2);
 
   // const cast:  OK because we're changing ghost cells only
-  LevelData<FArrayBox> &chiFineRef = (LevelData<FArrayBox> &)a_chiFine;
+  LevelData<FArrayBox> &dpsiFineRef = (LevelData<FArrayBox> &)a_dpsiFine;
 
   HamiltonianPoissonOperator *finerAMRPOp =
       (HamiltonianPoissonOperator *)a_finerOp;
   QuadCFInterp &quadCFI = finerAMRPOp->m_interpWithCoarser;
 
-  quadCFI.coarseFineInterp(chiFineRef, a_chi);
+  quadCFI.coarseFineInterp(dpsiFineRef, a_dpsi);
   // I'm pretty sure this is not necessary. bvs -- flux calculations use
   // outer ghost cells, but not inner ones
-  // chiFineRef.exchange(a_chiFine.interval());
-  IntVect chiGhost = chiFineRef.ghostVect();
-  int ncomps = a_chiFine.nComp();
+  // dpsiFineRef.exchange(a_dpsiFine.interval());
+  IntVect dpsiGhost = dpsiFineRef.ghostVect();
+  int ncomps = a_dpsiFine.nComp();
 
   CH_TIMER("HamiltonianPoissonOperator::reflux::incrementFine", t3);
   CH_START(t3);
 
-  DataIterator ditf = a_chiFine.dataIterator();
-  const DisjointBoxLayout &dblFine = a_chiFine.disjointBoxLayout();
+  DataIterator ditf = a_dpsiFine.dataIterator();
+  const DisjointBoxLayout &dblFine = a_dpsiFine.disjointBoxLayout();
   for (ditf.reset(); ditf.ok(); ++ditf) {
-    const FArrayBox &chifFab = a_chiFine[ditf];
+    const FArrayBox &dpsifFab = a_dpsiFine[ditf];
     const FluxBox &fineBCoef = (*(finerAMRPOp->m_bCoef))[ditf];
     const Box &gridbox = dblFine.get(ditf());
 
     for (int idir = 0; idir < SpaceDim; idir++) {
-      // int normalGhost = chiGhost[idir];
+      // int normalGhost = dpsiGhost[idir];
       SideIterator sit;
       for (sit.begin(); sit.ok(); sit.next()) {
         if (m_levfluxreg.hasCF(ditf(), sit())) {
@@ -333,7 +326,7 @@ void HamiltonianPoissonOperator::reflux(
           Box fluxBox = bdryBox(gridbox, idir, hiorlo, 1);
 
           FArrayBox fineflux(fluxBox, ncomps);
-          getFlux(fineflux, chifFab, fineBCoef, fluxBox, idir, m_refToFiner);
+          getFlux(fineflux, dpsifFab, fineBCoef, fluxBox, idir, m_refToFiner);
 
           Real scale = 1.0;
           m_levfluxreg.incrementFine(fineflux, scale, ditf(), interv, interv,
@@ -350,35 +343,35 @@ void HamiltonianPoissonOperator::reflux(
 }
 */
 
-void HamiltonianPoissonOperator::levelGSRB(LevelData<FArrayBox> &a_chi,
+void HamiltonianPoissonOperator::levelGSRB(LevelData<FArrayBox> &a_dpsi,
                                            const LevelData<FArrayBox> &a_rhs) {
   CH_TIME("HamiltonianPoissonOperator::levelGSRB");
 
-  CH_assert(a_chi.isDefined());
+  CH_assert(a_dpsi.isDefined());
   CH_assert(a_rhs.isDefined());
-  CH_assert(a_chi.ghostVect() >= IntVect::Unit);
-  CH_assert(a_chi.nComp() == a_rhs.nComp());
+  CH_assert(a_dpsi.ghostVect() >= IntVect::Unit);
+  CH_assert(a_dpsi.nComp() == a_rhs.nComp());
 
   // Recompute the relaxation coefficient if needed.
   resetLambda();
 
-  const DisjointBoxLayout &dbl = a_chi.disjointBoxLayout();
+  const DisjointBoxLayout &dbl = a_dpsi.disjointBoxLayout();
 
-  DataIterator dit = a_chi.dataIterator();
+  DataIterator dit = a_dpsi.dataIterator();
 
   // do first red, then black passes
   for (int whichPass = 0; whichPass <= 1; whichPass++) {
     CH_TIMERS("HamiltonianPoissonOperator::levelGSRB::Compute");
 
-    // fill in intersection of ghostcells and a_chi's boxes
+    // fill in intersection of ghostcells and a_dpsi's boxes
     {
       CH_TIME("HamiltonianPoissonOperator::levelGSRB::homogeneousCFInterp");
-      homogeneousCFInterp(a_chi);
+      homogeneousCFInterp(a_dpsi);
     }
 
     {
       CH_TIME("HamiltonianPoissonOperator::levelGSRB::exchange");
-      a_chi.exchange(a_chi.interval(), m_exchangeCopier);
+      a_dpsi.exchange(a_dpsi.interval(), m_exchangeCopier);
     }
 
     {
@@ -386,7 +379,7 @@ void HamiltonianPoissonOperator::levelGSRB(LevelData<FArrayBox> &a_chi,
       // now step through grids...
       for (dit.begin(); dit.ok(); ++dit) {
         // invoke physical BC's where necessary
-        m_bc(a_chi[dit], dbl[dit()], m_domain, m_dx, true);
+        m_bc(a_dpsi[dit], dbl[dit()], m_domain, m_dx, true);
       }
     }
 
@@ -402,7 +395,7 @@ void HamiltonianPoissonOperator::levelGSRB(LevelData<FArrayBox> &a_chi,
 #else
       This_will_not_compile !
 #endif
-          (CHF_FRA(a_chi[dit]), CHF_CONST_FRA(a_rhs[dit]), CHF_BOX(region),
+          (CHF_FRA(a_dpsi[dit]), CHF_CONST_FRA(a_rhs[dit]), CHF_BOX(region),
            CHF_CONST_REAL(m_dx), CHF_CONST_REAL(m_alpha),
            CHF_CONST_FRA((*m_aCoef)[dit]), CHF_CONST_REAL(m_beta),
            CHF_CONST_FRA((*m_bCoef)[dit]), CHF_CONST_FRA(m_lambda[dit]),
@@ -412,32 +405,32 @@ void HamiltonianPoissonOperator::levelGSRB(LevelData<FArrayBox> &a_chi,
 }
 
 void HamiltonianPoissonOperator::levelMultiColor(
-    LevelData<FArrayBox> &a_chi, const LevelData<FArrayBox> &a_rhs) {
+    LevelData<FArrayBox> &a_dpsi, const LevelData<FArrayBox> &a_rhs) {
   CH_TIME("HamiltonianPoissonOperator::levelMultiColor");
   MayDay::Abort(
       "HamiltonianPoissonOperator::levelMultiColor - Not implemented");
 }
 
-void HamiltonianPoissonOperator::looseGSRB(LevelData<FArrayBox> &a_chi,
+void HamiltonianPoissonOperator::looseGSRB(LevelData<FArrayBox> &a_dpsi,
                                            const LevelData<FArrayBox> &a_rhs) {
   CH_TIME("HamiltonianPoissonOperator::looseGSRB");
   MayDay::Abort("HamiltonianPoissonOperator::looseGSRB - Not implemented");
 }
 
 void HamiltonianPoissonOperator::overlapGSRB(
-    LevelData<FArrayBox> &a_chi, const LevelData<FArrayBox> &a_rhs) {
+    LevelData<FArrayBox> &a_dpsi, const LevelData<FArrayBox> &a_rhs) {
   CH_TIME("HamiltonianPoissonOperator::overlapGSRB");
   MayDay::Abort("HamiltonianPoissonOperator::overlapGSRB - Not implemented");
 }
 
 void HamiltonianPoissonOperator::levelGSRBLazy(
-    LevelData<FArrayBox> &a_chi, const LevelData<FArrayBox> &a_rhs) {
+    LevelData<FArrayBox> &a_dpsi, const LevelData<FArrayBox> &a_rhs) {
   CH_TIME("HamiltonianPoissonOperator::levelGSRBLazy");
   MayDay::Abort("HamiltonianPoissonOperator::levelGSRBLazy - Not implemented");
 }
 
 void HamiltonianPoissonOperator::levelJacobi(
-    LevelData<FArrayBox> &a_chi, const LevelData<FArrayBox> &a_rhs) {
+    LevelData<FArrayBox> &a_dpsi, const LevelData<FArrayBox> &a_rhs) {
 
   CH_TIME("HamiltonianPoissonOperator::levelJacobi");
 
@@ -448,7 +441,7 @@ void HamiltonianPoissonOperator::levelJacobi(
   create(resid, a_rhs);
 
   // Get the residual
-  residual(resid, a_chi, a_rhs, true);
+  residual(resid, a_dpsi, a_rhs, true);
 
   // Multiply by the weights
   DataIterator dit = m_lambda.dataIterator();
@@ -457,7 +450,7 @@ void HamiltonianPoissonOperator::levelJacobi(
   }
 
   // Do the Jacobi relaxation
-  incr(a_chi, resid, 0.5);
+  incr(a_dpsi, resid, 0.5);
 }
 
 // KC TODO: Think we don't need this any more
@@ -501,11 +494,11 @@ void HamiltonianPoissonOperator::getFlux(FArrayBox &a_flux,
     CH_assert(a_data.box().contains(ivhi));
 
     for (int ivar = 0; ivar < a_data.nComp(); ivar++) {
-      Real chihi = a_data(ivhi, ivar);
-      Real chilo = a_data(ivlo, ivar);
-      Real gradchi = (chihi - chilo) * scale;
+      Real dpsihi = a_data(ivhi, ivar);
+      Real dpsilo = a_data(ivlo, ivar);
+      Real graddpsi = (dpsihi - dpsilo) * scale;
 
-      a_flux(iv, ivar) = -bCoefDir(iv, ivar) * gradchi;
+      a_flux(iv, ivar) = -bCoefDir(iv, ivar) * graddpsi;
     }
   }
 }

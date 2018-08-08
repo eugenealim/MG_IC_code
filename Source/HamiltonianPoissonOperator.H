@@ -19,7 +19,7 @@
 ///
 /**
    Operator for solving variable-coefficient
-   (alpha * aCoef(x) * I - beta * cCoef(x) * laplacian ) chi = rhs
+   (alpha * aCoef(x) * I - beta * cCoef(x) * laplacian ) dpsi = rhs
    over an AMR hierarchy.
 */
 class HamiltonianPoissonOperator : public AMRPoissonOp
@@ -38,7 +38,7 @@ public:
 
   /// calculate residual
   virtual void residualI(LevelData<FArrayBox>&       a_lhs,
-                         const LevelData<FArrayBox>& a_chi,
+                         const LevelData<FArrayBox>& a_dpsi,
                          const LevelData<FArrayBox>& a_rhs,
                          bool                        a_homogeneous = false);
 
@@ -48,18 +48,18 @@ public:
 
   ///
   virtual void applyOpI(LevelData<FArrayBox>&       a_lhs,
-                        const LevelData<FArrayBox>& a_chi,
+                        const LevelData<FArrayBox>& a_dpsi,
                         bool                        a_homogeneous = false);
 
   virtual void applyOpNoBoundary(LevelData<FArrayBox>&       a_lhs,
-                                 const LevelData<FArrayBox>& a_chi);
+                                 const LevelData<FArrayBox>& a_dpsi);
 
   /**
      calculate restricted residual
-     a_resCoarse[2h] = I[h->2h] (rhsFine[h] - L[h](chiFine[h])
+     a_resCoarse[2h] = I[h->2h] (rhsFine[h] - L[h](dpsiFine[h])
   */
   virtual void restrictResidual(LevelData<FArrayBox>&       a_resCoarse,
-                                LevelData<FArrayBox>&       a_chiFine,
+                                LevelData<FArrayBox>&       a_dpsiFine,
                                 const LevelData<FArrayBox>& a_rhsFine);
 
   /// For tga stuff
@@ -79,8 +79,8 @@ public:
   virtual void computeLambda();
 
   /// refluxing
-  virtual void reflux(const LevelData<FArrayBox>&        a_chiFine,
-                      const LevelData<FArrayBox>&        a_chi,
+  virtual void reflux(const LevelData<FArrayBox>&        a_dpsiFine,
+                      const LevelData<FArrayBox>&        a_dpsi,
                       LevelData<FArrayBox>&              a_residual,
                       AMRLevelOp<LevelData<FArrayBox> >* a_finerOp);
 
@@ -144,22 +144,22 @@ protected:
   // Does the relaxation coefficient need to be reset?
   bool m_lambdaNeedsResetting;
 
-  virtual void levelGSRB(LevelData<FArrayBox>&       a_chi,
+  virtual void levelGSRB(LevelData<FArrayBox>&       a_dpsi,
                          const LevelData<FArrayBox>& a_rhs);
 
-  virtual void levelMultiColor(LevelData<FArrayBox>&       a_chi,
+  virtual void levelMultiColor(LevelData<FArrayBox>&       a_dpsi,
                                const LevelData<FArrayBox>& a_rhs);
 
-  virtual void looseGSRB(LevelData<FArrayBox>&       a_chi,
+  virtual void looseGSRB(LevelData<FArrayBox>&       a_dpsi,
                          const LevelData<FArrayBox>& a_rhs);
 
-  virtual void overlapGSRB(LevelData<FArrayBox>&       a_chi,
+  virtual void overlapGSRB(LevelData<FArrayBox>&       a_dpsi,
                            const LevelData<FArrayBox>& a_rhs);
 
-  virtual void levelGSRBLazy(LevelData<FArrayBox>&       a_chi,
+  virtual void levelGSRBLazy(LevelData<FArrayBox>&       a_dpsi,
                              const LevelData<FArrayBox>& a_rhs);
 
-  virtual void levelJacobi(LevelData<FArrayBox>&       a_chi,
+  virtual void levelJacobi(LevelData<FArrayBox>&       a_dpsi,
                            const LevelData<FArrayBox>& a_rhs);
 
 };

@@ -16,7 +16,6 @@ using std::cerr;
 
 #include "DisjointBoxLayout.H"
 #include "AMRMultiGrid.H"
-#include "GridFuncs.H"
 #include "HamiltonianPoissonOperator.H"
 #include "ParmParse.H"
 #include "FArrayBox.H"

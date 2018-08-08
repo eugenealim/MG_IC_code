@@ -47,7 +47,7 @@ public:
   Real         alpha;
   Real         beta;
   Real         kappa_sq;
-  Real         initial_chi; // initial constant chi
+  Real         initial_psi; // initial constant psi
   Real         initial_phi; // initial constant phi
   Real         constant_K; // initial constant K
   int          rho_type; // 0 = gaussian, 1 = wavemodes

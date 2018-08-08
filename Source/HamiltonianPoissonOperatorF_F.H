@@ -13,7 +13,7 @@ extern "C"
 // Prototype for Fortran procedure GSRBHELMHOLTZVC1D ...
 //
 void FORTRAN_NAME( GSRBHELMHOLTZVC1D ,gsrbhelmholtzvc1d )(
-      CHFp_FRA(chi)
+      CHFp_FRA(dpsi)
       ,CHFp_CONST_FRA(rhs)
       ,CHFp_BOX(region)
       ,CHFp_CONST_REAL(dx)
@@ -28,7 +28,7 @@ void FORTRAN_NAME( GSRBHELMHOLTZVC1D ,gsrbhelmholtzvc1d )(
 #define FORTNT_GSRBHELMHOLTZVC1D FORTRAN_NAME( GSRBHELMHOLTZVC1D, gsrbhelmholtzvc1d)
 
 inline void FORTRAN_NAME(inlineGSRBHELMHOLTZVC1D, inlineGSRBHELMHOLTZVC1D)(
-      CHFp_FRA(chi)
+      CHFp_FRA(dpsi)
       ,CHFp_CONST_FRA(rhs)
       ,CHFp_BOX(region)
       ,CHFp_CONST_REAL(dx)
@@ -41,7 +41,7 @@ inline void FORTRAN_NAME(inlineGSRBHELMHOLTZVC1D, inlineGSRBHELMHOLTZVC1D)(
 {
  CH_TIMELEAF("FORT_GSRBHELMHOLTZVC1D");
  FORTRAN_NAME( GSRBHELMHOLTZVC1D ,gsrbhelmholtzvc1d )(
-      CHFt_FRA(chi)
+      CHFt_FRA(dpsi)
       ,CHFt_CONST_FRA(rhs)
       ,CHFt_BOX(region)
       ,CHFt_CONST_REAL(dx)
@@ -59,7 +59,7 @@ inline void FORTRAN_NAME(inlineGSRBHELMHOLTZVC1D, inlineGSRBHELMHOLTZVC1D)(
 // Prototype for Fortran procedure GSRBHELMHOLTZVC2D ...
 //
 void FORTRAN_NAME( GSRBHELMHOLTZVC2D ,gsrbhelmholtzvc2d )(
-      CHFp_FRA(chi)
+      CHFp_FRA(dpsi)
       ,CHFp_CONST_FRA(rhs)
       ,CHFp_BOX(region)
       ,CHFp_CONST_REAL(dx)
@@ -74,7 +74,7 @@ void FORTRAN_NAME( GSRBHELMHOLTZVC2D ,gsrbhelmholtzvc2d )(
 #define FORTNT_GSRBHELMHOLTZVC2D FORTRAN_NAME( GSRBHELMHOLTZVC2D, gsrbhelmholtzvc2d)
 
 inline void FORTRAN_NAME(inlineGSRBHELMHOLTZVC2D, inlineGSRBHELMHOLTZVC2D)(
-      CHFp_FRA(chi)
+      CHFp_FRA(dpsi)
       ,CHFp_CONST_FRA(rhs)
       ,CHFp_BOX(region)
       ,CHFp_CONST_REAL(dx)
@@ -87,7 +87,7 @@ inline void FORTRAN_NAME(inlineGSRBHELMHOLTZVC2D, inlineGSRBHELMHOLTZVC2D)(
 {
  CH_TIMELEAF("FORT_GSRBHELMHOLTZVC2D");
  FORTRAN_NAME( GSRBHELMHOLTZVC2D ,gsrbhelmholtzvc2d )(
-      CHFt_FRA(chi)
+      CHFt_FRA(dpsi)
       ,CHFt_CONST_FRA(rhs)
       ,CHFt_BOX(region)
       ,CHFt_CONST_REAL(dx)
@@ -105,7 +105,7 @@ inline void FORTRAN_NAME(inlineGSRBHELMHOLTZVC2D, inlineGSRBHELMHOLTZVC2D)(
 // Prototype for Fortran procedure GSRBHELMHOLTZVC3D ...
 //
 void FORTRAN_NAME( GSRBHELMHOLTZVC3D ,gsrbhelmholtzvc3d )(
-      CHFp_FRA(chi)
+      CHFp_FRA(dpsi)
       ,CHFp_CONST_FRA(rhs)
       ,CHFp_BOX(region)
       ,CHFp_CONST_REAL(dx)
@@ -120,7 +120,7 @@ void FORTRAN_NAME( GSRBHELMHOLTZVC3D ,gsrbhelmholtzvc3d )(
 #define FORTNT_GSRBHELMHOLTZVC3D FORTRAN_NAME( GSRBHELMHOLTZVC3D, gsrbhelmholtzvc3d)
 
 inline void FORTRAN_NAME(inlineGSRBHELMHOLTZVC3D, inlineGSRBHELMHOLTZVC3D)(
-      CHFp_FRA(chi)
+      CHFp_FRA(dpsi)
       ,CHFp_CONST_FRA(rhs)
       ,CHFp_BOX(region)
       ,CHFp_CONST_REAL(dx)
@@ -133,7 +133,7 @@ inline void FORTRAN_NAME(inlineGSRBHELMHOLTZVC3D, inlineGSRBHELMHOLTZVC3D)(
 {
  CH_TIMELEAF("FORT_GSRBHELMHOLTZVC3D");
  FORTRAN_NAME( GSRBHELMHOLTZVC3D ,gsrbhelmholtzvc3d )(
-      CHFt_FRA(chi)
+      CHFt_FRA(dpsi)
       ,CHFt_CONST_FRA(rhs)
       ,CHFt_BOX(region)
       ,CHFt_CONST_REAL(dx)
@@ -151,8 +151,8 @@ inline void FORTRAN_NAME(inlineGSRBHELMHOLTZVC3D, inlineGSRBHELMHOLTZVC3D)(
 // Prototype for Fortran procedure VCCOMPUTEOP1D ...
 //
 void FORTRAN_NAME( VCCOMPUTEOP1D ,vccomputeop1d )(
-      CHFp_FRA(lofchi)
-      ,CHFp_CONST_FRA(chi)
+      CHFp_FRA(lofdpsi)
+      ,CHFp_CONST_FRA(dpsi)
       ,CHFp_CONST_REAL(alpha)
       ,CHFp_CONST_FRA(aCoef)
       ,CHFp_CONST_REAL(beta)
@@ -164,8 +164,8 @@ void FORTRAN_NAME( VCCOMPUTEOP1D ,vccomputeop1d )(
 #define FORTNT_VCCOMPUTEOP1D FORTRAN_NAME( VCCOMPUTEOP1D, vccomputeop1d)
 
 inline void FORTRAN_NAME(inlineVCCOMPUTEOP1D, inlineVCCOMPUTEOP1D)(
-      CHFp_FRA(lofchi)
-      ,CHFp_CONST_FRA(chi)
+      CHFp_FRA(lofdpsi)
+      ,CHFp_CONST_FRA(dpsi)
       ,CHFp_CONST_REAL(alpha)
       ,CHFp_CONST_FRA(aCoef)
       ,CHFp_CONST_REAL(beta)
@@ -175,8 +175,8 @@ inline void FORTRAN_NAME(inlineVCCOMPUTEOP1D, inlineVCCOMPUTEOP1D)(
 {
  CH_TIMELEAF("FORT_VCCOMPUTEOP1D");
  FORTRAN_NAME( VCCOMPUTEOP1D ,vccomputeop1d )(
-      CHFt_FRA(lofchi)
-      ,CHFt_CONST_FRA(chi)
+      CHFt_FRA(lofdpsi)
+      ,CHFt_CONST_FRA(dpsi)
       ,CHFt_CONST_REAL(alpha)
       ,CHFt_CONST_FRA(aCoef)
       ,CHFt_CONST_REAL(beta)
@@ -191,8 +191,8 @@ inline void FORTRAN_NAME(inlineVCCOMPUTEOP1D, inlineVCCOMPUTEOP1D)(
 // Prototype for Fortran procedure VCCOMPUTEOP2D ...
 //
 void FORTRAN_NAME( VCCOMPUTEOP2D ,vccomputeop2d )(
-      CHFp_FRA(lofchi)
-      ,CHFp_CONST_FRA(chi)
+      CHFp_FRA(lofdpsi)
+      ,CHFp_CONST_FRA(dpsi)
       ,CHFp_CONST_REAL(alpha)
       ,CHFp_CONST_FRA(aCoef)
       ,CHFp_CONST_REAL(beta)
@@ -204,8 +204,8 @@ void FORTRAN_NAME( VCCOMPUTEOP2D ,vccomputeop2d )(
 #define FORTNT_VCCOMPUTEOP2D FORTRAN_NAME( VCCOMPUTEOP2D, vccomputeop2d)
 
 inline void FORTRAN_NAME(inlineVCCOMPUTEOP2D, inlineVCCOMPUTEOP2D)(
-      CHFp_FRA(lofchi)
-      ,CHFp_CONST_FRA(chi)
+      CHFp_FRA(lofdpsi)
+      ,CHFp_CONST_FRA(dpsi)
       ,CHFp_CONST_REAL(alpha)
       ,CHFp_CONST_FRA(aCoef)
       ,CHFp_CONST_REAL(beta)
@@ -215,8 +215,8 @@ inline void FORTRAN_NAME(inlineVCCOMPUTEOP2D, inlineVCCOMPUTEOP2D)(
 {
  CH_TIMELEAF("FORT_VCCOMPUTEOP2D");
  FORTRAN_NAME( VCCOMPUTEOP2D ,vccomputeop2d )(
-      CHFt_FRA(lofchi)
-      ,CHFt_CONST_FRA(chi)
+      CHFt_FRA(lofdpsi)
+      ,CHFt_CONST_FRA(dpsi)
       ,CHFt_CONST_REAL(alpha)
       ,CHFt_CONST_FRA(aCoef)
       ,CHFt_CONST_REAL(beta)
@@ -231,8 +231,8 @@ inline void FORTRAN_NAME(inlineVCCOMPUTEOP2D, inlineVCCOMPUTEOP2D)(
 // Prototype for Fortran procedure VCCOMPUTEOP3D ...
 //
 void FORTRAN_NAME( VCCOMPUTEOP3D ,vccomputeop3d )(
-      CHFp_FRA(lofchi)
-      ,CHFp_CONST_FRA(chi)
+      CHFp_FRA(lofdpsi)
+      ,CHFp_CONST_FRA(dpsi)
       ,CHFp_CONST_REAL(alpha)
       ,CHFp_CONST_FRA(aCoef)
       ,CHFp_CONST_REAL(beta)
@@ -244,8 +244,8 @@ void FORTRAN_NAME( VCCOMPUTEOP3D ,vccomputeop3d )(
 #define FORTNT_VCCOMPUTEOP3D FORTRAN_NAME( VCCOMPUTEOP3D, vccomputeop3d)
 
 inline void FORTRAN_NAME(inlineVCCOMPUTEOP3D, inlineVCCOMPUTEOP3D)(
-      CHFp_FRA(lofchi)
-      ,CHFp_CONST_FRA(chi)
+      CHFp_FRA(lofdpsi)
+      ,CHFp_CONST_FRA(dpsi)
       ,CHFp_CONST_REAL(alpha)
       ,CHFp_CONST_FRA(aCoef)
       ,CHFp_CONST_REAL(beta)
@@ -255,8 +255,8 @@ inline void FORTRAN_NAME(inlineVCCOMPUTEOP3D, inlineVCCOMPUTEOP3D)(
 {
  CH_TIMELEAF("FORT_VCCOMPUTEOP3D");
  FORTRAN_NAME( VCCOMPUTEOP3D ,vccomputeop3d )(
-      CHFt_FRA(lofchi)
-      ,CHFt_CONST_FRA(chi)
+      CHFt_FRA(lofdpsi)
+      ,CHFt_CONST_FRA(dpsi)
       ,CHFt_CONST_REAL(alpha)
       ,CHFt_CONST_FRA(aCoef)
       ,CHFt_CONST_REAL(beta)
@@ -272,7 +272,7 @@ inline void FORTRAN_NAME(inlineVCCOMPUTEOP3D, inlineVCCOMPUTEOP3D)(
 //
 void FORTRAN_NAME( VCCOMPUTERES1D ,vccomputeres1d )(
       CHFp_FRA(res)
-      ,CHFp_CONST_FRA(chi)
+      ,CHFp_CONST_FRA(dpsi)
       ,CHFp_CONST_FRA(rhs)
       ,CHFp_CONST_REAL(alpha)
       ,CHFp_CONST_FRA(aCoef)
@@ -286,7 +286,7 @@ void FORTRAN_NAME( VCCOMPUTERES1D ,vccomputeres1d )(
 
 inline void FORTRAN_NAME(inlineVCCOMPUTERES1D, inlineVCCOMPUTERES1D)(
       CHFp_FRA(res)
-      ,CHFp_CONST_FRA(chi)
+      ,CHFp_CONST_FRA(dpsi)
       ,CHFp_CONST_FRA(rhs)
       ,CHFp_CONST_REAL(alpha)
       ,CHFp_CONST_FRA(aCoef)
@@ -298,7 +298,7 @@ inline void FORTRAN_NAME(inlineVCCOMPUTERES1D, inlineVCCOMPUTERES1D)(
  CH_TIMELEAF("FORT_VCCOMPUTERES1D");
  FORTRAN_NAME( VCCOMPUTERES1D ,vccomputeres1d )(
       CHFt_FRA(res)
-      ,CHFt_CONST_FRA(chi)
+      ,CHFt_CONST_FRA(dpsi)
       ,CHFt_CONST_FRA(rhs)
       ,CHFt_CONST_REAL(alpha)
       ,CHFt_CONST_FRA(aCoef)
@@ -315,7 +315,7 @@ inline void FORTRAN_NAME(inlineVCCOMPUTERES1D, inlineVCCOMPUTERES1D)(
 //
 void FORTRAN_NAME( VCCOMPUTERES2D ,vccomputeres2d )(
       CHFp_FRA(res)
-      ,CHFp_CONST_FRA(chi)
+      ,CHFp_CONST_FRA(dpsi)
       ,CHFp_CONST_FRA(rhs)
       ,CHFp_CONST_REAL(alpha)
       ,CHFp_CONST_FRA(aCoef)
@@ -329,7 +329,7 @@ void FORTRAN_NAME( VCCOMPUTERES2D ,vccomputeres2d )(
 
 inline void FORTRAN_NAME(inlineVCCOMPUTERES2D, inlineVCCOMPUTERES2D)(
       CHFp_FRA(res)
-      ,CHFp_CONST_FRA(chi)
+      ,CHFp_CONST_FRA(dpsi)
       ,CHFp_CONST_FRA(rhs)
       ,CHFp_CONST_REAL(alpha)
       ,CHFp_CONST_FRA(aCoef)
@@ -341,7 +341,7 @@ inline void FORTRAN_NAME(inlineVCCOMPUTERES2D, inlineVCCOMPUTERES2D)(
  CH_TIMELEAF("FORT_VCCOMPUTERES2D");
  FORTRAN_NAME( VCCOMPUTERES2D ,vccomputeres2d )(
       CHFt_FRA(res)
-      ,CHFt_CONST_FRA(chi)
+      ,CHFt_CONST_FRA(dpsi)
       ,CHFt_CONST_FRA(rhs)
       ,CHFt_CONST_REAL(alpha)
       ,CHFt_CONST_FRA(aCoef)
@@ -358,7 +358,7 @@ inline void FORTRAN_NAME(inlineVCCOMPUTERES2D, inlineVCCOMPUTERES2D)(
 //
 void FORTRAN_NAME( VCCOMPUTERES3D ,vccomputeres3d )(
       CHFp_FRA(res)
-      ,CHFp_CONST_FRA(chi)
+      ,CHFp_CONST_FRA(dpsi)
       ,CHFp_CONST_FRA(rhs)
       ,CHFp_CONST_REAL(alpha)
       ,CHFp_CONST_FRA(aCoef)
@@ -372,7 +372,7 @@ void FORTRAN_NAME( VCCOMPUTERES3D ,vccomputeres3d )(
 
 inline void FORTRAN_NAME(inlineVCCOMPUTERES3D, inlineVCCOMPUTERES3D)(
       CHFp_FRA(res)
-      ,CHFp_CONST_FRA(chi)
+      ,CHFp_CONST_FRA(dpsi)
       ,CHFp_CONST_FRA(rhs)
       ,CHFp_CONST_REAL(alpha)
       ,CHFp_CONST_FRA(aCoef)
@@ -384,7 +384,7 @@ inline void FORTRAN_NAME(inlineVCCOMPUTERES3D, inlineVCCOMPUTERES3D)(
  CH_TIMELEAF("FORT_VCCOMPUTERES3D");
  FORTRAN_NAME( VCCOMPUTERES3D ,vccomputeres3d )(
       CHFt_FRA(res)
-      ,CHFt_CONST_FRA(chi)
+      ,CHFt_CONST_FRA(dpsi)
       ,CHFt_CONST_FRA(rhs)
       ,CHFt_CONST_REAL(alpha)
       ,CHFt_CONST_FRA(aCoef)
@@ -401,7 +401,7 @@ inline void FORTRAN_NAME(inlineVCCOMPUTERES3D, inlineVCCOMPUTERES3D)(
 //
 void FORTRAN_NAME( RESTRICTRESVC1D ,restrictresvc1d )(
       CHFp_FRA(res)
-      ,CHFp_CONST_FRA(chi)
+      ,CHFp_CONST_FRA(dpsi)
       ,CHFp_CONST_FRA(rhs)
       ,CHFp_CONST_REAL(alpha)
       ,CHFp_CONST_FRA(aCoef)
@@ -415,7 +415,7 @@ void FORTRAN_NAME( RESTRICTRESVC1D ,restrictresvc1d )(
 
 inline void FORTRAN_NAME(inlineRESTRICTRESVC1D, inlineRESTRICTRESVC1D)(
       CHFp_FRA(res)
-      ,CHFp_CONST_FRA(chi)
+      ,CHFp_CONST_FRA(dpsi)
       ,CHFp_CONST_FRA(rhs)
       ,CHFp_CONST_REAL(alpha)
       ,CHFp_CONST_FRA(aCoef)
@@ -427,7 +427,7 @@ inline void FORTRAN_NAME(inlineRESTRICTRESVC1D, inlineRESTRICTRESVC1D)(
  CH_TIMELEAF("FORT_RESTRICTRESVC1D");
  FORTRAN_NAME( RESTRICTRESVC1D ,restrictresvc1d )(
       CHFt_FRA(res)
-      ,CHFt_CONST_FRA(chi)
+      ,CHFt_CONST_FRA(dpsi)
       ,CHFt_CONST_FRA(rhs)
       ,CHFt_CONST_REAL(alpha)
       ,CHFt_CONST_FRA(aCoef)
@@ -444,7 +444,7 @@ inline void FORTRAN_NAME(inlineRESTRICTRESVC1D, inlineRESTRICTRESVC1D)(
 //
 void FORTRAN_NAME( RESTRICTRESVC2D ,restrictresvc2d )(
       CHFp_FRA(res)
-      ,CHFp_CONST_FRA(chi)
+      ,CHFp_CONST_FRA(dpsi)
       ,CHFp_CONST_FRA(rhs)
       ,CHFp_CONST_REAL(alpha)
       ,CHFp_CONST_FRA(aCoef)
@@ -458,7 +458,7 @@ void FORTRAN_NAME( RESTRICTRESVC2D ,restrictresvc2d )(
 
 inline void FORTRAN_NAME(inlineRESTRICTRESVC2D, inlineRESTRICTRESVC2D)(
       CHFp_FRA(res)
-      ,CHFp_CONST_FRA(chi)
+      ,CHFp_CONST_FRA(dpsi)
       ,CHFp_CONST_FRA(rhs)
       ,CHFp_CONST_REAL(alpha)
       ,CHFp_CONST_FRA(aCoef)
@@ -470,7 +470,7 @@ inline void FORTRAN_NAME(inlineRESTRICTRESVC2D, inlineRESTRICTRESVC2D)(
  CH_TIMELEAF("FORT_RESTRICTRESVC2D");
  FORTRAN_NAME( RESTRICTRESVC2D ,restrictresvc2d )(
       CHFt_FRA(res)
-      ,CHFt_CONST_FRA(chi)
+      ,CHFt_CONST_FRA(dpsi)
       ,CHFt_CONST_FRA(rhs)
       ,CHFt_CONST_REAL(alpha)
       ,CHFt_CONST_FRA(aCoef)
@@ -487,7 +487,7 @@ inline void FORTRAN_NAME(inlineRESTRICTRESVC2D, inlineRESTRICTRESVC2D)(
 //
 void FORTRAN_NAME( RESTRICTRESVC3D ,restrictresvc3d )(
       CHFp_FRA(res)
-      ,CHFp_CONST_FRA(chi)
+      ,CHFp_CONST_FRA(dpsi)
       ,CHFp_CONST_FRA(rhs)
       ,CHFp_CONST_REAL(alpha)
       ,CHFp_CONST_FRA(aCoef)
@@ -501,7 +501,7 @@ void FORTRAN_NAME( RESTRICTRESVC3D ,restrictresvc3d )(
 
 inline void FORTRAN_NAME(inlineRESTRICTRESVC3D, inlineRESTRICTRESVC3D)(
       CHFp_FRA(res)
-      ,CHFp_CONST_FRA(chi)
+      ,CHFp_CONST_FRA(dpsi)
       ,CHFp_CONST_FRA(rhs)
       ,CHFp_CONST_REAL(alpha)
       ,CHFp_CONST_FRA(aCoef)
@@ -513,7 +513,7 @@ inline void FORTRAN_NAME(inlineRESTRICTRESVC3D, inlineRESTRICTRESVC3D)(
  CH_TIMELEAF("FORT_RESTRICTRESVC3D");
  FORTRAN_NAME( RESTRICTRESVC3D ,restrictresvc3d )(
       CHFt_FRA(res)
-      ,CHFt_CONST_FRA(chi)
+      ,CHFt_CONST_FRA(dpsi)
       ,CHFt_CONST_FRA(rhs)
       ,CHFt_CONST_REAL(alpha)
       ,CHFt_CONST_FRA(aCoef)

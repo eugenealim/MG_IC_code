@@ -11,10 +11,12 @@
 #include "AMRIO.H"
 #include "BRMeshRefine.H"
 #include "BiCGStabSolver.H"
+#include "computeNorm.H"
 #include "DebugDump.H"
 #include "FABView.H"
 #include "FArrayBox.H"
-#include "GridFuncs.H"
+#include "SetGrids.H"
+#include "SetLevelData.H"
 #include "HamiltonianPoissonOperatorFactory.H"
 #include "LevelData.H"
 #include "LoadBalance.H"
@@ -39,20 +41,22 @@ static void enableFpExceptions();
 using std::cerr;
 
 // Sets up and runs the solver
-// The equation solved is: [aCoef*I + bCoef*Laplacian](chi) = rhs
+// The equation solved is: [aCoef*I + bCoef*Laplacian](dpsi) = rhs
 // We assume conformal flatness, K=const and Momentum constraint satisfied
 // trivially  lapse = 1 shift = 0, phi is the scalar field and is used to
 // calculate the rhs
-int poissonSolve(Vector<LevelData<FArrayBox> *> &a_chi,
-                 Vector<LevelData<FArrayBox> *> &a_rhs,
+int poissonSolve(Vector<LevelData<FArrayBox> *> &a_dpsi,
+                 Vector<LevelData<FArrayBox> *> &a_psi,
                  Vector<LevelData<FArrayBox> *> &a_phi,
+                 Vector<LevelData<FArrayBox> *> &a_rhs,
                  const Vector<DisjointBoxLayout> &a_grids,
                  const PoissonParameters &a_params) {
   ParmParse pp;
 
   int nlevels = a_params.numLevels;
-  a_chi.resize(nlevels);
-  a_rhs.resize(nlevels);
+// unnecessary as set below?
+//  a_dpsi.resize(nlevels);
+//  a_rhs.resize(nlevels);
   Vector<RefCountedPtr<LevelData<FArrayBox>>> aCoef(nlevels);
   Vector<RefCountedPtr<LevelData<FArrayBox>>> bCoef(nlevels);
   Vector<ProblemDomain> vectDomains(nlevels);
@@ -62,10 +66,11 @@ int poissonSolve(Vector<LevelData<FArrayBox> *> &a_chi,
   dxLev *= a_params.coarsestDx;
   ProblemDomain domLev(a_params.coarsestDomain);
 
-  // Declare variables here
+  // Declare variables here, with num comps = 1 and ghosts for sources
   for (int ilev = 0; ilev < nlevels; ilev++) {
     a_rhs[ilev] = new LevelData<FArrayBox>(a_grids[ilev], 1, IntVect::Zero);
-    a_chi[ilev] = new LevelData<FArrayBox>(a_grids[ilev], 1, IntVect::Unit);
+    a_dpsi[ilev] = new LevelData<FArrayBox>(a_grids[ilev], 1, IntVect::Unit);
+    a_psi[ilev] = new LevelData<FArrayBox>(a_grids[ilev], 1, IntVect::Unit);
     a_phi[ilev] = new LevelData<FArrayBox>(a_grids[ilev], 1, IntVect::Unit);
     aCoef[ilev] = RefCountedPtr<LevelData<FArrayBox>>(
         new LevelData<FArrayBox>(a_grids[ilev], 1, IntVect::Zero));
@@ -74,7 +79,7 @@ int poissonSolve(Vector<LevelData<FArrayBox> *> &a_chi,
     vectDomains[ilev] = domLev;
     vectDx[ilev] = dxLev;
 
-    set_initial_chi(*a_chi[ilev], vectDx[ilev], a_params);
+    set_initial_psi(*a_psi[ilev], vectDx[ilev], a_params);
     set_initial_phi(*a_phi[ilev], vectDx[ilev], a_params);
 
     // prepare dx, domain for next level
@@ -85,13 +90,15 @@ int poissonSolve(Vector<LevelData<FArrayBox> *> &a_chi,
   // set up linear operator
   int lBase = 0;
   MultilevelLinearOp<FArrayBox> mlOp;
+
   int numMGIter = 1;
   pp.query("numMGIterations", numMGIter);
-
   mlOp.m_num_mg_iterations = numMGIter;
+
   int numMGSmooth = 4;
   pp.query("numMGsmooth", numMGSmooth);
   mlOp.m_num_mg_smooth = numMGSmooth;
+
   int preCondSolverDepth = -1;
   pp.query("preCondSolverDepth", preCondSolverDepth);
   mlOp.m_preCondSolverDepth = preCondSolverDepth;
@@ -108,6 +115,7 @@ int poissonSolve(Vector<LevelData<FArrayBox> *> &a_chi,
   int NL_iter = 0;
   int max_NL_iter = 1;
   pp.query("max_NL_iterations", max_NL_iter);
+  Real dpsi_norm = 0.0;
 
   for (NL_iter; NL_iter < max_NL_iter; NL_iter++) {
 
@@ -116,9 +124,9 @@ int poissonSolve(Vector<LevelData<FArrayBox> *> &a_chi,
 
     // Assign values here
     for (int ilev = 0; ilev < nlevels; ilev++) {
-      setACoef(*aCoef[ilev], *a_chi[ilev], a_params, vectDx[ilev]);
-      setBCoef(*bCoef[ilev], *a_chi[ilev], a_params, vectDx[ilev]);
-      setRHS(*a_rhs[ilev], *a_chi[ilev], *a_phi[ilev], vectDx[ilev], a_params);
+      set_a_coef(*aCoef[ilev], *a_psi[ilev], a_params, vectDx[ilev]);
+      set_b_coef(*bCoef[ilev], a_params, vectDx[ilev]);
+      set_rhs(*a_rhs[ilev], *a_dpsi[ilev], *a_phi[ilev], vectDx[ilev], a_params);
     }
 
     // set up solver
@@ -137,14 +145,27 @@ int poissonSolve(Vector<LevelData<FArrayBox> *> &a_chi,
     solver.m_eps = tolerance;
     solver.m_imax = max_iter;
 
-    outputData(a_chi, a_rhs, a_grids, a_params, NL_iter);
+    outputData(a_dpsi, a_rhs, a_grids, a_params, NL_iter);
 
-    solver.solve(a_chi, a_rhs);
+    solver.solve(a_dpsi, a_rhs);
 
-    // KC TODO: currently no check for NL convergence to exit loop,
-    // should add this
+    // Add the solution to the linearised eqn to the previous iteration
+    // ie psi -> psi + dpsi
+    for (int ilev = 0; ilev < nlevels; ilev++) {
+        set_update_psi0(*a_psi[ilev], *a_dpsi[ilev]);
+    }
 
-  } // end NL_iter loop
+    /// check if converged and if so exit NL iteration for loop
+    dpsi_norm = computeNorm(a_dpsi, a_params.refRatio, a_params.coarsestDx, Interval(0,0));
+    if (dpsi_norm < 1e-6) {break;}
+
+  } // end NL iteration loop
+
+  if (dpsi_norm > 1e-6) 
+  {
+      //Mayday - result not converged
+      MayDay::Error("The NL iterations completed but dpsi > 1e-6 so not converged");
+  }
 
   int exitStatus = solver.m_exitStatus;
   // note that for AMRMultiGrid, success = 1.
@@ -173,27 +194,32 @@ int main(int argc, char *argv[]) {
     // read params from file
     getPoissonParameters(param);
     int nlevels = param.numLevels;
-    Vector<LevelData<FArrayBox> *> chi(nlevels, NULL); // the conformal factor
-    Vector<LevelData<FArrayBox> *> phi(nlevels, NULL); // scalar field
+    Vector<LevelData<FArrayBox> *> dpsi(nlevels, NULL); // the correction to the conformal factor
     Vector<LevelData<FArrayBox> *> rhs(nlevels, NULL); // rhs
+    Vector<LevelData<FArrayBox> *> psi(nlevels, NULL); // the conformal factor
+    Vector<LevelData<FArrayBox> *> phi(nlevels, NULL); // scalar field
 
-    setGrids(grids, param);
+    set_grids(grids, param);
 
-    status = poissonSolve(chi, rhs, phi, grids, param);
+    status = poissonSolve(dpsi, psi, phi, rhs, grids, param);
 
     // KC TODO: Want to write all GRChombo vars ready for checkpoint restart,
-    // not just rhs and chi
+    // not just rhs and dpsi
     int dofileout;
     pp.get("write_output", dofileout);
     if (dofileout == 1) {
-      outputData(chi, rhs, grids, param, 999);
+      outputData(dpsi, rhs, grids, param, 999);
     }
 
     // clear memory
-    for (int level = 0; level < chi.size(); level++) {
-      if (chi[level] != NULL) {
-        delete chi[level];
-        chi[level] = NULL;
+    for (int level = 0; level < dpsi.size(); level++) {
+      if (dpsi[level] != NULL) {
+        delete dpsi[level];
+        dpsi[level] = NULL;
+      }
+      if (psi[level] != NULL) {
+        delete psi[level];
+        psi[level] = NULL;
       }
       if (phi[level] != NULL) {
         delete phi[level];
