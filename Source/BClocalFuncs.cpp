@@ -76,12 +76,12 @@ void ParseBC(FArrayBox &a_state, const Box &a_valid,
             NeumBC(a_state, valid, a_dx, a_homogeneous,
                    ParseValue, // BCValueHolder class
                    i, Side::Lo);
-          //} else if (GlobalBCRS::s_bcLo[i] == 2) {
-            //if (!GlobalBCRS::s_printedThatLo[i]) {
+            //} else if (GlobalBCRS::s_bcLo[i] == 2) {
+            // if (!GlobalBCRS::s_printedThatLo[i]) {
             //  GlobalBCRS::s_printedThatLo[i] = true;
             //  pout() << "trig neum bcs lo for direction " << i << endl;
             //}
-            //NeumBC(a_state, valid, a_dx, a_homogeneous, TrigValueNeum, i,
+            // NeumBC(a_state, valid, a_dx, a_homogeneous, TrigValueNeum, i,
             //       Side::Lo);
           } else if (GlobalBCRS::s_bcLo[i] == 0) {
             if (!GlobalBCRS::s_printedThatLo[i]) {
@@ -91,12 +91,12 @@ void ParseBC(FArrayBox &a_state, const Box &a_valid,
             DiriBC(a_state, valid, a_dx, a_homogeneous, ParseValue, i,
                    Side::Lo);
 
-          //} else if (GlobalBCRS::s_bcLo[i] == 3) {
-            //if (!GlobalBCRS::s_printedThatLo[i]) {
+            //} else if (GlobalBCRS::s_bcLo[i] == 3) {
+            // if (!GlobalBCRS::s_printedThatLo[i]) {
             //  GlobalBCRS::s_printedThatLo[i] = true;
             //  pout() << "trig diri bcs lo for direction " << i << endl;
             //}
-            //DiriBC(a_state, valid, a_dx, a_homogeneous, TrigValueDiri, i,
+            // DiriBC(a_state, valid, a_dx, a_homogeneous, TrigValueDiri, i,
             //       Side::Lo);
 
           } else if (GlobalBCRS::s_bcLo[i] == 4) {
@@ -118,13 +118,13 @@ void ParseBC(FArrayBox &a_state, const Box &a_valid,
             }
             NeumBC(a_state, valid, a_dx, a_homogeneous, ParseValue, i,
                    Side::Hi);
-          //} else if (GlobalBCRS::s_bcHi[i] == 2) {
-          //  if (!GlobalBCRS::s_printedThatHi[i]) {
-          //    GlobalBCRS::s_printedThatHi[i] = true;
-          //    pout() << "trig neum bcs hi for direction " << i << endl;
-          //  }
-          //  NeumBC(a_state, valid, a_dx, a_homogeneous, TrigValueNeum, i,
-          //         Side::Hi);
+            //} else if (GlobalBCRS::s_bcHi[i] == 2) {
+            //  if (!GlobalBCRS::s_printedThatHi[i]) {
+            //    GlobalBCRS::s_printedThatHi[i] = true;
+            //    pout() << "trig neum bcs hi for direction " << i << endl;
+            //  }
+            //  NeumBC(a_state, valid, a_dx, a_homogeneous, TrigValueNeum, i,
+            //         Side::Hi);
           } else if (GlobalBCRS::s_bcHi[i] == 0) {
             if (!GlobalBCRS::s_printedThatHi[i]) {
               GlobalBCRS::s_printedThatHi[i] = true;
@@ -132,13 +132,13 @@ void ParseBC(FArrayBox &a_state, const Box &a_valid,
             }
             DiriBC(a_state, valid, a_dx, a_homogeneous, ParseValue, i,
                    Side::Hi);
-          //} else if (GlobalBCRS::s_bcHi[i] == 3) {
-          //  if (!GlobalBCRS::s_printedThatHi[i]) {
-          //    GlobalBCRS::s_printedThatHi[i] = true;
-          //    pout() << "trig diri bcs hi for direction " << i << endl;
-          //  }
-          //  DiriBC(a_state, valid, a_dx, a_homogeneous, TrigValueDiri, i,
-          //         Side::Hi);
+            //} else if (GlobalBCRS::s_bcHi[i] == 3) {
+            //  if (!GlobalBCRS::s_printedThatHi[i]) {
+            //    GlobalBCRS::s_printedThatHi[i] = true;
+            //    pout() << "trig diri bcs hi for direction " << i << endl;
+            //  }
+            //  DiriBC(a_state, valid, a_dx, a_homogeneous, TrigValueDiri, i,
+            //         Side::Hi);
           } else if (GlobalBCRS::s_bcHi[i] == 4) {
             if (!GlobalBCRS::s_printedThatHi[i]) {
               GlobalBCRS::s_printedThatHi[i] = true;

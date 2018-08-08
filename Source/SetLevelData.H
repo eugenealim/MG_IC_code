@@ -40,13 +40,14 @@ extern void set_initial_phi(LevelData<FArrayBox>&    a_phi,
                    const RealVect&          a_dx,
                    const PoissonParameters& a_params);
 
-extern void set_m_value(Real& m, RealVect& loc,
+extern void set_m_value(Real& m, Real& phi_here,
                     const PoissonParameters& a_params);
 
 /* see BoxTools/BaseFabMacros.H  for ForAllXBNN loop macro */
 extern void
 set_a_coef(LevelData<FArrayBox>& a_aCoef,
          LevelData<FArrayBox>& a_psi,
+         LevelData<FArrayBox>& a_phi,
          const PoissonParameters& a_params,
          const RealVect& a_dx);
 

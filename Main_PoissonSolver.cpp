@@ -9,23 +9,23 @@
 #endif
 
 #include "AMRIO.H"
+#include "BClocalFuncs.H"
 #include "BRMeshRefine.H"
 #include "BiCGStabSolver.H"
-#include "computeNorm.H"
 #include "DebugDump.H"
 #include "FABView.H"
 #include "FArrayBox.H"
-#include "SetGrids.H"
-#include "SetLevelData.H"
 #include "HamiltonianPoissonOperatorFactory.H"
 #include "LevelData.H"
 #include "LoadBalance.H"
 #include "MultilevelLinearOp.H"
 #include "ParmParse.H"
 #include "PoissonParameters.H"
+#include "SetGrids.H"
+#include "SetLevelData.H"
 #include "UsingNamespace.H"
-#include "BClocalFuncs.H"
 #include "WriteOutput.H"
+#include "computeNorm.H"
 #include <iostream>
 
 #ifdef CH_Linux
@@ -54,9 +54,6 @@ int poissonSolve(Vector<LevelData<FArrayBox> *> &a_dpsi,
   ParmParse pp;
 
   int nlevels = a_params.numLevels;
-// unnecessary as set below?
-//  a_dpsi.resize(nlevels);
-//  a_rhs.resize(nlevels);
   Vector<RefCountedPtr<LevelData<FArrayBox>>> aCoef(nlevels);
   Vector<RefCountedPtr<LevelData<FArrayBox>>> bCoef(nlevels);
   Vector<ProblemDomain> vectDomains(nlevels);
@@ -79,7 +76,10 @@ int poissonSolve(Vector<LevelData<FArrayBox> *> &a_dpsi,
     vectDomains[ilev] = domLev;
     vectDx[ilev] = dxLev;
 
+    // set initial guess for psi
     set_initial_psi(*a_psi[ilev], vectDx[ilev], a_params);
+
+    // set source - scalar field
     set_initial_phi(*a_phi[ilev], vectDx[ilev], a_params);
 
     // prepare dx, domain for next level
@@ -124,9 +124,10 @@ int poissonSolve(Vector<LevelData<FArrayBox> *> &a_dpsi,
 
     // Assign values here
     for (int ilev = 0; ilev < nlevels; ilev++) {
-      set_a_coef(*aCoef[ilev], *a_psi[ilev], a_params, vectDx[ilev]);
+      set_a_coef(*aCoef[ilev], *a_psi[ilev], *a_phi[ilev], a_params,
+                 vectDx[ilev]);
       set_b_coef(*bCoef[ilev], a_params, vectDx[ilev]);
-      set_rhs(*a_rhs[ilev], *a_dpsi[ilev], *a_phi[ilev], vectDx[ilev], a_params);
+      set_rhs(*a_rhs[ilev], *a_psi[ilev], *a_phi[ilev], vectDx[ilev], a_params);
     }
 
     // set up solver
@@ -152,19 +153,22 @@ int poissonSolve(Vector<LevelData<FArrayBox> *> &a_dpsi,
     // Add the solution to the linearised eqn to the previous iteration
     // ie psi -> psi + dpsi
     for (int ilev = 0; ilev < nlevels; ilev++) {
-        set_update_psi0(*a_psi[ilev], *a_dpsi[ilev]);
+      set_update_psi0(*a_psi[ilev], *a_dpsi[ilev]);
     }
 
     /// check if converged and if so exit NL iteration for loop
-    dpsi_norm = computeNorm(a_dpsi, a_params.refRatio, a_params.coarsestDx, Interval(0,0));
-    if (dpsi_norm < 1e-6) {break;}
+    dpsi_norm = computeNorm(a_dpsi, a_params.refRatio, a_params.coarsestDx,
+                            Interval(0, 0));
+    if (dpsi_norm < 1e-6) {
+      break;
+    }
 
   } // end NL iteration loop
 
-  if (dpsi_norm > 1e-6) 
-  {
-      //Mayday - result not converged
-      MayDay::Error("The NL iterations completed but dpsi > 1e-6 so not converged");
+  if (dpsi_norm > 1e-6) {
+    // Mayday - result not converged
+    MayDay::Error(
+        "The NL iterations completed but dpsi > 1e-6 so not converged");
   }
 
   int exitStatus = solver.m_exitStatus;
@@ -194,7 +198,8 @@ int main(int argc, char *argv[]) {
     // read params from file
     getPoissonParameters(param);
     int nlevels = param.numLevels;
-    Vector<LevelData<FArrayBox> *> dpsi(nlevels, NULL); // the correction to the conformal factor
+    Vector<LevelData<FArrayBox> *> dpsi(
+        nlevels, NULL); // the correction to the conformal factor
     Vector<LevelData<FArrayBox> *> rhs(nlevels, NULL); // rhs
     Vector<LevelData<FArrayBox> *> psi(nlevels, NULL); // the conformal factor
     Vector<LevelData<FArrayBox> *> phi(nlevels, NULL); // scalar field

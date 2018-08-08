@@ -8,18 +8,18 @@
  */
 #endif
 
-#include "PoissonParameters.H"
+#include "SetGrids.H"
 #include "AMRIO.H"
 #include "BCFunc.H"
-#include "SetLevelData.H"
 #include "BRMeshRefine.H"
 #include "BiCGStabSolver.H"
 #include "BoxIterator.H"
-#include "SetGrids.H"
 #include "CONSTANTS.H"
 #include "CoarseAverage.H"
 #include "HamiltonianPoissonOperatorFactory.H"
 #include "LoadBalance.H"
+#include "PoissonParameters.H"
+#include "SetLevelData.H"
 #include "UsingNamespace.H"
 #include "computeNorm.H"
 #include "parstream.H"
@@ -29,7 +29,7 @@
 // Note that there is also an option to read in grids, but here we use tagging
 // for the refinement
 int set_grids(Vector<DisjointBoxLayout> &vectGrids,
-             PoissonParameters &a_params) {
+              PoissonParameters &a_params) {
   Vector<ProblemDomain> vectDomain;
   Vector<Real> vectDx;
   set_domains_and_dx(vectDomain, vectDx, a_params);
@@ -65,9 +65,9 @@ int set_grids(Vector<DisjointBoxLayout> &vectGrids,
 
   int nesting_radius = 2;
   // create grid generation object
-  BRMeshRefine meshrefine(vectDomain[0], a_params.refRatio,
-                          a_params.fillRatio, a_params.blockFactor,
-                          nesting_radius, a_params.maxGridSize);
+  BRMeshRefine meshrefine(vectDomain[0], a_params.refRatio, a_params.fillRatio,
+                          a_params.blockFactor, nesting_radius,
+                          a_params.maxGridSize);
 
   while (moreLevels) {
     // default is moreLevels = false
@@ -95,19 +95,19 @@ int set_grids(Vector<DisjointBoxLayout> &vectGrids,
       set_rhs(*vectRHS[level], *temp_psi, *temp_phi, dxLevel, a_params);
 
       if (temp_psi != NULL) {
-         delete temp_psi;
-         temp_psi = NULL;
+        delete temp_psi;
+        temp_psi = NULL;
       }
       if (temp_phi != NULL) {
-         delete temp_phi;
-         temp_phi = NULL;
+        delete temp_phi;
+        temp_phi = NULL;
       }
     }
 
     Vector<IntVectSet> tagVect(topLevel + 1);
     int tags_grow = 1;
     set_tag_cells(vectRHS, tagVect, vectDx, vectDomain, a_params.refineThresh,
-             tags_grow, baseLevel, topLevel + 1);
+                  tags_grow, baseLevel, topLevel + 1);
 
     int new_finest =
         meshrefine.regrid(newBoxes, tagVect, baseLevel, topLevel, oldBoxes);
@@ -144,11 +144,11 @@ int set_grids(Vector<DisjointBoxLayout> &vectGrids,
       vectRHS[ilev] = NULL;
     }
   }
- 
+
   return 0;
 }
 
-//Set grid hierarchy from input file
+// Set grid hierarchy from input file
 void set_domains_and_dx(Vector<ProblemDomain> &vectDomain, Vector<Real> &vectDx,
                         PoissonParameters &a_params) {
 
@@ -170,9 +170,9 @@ void set_domains_and_dx(Vector<ProblemDomain> &vectDomain, Vector<Real> &vectDx,
   tag cells for refinement based on magnitude(RHS)
 */
 void set_tag_cells(Vector<LevelData<FArrayBox> *> &vectRHS,
-              Vector<IntVectSet> &tagVect, Vector<Real> &vectDx,
-              Vector<ProblemDomain> &vectDomain, const Real refine_thresh,
-              const int tags_grow, const int baseLevel, int numLevels) {
+                   Vector<IntVectSet> &tagVect, Vector<Real> &vectDx,
+                   Vector<ProblemDomain> &vectDomain, const Real refine_thresh,
+                   const int tags_grow, const int baseLevel, int numLevels) {
   for (int lev = baseLevel; lev != numLevels; lev++) {
     IntVectSet local_tags;
     LevelData<FArrayBox> &levelRhs = *vectRHS[lev];
