@@ -228,10 +228,9 @@ int main(int argc, char *argv[]) {
 
     status = poissonSolve(dpsi, psi, phi, rhs, grids, params);
 
-    // KC TODO: Want to write all GRChombo vars ready for checkpoint restart,
-    int max_NL_iter = 1;
-    pp.query("max_NL_iterations", max_NL_iter);
-    output_solver_data(dpsi, psi, phi, rhs, grids, params, max_NL_iter);
+    // now output final data in a form which can be read as a checkpoint file
+    // for the AMR time dependent runs
+    output_final_data(psi, phi, grids, params);
 
     // clear memory
     for (int level = 0; level < dpsi.size(); level++) {

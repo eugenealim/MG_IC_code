@@ -87,8 +87,8 @@ void set_initial_phi(LevelData<FArrayBox> &a_phi, const RealVect &a_dx,
   }
 } // end set_initial_phi
 
-void set_rhs(LevelData<FArrayBox> &a_rhs, LevelData<FArrayBox> &a_psi,
-             LevelData<FArrayBox> &a_phi, const RealVect &a_dx,
+void set_rhs(LevelData<FArrayBox> &a_rhs, const LevelData<FArrayBox> &a_psi,
+             const LevelData<FArrayBox> &a_phi, const RealVect &a_dx,
              const PoissonParameters &a_params) {
 
   CH_assert(a_rhs.nComp() == 1);
@@ -135,7 +135,7 @@ void set_rhs(LevelData<FArrayBox> &a_rhs, LevelData<FArrayBox> &a_psi,
 
 // Add the correction to psi0 after the solver operates
 void set_update_psi0(LevelData<FArrayBox> &a_psi,
-                     LevelData<FArrayBox> &a_dpsi, Copier& a_exchange_copier) {
+                     LevelData<FArrayBox> &a_dpsi, const Copier& a_exchange_copier) {
 
   // first exchange ghost cells for dpsi so they are filled with the correct values
   a_dpsi.exchange(a_dpsi.interval(), a_exchange_copier);
@@ -149,7 +149,7 @@ void set_update_psi0(LevelData<FArrayBox> &a_psi,
 }
 
 // m(K, rho) = 2/3K^2 - 16piG rho
-void set_m_value(Real &m, Real &phi, const PoissonParameters &a_params) {
+void set_m_value(Real &m, const Real &phi_here, const PoissonParameters &a_params) {
 
   // KC TODO:
   // For now rho is just the gradient term which is kept separate
@@ -161,8 +161,8 @@ void set_m_value(Real &m, Real &phi, const PoissonParameters &a_params) {
 }
 
 // The coefficient of the I operator on dpsi
-void set_a_coef(LevelData<FArrayBox> &a_aCoef, LevelData<FArrayBox> &a_psi,
-                LevelData<FArrayBox> &a_phi, const PoissonParameters &a_params,
+void set_a_coef(LevelData<FArrayBox> &a_aCoef, const LevelData<FArrayBox> &a_psi,
+                const LevelData<FArrayBox> &a_phi, const PoissonParameters &a_params,
                 const RealVect &a_dx) {
   CH_assert(a_phi.nComp() == 1);
   int comp_number = 0;
@@ -209,9 +209,45 @@ void set_b_coef(LevelData<FArrayBox> &a_bCoef,
   CH_assert(a_bCoef.nComp() == 1);
   int comp_number = 0;
 
-  DataIterator dit = a_bCoef.dataIterator();
   for (DataIterator dit = a_bCoef.dataIterator(); dit.ok(); ++dit) {
     FArrayBox &this_bCoef = a_bCoef[dit()];
     this_bCoef.setVal(1.0, comp_number);
+  }
+}
+
+void set_output_data(LevelData<FArrayBox>& a_vars, const LevelData<FArrayBox>& a_psi, 
+                     const LevelData<FArrayBox>& a_phi, const PoissonParameters &a_params)
+{
+  CH_assert(a_vars.nComp() == NUM_VARS);
+
+  for (DataIterator dit = a_psi.dataIterator(); dit.ok(); ++dit) {
+    FArrayBox &this_vars = a_vars[dit()];
+    FArrayBox &this_psi = a_psi[dit()];
+    FArrayBox &this_phi = a_phi[dit()];
+
+    // first set everything to zero
+    this_vars.setVal(0.0, Interval(0, NUM_VARS));
+
+    // now set non zero terms
+    // Conformally flat, and lapse = 1
+    this_vars.setVal(1.0, c_h11);
+    this_vars.setVal(1.0, c_h22);
+    this_vars.setVal(1.0, c_h33);
+    this_vars.setVal(1.0, c_lapse);
+
+    // constant K
+    this_vars.setVal(a_params.constant_K, c_K);
+
+    // now non constant terms
+    Box this_box = aCoef.box();
+    BoxIterator bit(this_box);
+    for (bit.begin(); bit.ok(); ++bit) {
+
+      // just copy phi
+      this_vars(iv, c_phi) = this_phi(iv, 0);
+
+      // GRChombo conformal factor chi = psi^-4
+      this_vars(iv, c_chi) = pow(this_psi(iv, 0), -4.0);
+    }
   }
 }
