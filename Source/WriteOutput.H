@@ -140,7 +140,7 @@ void output_final_data( const Vector<LevelData<FArrayBox>* >&   a_psi,
     Vector<LevelData<FArrayBox>* > vars_data(a_psi.size(), NULL);
     HDF5HeaderData header;
 
-    header.m_int["max_levels"] = a_params.maxLevel;
+    header.m_int["max_level"] = a_params.maxLevel;
     header.m_int["num_levels"] = a_params.maxLevel + 1;
     header.m_int["iteration"] = 0;
     header.m_real["time"] = 0.0;

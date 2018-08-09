@@ -253,6 +253,9 @@ void set_output_data(LevelData<FArrayBox> &a_vars, LevelData<FArrayBox> &a_psi,
       this_vars(iv, c_phi) = this_phi(iv, 0);
 
       // GRChombo conformal factor chi = psi^-4
+      // KC TODO: For some reason there is a minus sign astray and
+      // actually chi = psi^4 gives the approriate Ham in GRChombo
+      // NEED TO FIND THIS!!
       this_vars(iv, c_chi) = pow(this_psi(iv, 0), -4.0);
     }
   }
