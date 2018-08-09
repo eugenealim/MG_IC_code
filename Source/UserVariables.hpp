@@ -7,56 +7,54 @@
 #define USERVARIABLES_HPP
 
 // assign an enum to each variable
-enum
-{
-    c_chi,
+enum {
+  c_chi,
 
-    c_h11,
-    c_h12,
-    c_h13,
-    c_h22,
-    c_h23,
-    c_h33,
+  c_h11,
+  c_h12,
+  c_h13,
+  c_h22,
+  c_h23,
+  c_h33,
 
-    c_K,
+  c_K,
 
-    c_A11,
-    c_A12,
-    c_A13,
-    c_A22,
-    c_A23,
-    c_A33,
+  c_A11,
+  c_A12,
+  c_A13,
+  c_A22,
+  c_A23,
+  c_A33,
 
-    c_Theta,
+  c_Theta,
 
-    c_Gamma1,
-    c_Gamma2,
-    c_Gamma3,
+  c_Gamma1,
+  c_Gamma2,
+  c_Gamma3,
 
-    c_lapse,
+  c_lapse,
 
-    c_shift1,
-    c_shift2,
-    c_shift3,
+  c_shift1,
+  c_shift2,
+  c_shift3,
 
-    c_B1,
-    c_B2,
-    c_B3,
+  c_B1,
+  c_B2,
+  c_B3,
 
-    c_phi, // matter field added
-    c_Pi,  //(minus) conjugate momentum
+  c_phi, // matter field added
+  c_Pi,  //(minus) conjugate momentum
 
-    c_Ham,
+  c_Ham,
 
-    c_Mom1,
-    c_Mom2,
-    c_Mom3,
+  c_Mom1,
+  c_Mom2,
+  c_Mom3,
 
-    NUM_VARS
+  NUM_VARS
 };
 
-namespace UserVariables
-{
+namespace UserVariables {
 static constexpr char const *variable_names[NUM_VARS] = {
     "chi",
 

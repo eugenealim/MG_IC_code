@@ -64,11 +64,14 @@ int poissonSolve(Vector<LevelData<FArrayBox> *> &a_dpsi,
   ProblemDomain domLev(a_params.coarsestDomain);
 
   // Declare variables here, with num comps = 1 and ghosts for sources
+  // want output data to have 3 ghost cells to match GRChombo, although
+  // not currently needed for 2nd order stencils used here
   for (int ilev = 0; ilev < nlevels; ilev++) {
+    IntVect ghosts = 3 * IntVect::Unit;
     a_rhs[ilev] = new LevelData<FArrayBox>(a_grids[ilev], 1, IntVect::Zero);
-    a_dpsi[ilev] = new LevelData<FArrayBox>(a_grids[ilev], 1, IntVect::Unit);
-    a_psi[ilev] = new LevelData<FArrayBox>(a_grids[ilev], 1, IntVect::Unit);
-    a_phi[ilev] = new LevelData<FArrayBox>(a_grids[ilev], 1, IntVect::Unit);
+    a_dpsi[ilev] = new LevelData<FArrayBox>(a_grids[ilev], 1, ghosts);
+    a_psi[ilev] = new LevelData<FArrayBox>(a_grids[ilev], 1, ghosts);
+    a_phi[ilev] = new LevelData<FArrayBox>(a_grids[ilev], 1, ghosts);
     aCoef[ilev] = RefCountedPtr<LevelData<FArrayBox>>(
         new LevelData<FArrayBox>(a_grids[ilev], 1, IntVect::Zero));
     bCoef[ilev] = RefCountedPtr<LevelData<FArrayBox>>(
@@ -154,28 +157,29 @@ int poissonSolve(Vector<LevelData<FArrayBox> *> &a_dpsi,
     // ie psi -> psi + dpsi
     // need to fill interlevel and intralevel ghosts first in dpsi
     for (int ilev = 0; ilev < nlevels; ilev++) {
-      
+
       // For interlevel ghosts
-      if (ilev > 0)
-      {
+      if (ilev > 0) {
         int num_comps = 1;
-        QuadCFInterp quadCFI(a_grids[ilev], &a_grids[ilev-1], vectDx[ilev][0], 
-                              a_params.refRatio[ilev], num_comps, vectDomains[ilev]);
-        quadCFI.coarseFineInterp(*a_dpsi[ilev], *a_dpsi[ilev-1]);
+        QuadCFInterp quadCFI(a_grids[ilev], &a_grids[ilev - 1], vectDx[ilev][0],
+                             a_params.refRatio[ilev], num_comps,
+                             vectDomains[ilev]);
+        quadCFI.coarseFineInterp(*a_dpsi[ilev], *a_dpsi[ilev - 1]);
       }
 
-      //For intralevel ghosts
+      // For intralevel ghosts
       Copier exchange_copier;
       exchange_copier.exchangeDefine(a_grids[ilev], IntVect::Unit);
 
-      //now the update
+      // now the update
       set_update_psi0(*a_psi[ilev], *a_dpsi[ilev], exchange_copier);
     }
 
     // check if converged and if so exit NL iteration for loop
     dpsi_norm = computeNorm(a_dpsi, a_params.refRatio, a_params.coarsestDx,
                             Interval(0, 0));
-    pout() << "The norm of dpsi at step " << NL_iter << " is " << dpsi_norm << endl;
+    pout() << "The norm of dpsi at step " << NL_iter << " is " << dpsi_norm
+           << endl;
 
     if (dpsi_norm < tolerance) {
       break;
@@ -185,11 +189,16 @@ int poissonSolve(Vector<LevelData<FArrayBox> *> &a_dpsi,
 
   pout() << "The norm of dpsi at the final step was " << dpsi_norm << endl;
 
-  // Mayday if result not converged at all - using a fairly generous threshold for this
-  // as usually non convergence means everything goes nuts
+  // Mayday if result not converged at all - using a fairly generous threshold
+  // for this as usually non convergence means everything goes nuts
   if (dpsi_norm > 1e-4) {
-    MayDay::Error("NL iterations did not converge - may need a better initial guess");
+    MayDay::Error(
+        "NL iterations did not converge - may need a better initial guess");
   }
+
+  // now output final data in a form which can be read as a checkpoint file
+  // for the AMR time dependent runs
+  output_final_data(a_psi, a_phi, a_grids, vectDx, vectDomains, a_params);
 
   int exitStatus = solver.m_exitStatus;
   // note that for AMRMultiGrid, success = 1.
@@ -227,10 +236,6 @@ int main(int argc, char *argv[]) {
     set_grids(grids, params);
 
     status = poissonSolve(dpsi, psi, phi, rhs, grids, params);
-
-    // now output final data in a form which can be read as a checkpoint file
-    // for the AMR time dependent runs
-    output_final_data(psi, phi, grids, params);
 
     // clear memory
     for (int level = 0; level < dpsi.size(); level++) {
