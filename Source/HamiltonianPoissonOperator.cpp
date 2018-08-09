@@ -451,6 +451,9 @@ void HamiltonianPoissonOperator::levelJacobi(
 
   // Do the Jacobi relaxation
   incr(a_dpsi, resid, 0.5);
+
+  //exchange ghost cells
+  a_dpsi.exchange(a_dpsi.interval(), m_exchangeCopier);
 }
 
 // KC TODO: Think we don't need this any more

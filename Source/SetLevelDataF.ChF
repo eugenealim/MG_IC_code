@@ -18,7 +18,7 @@ c     ----------------------------------------------------------------------
      &     CHF_CONST_REAL[dx],
      &     CHF_BOX[box])
 
-      integer d0, CHF_AUTODECL[i], CHF_AUTODECL[ii], CHF_AUTODECL[jj]
+      integer d0, CHF_AUTODECL[i], CHF_AUTODECL[ii]
       real_t dpsidxdx
 
       CHF_AUTOMULTIDO[box;i]
@@ -68,8 +68,8 @@ c     Note that the psi^-4 term from raising the index is dealt with elsewhere
               ii2 = CHF_ID(d0,2)]
 
             dphidx = 0.5/dx * (
-     &     + 1*phi(CHF_OFFSETIX[i;-ii])
      &     + 1*phi(CHF_OFFSETIX[i;+ii])
+     &     - 1*phi(CHF_OFFSETIX[i;-ii])
      &       )
 
             rho_grad_phi(CHF_AUTOIX[i]) = rho_grad_phi(CHF_AUTOIX[i]) + 0.5*dphidx*dphidx

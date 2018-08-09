@@ -76,8 +76,8 @@ int poissonSolve(Vector<LevelData<FArrayBox> *> &a_dpsi,
     vectDomains[ilev] = domLev;
     vectDx[ilev] = dxLev;
 
-    // set initial guess for psi
-    set_initial_psi(*a_psi[ilev], vectDx[ilev], a_params);
+    // set initial guess for psi and zero the difference
+    set_initial_psi(*a_psi[ilev], *a_dpsi[ilev], vectDx[ilev], a_params);
 
     // set source - scalar field
     set_initial_phi(*a_phi[ilev], vectDx[ilev], a_params);
@@ -122,7 +122,7 @@ int poissonSolve(Vector<LevelData<FArrayBox> *> &a_dpsi,
     pout() << "Main Loop Iteration " << (NL_iter + 1) << " out of "
            << max_NL_iter << endl;
 
-    // Assign values here
+    // Assign values for coefficients here
     for (int ilev = 0; ilev < nlevels; ilev++) {
       set_a_coef(*aCoef[ilev], *a_psi[ilev], *a_phi[ilev], a_params,
                  vectDx[ilev]);
@@ -146,29 +146,49 @@ int poissonSolve(Vector<LevelData<FArrayBox> *> &a_dpsi,
     solver.m_eps = tolerance;
     solver.m_imax = max_iter;
 
-    outputData(a_dpsi, a_rhs, a_grids, a_params, NL_iter);
+    output_solver_data(a_dpsi, a_psi, a_phi, a_rhs, a_grids, a_params, NL_iter);
 
     solver.solve(a_dpsi, a_rhs);
 
     // Add the solution to the linearised eqn to the previous iteration
     // ie psi -> psi + dpsi
+    // need to fill interlevel and intralevel ghosts first in dpsi
     for (int ilev = 0; ilev < nlevels; ilev++) {
-      set_update_psi0(*a_psi[ilev], *a_dpsi[ilev]);
+      
+      // For interlevel ghosts
+      if (ilev > 0)
+      {
+        int num_comps = 1;
+        QuadCFInterp quadCFI(a_grids[ilev], &a_grids[ilev-1], vectDx[ilev][0], 
+                              a_params.refRatio[ilev], num_comps, vectDomains[ilev]);
+        quadCFI.coarseFineInterp(*a_dpsi[ilev], *a_dpsi[ilev-1]);
+      }
+
+      //For intralevel ghosts
+      Copier exchange_copier;
+      exchange_copier.exchangeDefine(a_grids[ilev], IntVect::Unit);
+
+      //now the update
+      set_update_psi0(*a_psi[ilev], *a_dpsi[ilev], exchange_copier);
     }
 
-    /// check if converged and if so exit NL iteration for loop
+    // check if converged and if so exit NL iteration for loop
     dpsi_norm = computeNorm(a_dpsi, a_params.refRatio, a_params.coarsestDx,
                             Interval(0, 0));
-    if (dpsi_norm < 1e-6) {
+    pout() << "The norm of dpsi at step " << NL_iter << " is " << dpsi_norm << endl;
+
+    if (dpsi_norm < tolerance) {
       break;
     }
 
   } // end NL iteration loop
 
-  if (dpsi_norm > 1e-6) {
-    // Mayday - result not converged
-    MayDay::Error(
-        "The NL iterations completed but dpsi > 1e-6 so not converged");
+  pout() << "The norm of dpsi at the final step was " << dpsi_norm << endl;
+
+  // Mayday if result not converged at all - using a fairly generous threshold for this
+  // as usually non convergence means everything goes nuts
+  if (dpsi_norm > 1e-4) {
+    MayDay::Error("NL iterations did not converge - may need a better initial guess");
   }
 
   int exitStatus = solver.m_exitStatus;
@@ -192,29 +212,26 @@ int main(int argc, char *argv[]) {
     char *inFile = argv[1];
     ParmParse pp(argc - 2, argv + 2, NULL, inFile);
 
-    PoissonParameters param;
+    PoissonParameters params;
     Vector<DisjointBoxLayout> grids;
 
     // read params from file
-    getPoissonParameters(param);
-    int nlevels = param.numLevels;
+    getPoissonParameters(params);
+    int nlevels = params.numLevels;
     Vector<LevelData<FArrayBox> *> dpsi(
         nlevels, NULL); // the correction to the conformal factor
     Vector<LevelData<FArrayBox> *> rhs(nlevels, NULL); // rhs
     Vector<LevelData<FArrayBox> *> psi(nlevels, NULL); // the conformal factor
     Vector<LevelData<FArrayBox> *> phi(nlevels, NULL); // scalar field
 
-    set_grids(grids, param);
+    set_grids(grids, params);
 
-    status = poissonSolve(dpsi, psi, phi, rhs, grids, param);
+    status = poissonSolve(dpsi, psi, phi, rhs, grids, params);
 
     // KC TODO: Want to write all GRChombo vars ready for checkpoint restart,
-    // not just rhs and dpsi
-    int dofileout;
-    pp.get("write_output", dofileout);
-    if (dofileout == 1) {
-      outputData(dpsi, rhs, grids, param, 999);
-    }
+    int max_NL_iter = 1;
+    pp.query("max_NL_iterations", max_NL_iter);
+    output_solver_data(dpsi, psi, phi, rhs, grids, params, max_NL_iter);
 
     // clear memory
     for (int level = 0; level < dpsi.size(); level++) {

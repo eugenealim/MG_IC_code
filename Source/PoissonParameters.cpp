@@ -41,25 +41,17 @@ void getPoissonParameters(PoissonParameters &a_params) {
   pp.get("buffer_size", a_params.bufferSize);
   pp.get("alpha", a_params.alpha);
   pp.get("beta", a_params.beta);
-  pp.get("kappa_sq", a_params.kappa_sq); // this is 8piG
+  pp.get("G_Newton", a_params.G_Newton);
   pp.get("initial_psi", a_params.initial_psi);
-  pp.get("initial_phi", a_params.initial_phi);
   pp.get("constant_K", a_params.constant_K);
 
-  // Get rho params
-  pp.get("rho_type", a_params.rho_type); // 0 = gaussian, 1 = waves
-  // Gaussian rho = strength * Exp[-r^2/scale]
-  pp.get("rho_scale", a_params.rho_scale);
-  pp.get("rho_strength", a_params.rho_strength);
-  pp.getarr("rho_center_1", a_params.rho_center_1, 0, SpaceDim);
-  pp.getarr("rho_center_2", a_params.rho_center_2, 0, SpaceDim);
-  pp.getarr("rho_center_3", a_params.rho_center_3, 0, SpaceDim);
+  // Gaussian phi = strength * Exp[-r^2/scale]
+  pp.get("phi_scale", a_params.phi_scale);
+  pp.get("phi_strength", a_params.phi_strength);
+  pp.getarr("phi_center", a_params.phi_center, 0, SpaceDim);
 
-  // waves rho = SUM_i rho_amplitude_i * Sin[2pi rho_k_i x_i]
-  pp.getarr("rho_k", a_params.rho_k, 0, SpaceDim);
-  pp.getarr("rho_amplitude", a_params.rho_amplitude, 0, SpaceDim);
-  pp.get("rho_baseline", a_params.rho_baseline);
-
+  // print out the overall coeffs just to be sure we have selected them
+  // correctly
   pout() << "alpha, beta = " << a_params.alpha << ", " << a_params.beta << endl;
 
   // set to a bogus default value, so we only break from solver

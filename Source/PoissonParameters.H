@@ -46,19 +46,12 @@ public:
   RealVect     probHi;
   Real         alpha;
   Real         beta;
-  Real         kappa_sq;
+  Real         G_Newton;
   Real         initial_psi; // initial constant psi
-  Real         initial_phi; // initial constant phi
   Real         constant_K; // initial constant K
-  int          rho_type; // 0 = gaussian, 1 = wavemodes
-  Real         rho_scale; // scale of rho gaussian
-  Real         rho_strength; // strength of rho gaussian, rho = strength*Exp(-r^2/scale)
-  Vector<Real> rho_center_1;
-  Vector<Real> rho_center_2;
-  Vector<Real> rho_center_3;
-  Vector<Real> rho_k; // wave lengths for wave modes
-  Vector<Real> rho_amplitude; // three amplitude for wave modes
-  Real         rho_baseline; // baseline
+  Real         phi_scale; // scale of phi gaussian
+  Real         phi_strength; // strength of phi gaussian, phi = strength*Exp(-r^2/scale)
+  Vector<Real> phi_center;
   int          coefficient_average_type;
   int          verbosity;
   Vector<int>  periodic; // 1 1 1 for periodic, 0 0 0 for non-periodic

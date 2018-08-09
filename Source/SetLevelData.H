@@ -33,6 +33,7 @@ extern void set_rhs(LevelData<FArrayBox>&    a_rhs,
                    const PoissonParameters& a_params);
 
 extern void set_initial_psi(LevelData<FArrayBox>&    a_psi,
+                   LevelData<FArrayBox>&    a_dpsi,
                    const RealVect&          a_dx,
                    const PoissonParameters& a_params);
 
@@ -58,6 +59,7 @@ set_b_coef(LevelData<FArrayBox>& a_bCoef,
          const PoissonParameters& a_params,
          const RealVect& a_dx);
 
-extern void set_update_psi0(LevelData<FArrayBox>& a_psi, LevelData<FArrayBox>& a_dpsi);
+extern void set_update_psi0(LevelData<FArrayBox>& a_psi, LevelData<FArrayBox>& a_dpsi,
+                            Copier& a_exchange_copier);
 
 #endif

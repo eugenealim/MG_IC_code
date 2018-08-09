@@ -6,24 +6,20 @@
 alpha = 1.0
 beta  = -1.0
 
-# kappa_sq = 8piG 
-kappa_sq = 25.1327412 
-
 # Threshold for AMR refinement, based on magnitude of rhs
 refine_threshold = 0.85
 
 # AMR grid params 
-max_level    = 2
+max_level    = 4
 ref_ratio    = 2 2 2 2 2 
 n_cells      = 64 64 64
 block_factor = 16
 fill_ratio   = 0.7
 max_grid_size = 16
 buffer_size  = 2
-domain_length = 1.0 1.0 1.0
+domain_length = 100.0 100.0 100.0
 
 # Setup multigrid params
-write_output = 1 # write solution to an hdf5 plotfile
 numMGsmooth = 4 # number of GSRB smooths before and after MG coarsening
 #preCondSolverDepth = 1
 num_mg     = 1 
@@ -40,27 +36,20 @@ coefficient_average_type = harmonic
 
 # Boundary conditions for domain-boundary faces 
 # 1== const Neumann, 0 == const Dirichlet
+# note bc_value = 0 because it is applied to dpsi - we want psi = 1
 is_periodic = 0 0 0 
 bc_lo       = 0 0 0
 bc_hi       = 0 0 0  
-bc_value = 1.0
+bc_value = 0.0
 
+# phi gaussian
+phi_scale = 1
+phi_strength = 1e-2
+phi_center = 50.0 50.0 50.0
 
-# rho 
-rho_type = 0 # 0=gaussian, 1=wavemodes, 2 = 3 gaussians
-# gaussian
-rho_scale = 1e-2
-rho_strength = 2.65
-rho_center_1 = 0.5 0.5 0.5
-rho_center_2 = 8.0 16.0 8.0
-rho_center_3 = 8.0 8.0 16.0
-
-# wavemodes
-rho_amplitude = 0.0001 0.0001 0.0001
-rho_k = 1.0 1.0 1.0
-rho_baseline = 0.0003 # baseline constant
+# Q: "Simple, change the gravitational constant of the Universe"
+G_Newton = 1.0 
 
 # initial constants
-initial_chi = 1.0
-initial_phi = 1.0
+initial_psi = 1.0
 constant_K = 0 # K=0 for dirichlet, K= -\sqrt{ < 24 pi G rho + (3/2chi)A^2>} for periodic 
