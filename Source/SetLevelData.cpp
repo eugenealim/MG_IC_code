@@ -121,14 +121,14 @@ void set_rhs(LevelData<FArrayBox> &a_rhs, LevelData<FArrayBox> &a_psi,
     for (bit.begin(); bit.ok(); ++bit) {
       IntVect iv = bit();
 
-      // rhs = m/8 psi_0^5 - laplacian(psi_0)
+      // rhs = m/8 psi_0^5 - 2 pi rho_grad psi_0  - laplacian(psi_0)
       Real m = 0;
       set_m_value(m, this_phi(iv, comp_number), a_params);
       Real psi_0 = this_psi(iv, comp_number);
       this_rhs(iv, comp_number) =
-          0.125 * m * pow(psi_0, 5.0) +
-          2.0 * M_PI * a_params.G_Newton * rho_gradient(iv) * psi_0 -
-          laplacian_of_psi(iv);
+          0.125 * m * pow(psi_0, 5.0)
+          - 2.0 * M_PI * a_params.G_Newton * rho_gradient(iv) * psi_0
+          - laplacian_of_psi(iv);
     }
   }
 } // end set_rhs
@@ -197,8 +197,8 @@ void set_a_coef(LevelData<FArrayBox> &a_aCoef, LevelData<FArrayBox> &a_psi,
       Real m;
       set_m_value(m, this_phi(iv, comp_number), a_params);
       Real psi_0 = this_psi(iv, 0);
-      aCoef(iv, 0) = -0.625 * m * pow(psi_0, 4.0) -
-                     2.0 * M_PI * a_params.G_Newton * rho_gradient(iv);
+      aCoef(iv, 0) = - 0.625 * m * pow(psi_0, 4.0)
+                     + 2.0 * M_PI * a_params.G_Newton * rho_gradient(iv);
     }
   }
 }
@@ -253,9 +253,6 @@ void set_output_data(LevelData<FArrayBox> &a_vars, LevelData<FArrayBox> &a_psi,
       this_vars(iv, c_phi) = this_phi(iv, 0);
 
       // GRChombo conformal factor chi = psi^-4
-      // KC TODO: For some reason there is a minus sign astray and
-      // actually chi = psi^4 gives the approriate Ham in GRChombo
-      // NEED TO FIND THIS!!
       this_vars(iv, c_chi) = pow(this_psi(iv, 0), -4.0);
     }
   }
