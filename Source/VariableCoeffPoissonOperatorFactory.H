@@ -8,13 +8,13 @@
  */
 #endif
 
-#ifndef _HAMILTONIANPOISSONOPERATORFACTORY_H_
-#define _HAMILTONIANPOISSONOPERATORFACTORY_H_
+#ifndef _VARIABLECOEFFPOISSONOPERATORFACTORY_H_
+#define _VARIABLECOEFFPOISSONOPERATORFACTORY_H_
 
 #include "PoissonParameters.H"
 #include "AMRPoissonOp.H"
-#include "BClocalFuncs.H"
-#include "HamiltonianPoissonOperator.H"
+#include "SetBCs.H"
+#include "VariableCoeffPoissonOperator.H"
 #include "CoefficientInterpolator.H"
 #include "NamespaceHeader.H"
 
@@ -29,14 +29,14 @@ defineOperatorFactory(
                       const PoissonParameters&                     a_params);
 
 /**
-   Factory to create HamiltonianPoissonOperators
+   Factory to create VariableCoeffPoissonOperators
 */
-class HamiltonianPoissonOperatorFactory: public AMRLevelOpFactory<LevelData<FArrayBox> >
+class VariableCoeffPoissonOperatorFactory: public AMRLevelOpFactory<LevelData<FArrayBox> >
 {
 public:
-  HamiltonianPoissonOperatorFactory();
+  VariableCoeffPoissonOperatorFactory();
 
-  virtual ~HamiltonianPoissonOperatorFactory()
+  virtual ~VariableCoeffPoissonOperatorFactory()
   {
   }
 
@@ -64,7 +64,7 @@ public:
               const Real&                                    a_beta,
               Vector<RefCountedPtr<LevelData<FArrayBox> > >& a_bCoef);
 
-  //! Defines a factory for HamiltonianPoissonOperator which allows the operators to
+  //! Defines a factory for VariableCoeffPoissonOperator which allows the operators to
   //! allocate their own coefficient data. \f$\alpha\f$ and \f$\beta\f$
   //! coefficients are initialized to 1.
   //! \param a_coarseDomain The domain at the coarsest level.

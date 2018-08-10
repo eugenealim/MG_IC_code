@@ -16,7 +16,7 @@
 #include "BoxIterator.H"
 #include "CONSTANTS.H"
 #include "CoarseAverage.H"
-#include "HamiltonianPoissonOperatorFactory.H"
+#include "VariableCoeffPoissonOperatorFactory.H"
 #include "LoadBalance.H"
 #include "PoissonParameters.H"
 #include "SetLevelData.H"

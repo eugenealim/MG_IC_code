@@ -8,8 +8,8 @@
  */
 #endif
 
-#ifndef _HAMILTONIANPOISSONOPERATOR_H_
-#define _HAMILTONIANPOISSONOPERATOR_H_
+#ifndef _VARIABLECOEFFPOISSONOPERATOR_H_
+#define _VARIABLECOEFFPOISSONOPERATOR_H_
 
 #include "AMRPoissonOp.H"
 #include "CoefficientInterpolator.H"
@@ -22,17 +22,17 @@
    (alpha * aCoef(x) * I - beta * cCoef(x) * laplacian ) dpsi = rhs
    over an AMR hierarchy.
 */
-class HamiltonianPoissonOperator : public AMRPoissonOp
+class VariableCoeffPoissonOperator : public AMRPoissonOp
 {
 public:
   /// default constructor
-  HamiltonianPoissonOperator()
+  VariableCoeffPoissonOperator()
   {
     m_lambdaNeedsResetting = true;
   }
 
   /// destructor
-  virtual ~HamiltonianPoissonOperator()
+  virtual ~VariableCoeffPoissonOperator()
   {
   }
 
@@ -78,7 +78,7 @@ public:
   /// Compute lambda once alpha, aCoef, beta, bCoef are defined
   virtual void computeLambda();
 
-  /// refluxing
+  /// refluxing - not implemented
   virtual void reflux(const LevelData<FArrayBox>&        a_dpsiFine,
                       const LevelData<FArrayBox>&        a_dpsi,
                       LevelData<FArrayBox>&              a_residual,
@@ -117,6 +117,11 @@ public:
   {
     return m_bCoefInterpolator;
   }
+
+  // get flux - not implemented
+  void getFlux(FArrayBox &a_flux, const FArrayBox &a_data,
+               const FArrayBox &b_data, const Box &a_facebox, 
+               int a_dir, int a_ref) const;
 
   //! Sets the time centering of the operator. This interpolates b coefficient
   //! data at the given time if an interpolator is set.

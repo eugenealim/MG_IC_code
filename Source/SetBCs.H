@@ -8,15 +8,15 @@
  */
 #endif
 
-#ifndef _BCLOCALFUNCS_H_
-#define _BCLOCALFUNCS_H_
+#ifndef _SETBCS_H_
+#define _SETBCS_H_
 
 #include <iostream>
 using std::cerr;
 
 #include "DisjointBoxLayout.H"
 #include "AMRMultiGrid.H"
-#include "HamiltonianPoissonOperator.H"
+#include "VariableCoeffPoissonOperator.H"
 #include "ParmParse.H"
 #include "FArrayBox.H"
 #include "UsingNamespace.H"

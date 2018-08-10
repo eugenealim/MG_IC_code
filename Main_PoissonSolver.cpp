@@ -9,13 +9,13 @@
 #endif
 
 #include "AMRIO.H"
-#include "BClocalFuncs.H"
+#include "SetBCs.H"
 #include "BRMeshRefine.H"
 #include "BiCGStabSolver.H"
 #include "DebugDump.H"
 #include "FABView.H"
 #include "FArrayBox.H"
-#include "HamiltonianPoissonOperatorFactory.H"
+#include "VariableCoeffPoissonOperatorFactory.H"
 #include "LevelData.H"
 #include "LoadBalance.H"
 #include "MultilevelLinearOp.H"

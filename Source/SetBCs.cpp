@@ -8,7 +8,7 @@
  */
 #endif
 
-#include "BClocalFuncs.H"
+#include "SetBCs.H"
 #include "AMRIO.H"
 #include "BCFunc.H"
 #include "BRMeshRefine.H"

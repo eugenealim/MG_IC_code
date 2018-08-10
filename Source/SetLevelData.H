@@ -16,8 +16,8 @@ using std::cerr;
 
 #include "DisjointBoxLayout.H"
 #include "AMRMultiGrid.H"
-#include "HamiltonianPoissonOperator.H"
-#include "HamiltonianPoissonOperatorFactory.H"
+#include "VariableCoeffPoissonOperator.H"
+#include "VariableCoeffPoissonOperatorFactory.H"
 #include "ParmParse.H"
 #include "PoissonParameters.H"
 #include "FArrayBox.H"

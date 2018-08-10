@@ -8,7 +8,7 @@
  */
 #endif
 
-#include "HamiltonianPoissonOperatorFactory.H"
+#include "VariableCoeffPoissonOperatorFactory.H"
 #include "AMRMultiGrid.H"
 #include "AMRPoissonOpF_F.H"
 #include "AverageF_F.H"
@@ -18,8 +18,8 @@
 #include "DebugOut.H"
 #include "FORT_PROTO.H"
 #include "FineInterp.H"
-#include "HamiltonianPoissonOperator.H"
-#include "HamiltonianPoissonOperatorF_F.H"
+#include "VariableCoeffPoissonOperator.H"
+#include "VariableCoeffPoissonOperatorF_F.H"
 #include "InterpF_F.H"
 #include "LayoutIterator.H"
 #include "Misc.H"
@@ -34,8 +34,8 @@ defineOperatorFactory(const Vector<DisjointBoxLayout> &a_grids,
                       const PoissonParameters &a_params) {
   ParmParse pp2;
 
-  HamiltonianPoissonOperatorFactory *opFactory =
-      new HamiltonianPoissonOperatorFactory;
+  VariableCoeffPoissonOperatorFactory *opFactory =
+      new VariableCoeffPoissonOperatorFactory;
 
   opFactory->define(a_params.coarsestDomain, a_grids, a_params.refRatio,
                     a_params.coarsestDx, &ParseBC, a_params.alpha, a_aCoef,
@@ -51,19 +51,19 @@ defineOperatorFactory(const Vector<DisjointBoxLayout> &a_grids,
 //-----------------------------------------------------------------------
 
 // Default constructor
-HamiltonianPoissonOperatorFactory::HamiltonianPoissonOperatorFactory() {
+VariableCoeffPoissonOperatorFactory::VariableCoeffPoissonOperatorFactory() {
   setDefaultValues();
 }
 
 //  AMR Factory define function
-void HamiltonianPoissonOperatorFactory::define(
+void VariableCoeffPoissonOperatorFactory::define(
     const ProblemDomain &a_coarseDomain,
     const Vector<DisjointBoxLayout> &a_grids, const Vector<int> &a_refRatios,
     const Real &a_coarsedx, BCHolder a_bc, const Real &a_alpha,
     Vector<RefCountedPtr<LevelData<FArrayBox>>> &a_aCoef, const Real &a_beta,
     Vector<RefCountedPtr<LevelData<FArrayBox>>> &a_bCoef) {
 
-  CH_TIME("HamiltonianPoissonOperatorFactory::define");
+  CH_TIME("VariableCoeffPoissonOperatorFactory::define");
 
   setDefaultValues();
 
@@ -109,7 +109,7 @@ void HamiltonianPoissonOperatorFactory::define(
 //-----------------------------------------------------------------------
 // AMR Factory define function, with coefficient data allocated automagically
 // for operators.
-void HamiltonianPoissonOperatorFactory::define(
+void VariableCoeffPoissonOperatorFactory::define(
     const ProblemDomain &a_coarseDomain,
     const Vector<DisjointBoxLayout> &a_grids, const Vector<int> &a_refRatios,
     const Real &a_coarsedx, BCHolder a_bc, const IntVect &a_ghostVect) {
@@ -137,10 +137,10 @@ void HamiltonianPoissonOperatorFactory::define(
 //-----------------------------------------------------------------------
 
 MGLevelOp<LevelData<FArrayBox>> *
-HamiltonianPoissonOperatorFactory::MGnewOp(const ProblemDomain &a_indexSpace,
+VariableCoeffPoissonOperatorFactory::MGnewOp(const ProblemDomain &a_indexSpace,
                                            int a_depth, bool a_homoOnly) {
 
-  CH_TIME("HamiltonianPoissonOperatorFactory::MGnewOp");
+  CH_TIME("VariableCoeffPoissonOperatorFactory::MGnewOp");
 
   Real dxCrse = -1.0;
 
@@ -167,7 +167,7 @@ HamiltonianPoissonOperatorFactory::MGnewOp(const ProblemDomain &a_indexSpace,
 
   if (coarsening > 1 &&
       !m_boxes[ref].coarsenable(coarsening *
-                                HamiltonianPoissonOperator::s_maxCoarse)) {
+                                VariableCoeffPoissonOperator::s_maxCoarse)) {
     return NULL;
   }
 
@@ -184,7 +184,7 @@ HamiltonianPoissonOperatorFactory::MGnewOp(const ProblemDomain &a_indexSpace,
     cfregion.coarsen(coarsening);
   }
 
-  HamiltonianPoissonOperator *newOp = new HamiltonianPoissonOperator;
+  VariableCoeffPoissonOperator *newOp = new VariableCoeffPoissonOperator;
 
   newOp->define(layout, dx, domain, m_bc, ex, cfregion);
 
@@ -219,7 +219,7 @@ HamiltonianPoissonOperatorFactory::MGnewOp(const ProblemDomain &a_indexSpace,
       averager_b.averageToCoarseHarmonic(*bCoef, *(m_bCoef[ref]));
     } else {
       MayDay::Abort(
-          "HamiltonianPoissonOperatorFactory::MGNewOp -- bad averagetype");
+          "VariableCoeffPoissonOperatorFactory::MGNewOp -- bad averagetype");
     }
 
     newOp->m_aCoef = aCoef;
@@ -234,10 +234,10 @@ HamiltonianPoissonOperatorFactory::MGnewOp(const ProblemDomain &a_indexSpace,
 }
 
 AMRLevelOp<LevelData<FArrayBox>> *
-HamiltonianPoissonOperatorFactory::AMRnewOp(const ProblemDomain &a_indexSpace) {
-  CH_TIME("HamiltonianPoissonOperatorFactory::AMRnewOp");
+VariableCoeffPoissonOperatorFactory::AMRnewOp(const ProblemDomain &a_indexSpace) {
+  CH_TIME("VariableCoeffPoissonOperatorFactory::AMRnewOp");
 
-  HamiltonianPoissonOperator *newOp = new HamiltonianPoissonOperator;
+  VariableCoeffPoissonOperator *newOp = new VariableCoeffPoissonOperator;
   Real dxCrse = -1.0;
 
   int ref;
@@ -294,7 +294,7 @@ HamiltonianPoissonOperatorFactory::AMRnewOp(const ProblemDomain &a_indexSpace) {
   return (AMRLevelOp<LevelData<FArrayBox>> *)newOp;
 }
 
-int HamiltonianPoissonOperatorFactory::refToFiner(
+int VariableCoeffPoissonOperatorFactory::refToFiner(
     const ProblemDomain &a_domain) const {
   int retval = -1;
   bool found = false;
@@ -314,7 +314,7 @@ int HamiltonianPoissonOperatorFactory::refToFiner(
 }
 
 //-----------------------------------------------------------------------
-void HamiltonianPoissonOperatorFactory::setDefaultValues() {
+void VariableCoeffPoissonOperatorFactory::setDefaultValues() {
   // Default to Laplacian operator
   m_alpha = 0.0;
   m_beta = -1.0;
@@ -323,10 +323,10 @@ void HamiltonianPoissonOperatorFactory::setDefaultValues() {
 //-----------------------------------------------------------------------
 
 //-----------------------------------------------------------------------
-void HamiltonianPoissonOperator::finerOperatorChanged(
+void VariableCoeffPoissonOperator::finerOperatorChanged(
     const MGLevelOp<LevelData<FArrayBox>> &a_operator, int a_coarseningFactor) {
-  const HamiltonianPoissonOperator &op =
-      dynamic_cast<const HamiltonianPoissonOperator &>(a_operator);
+  const VariableCoeffPoissonOperator &op =
+      dynamic_cast<const VariableCoeffPoissonOperator &>(a_operator);
 
   // Perform multigrid coarsening on the operator data.
   LevelData<FArrayBox> &acoefCoar = *m_aCoef;

@@ -8,7 +8,7 @@
  */
 #endif
 
-#include "HamiltonianPoissonOperator.H"
+#include "VariableCoeffPoissonOperator.H"
 #include "AMRMultiGrid.H"
 #include "AMRPoissonOpF_F.H"
 #include "AverageF_F.H"
@@ -18,25 +18,28 @@
 #include "DebugOut.H"
 #include "FORT_PROTO.H"
 #include "FineInterp.H"
-#include "HamiltonianPoissonOperatorF_F.H"
+#include "VariableCoeffPoissonOperatorF_F.H"
 #include "InterpF_F.H"
 #include "LayoutIterator.H"
 #include "Misc.H"
 
 #include "NamespaceHeader.H"
 
-void HamiltonianPoissonOperator::residualI(LevelData<FArrayBox> &a_lhs,
+
+// This file implements the key functions for the multi grid methods
+
+void VariableCoeffPoissonOperator::residualI(LevelData<FArrayBox> &a_lhs,
                                            const LevelData<FArrayBox> &a_dpsi,
                                            const LevelData<FArrayBox> &a_rhs,
                                            bool a_homogeneous) {
-  CH_TIME("HamiltonianPoissonOperator::residualI");
+  CH_TIME("VariableCoeffPoissonOperator::residualI");
 
   LevelData<FArrayBox> &dpsi = (LevelData<FArrayBox> &)a_dpsi;
   Real dx = m_dx;
   const DisjointBoxLayout &dbl = a_lhs.disjointBoxLayout();
   DataIterator dit = dpsi.dataIterator();
   {
-    CH_TIME("HamiltonianPoissonOperator::residualIBC");
+    CH_TIME("VariableCoeffPoissonOperator::residualIBC");
 
     for (dit.begin(); dit.ok(); ++dit) {
       m_bc(dpsi[dit], dbl[dit()], m_domain, dx, a_homogeneous);
@@ -64,13 +67,12 @@ void HamiltonianPoissonOperator::residualI(LevelData<FArrayBox> &a_lhs,
   } // end loop over boxes
 }
 
-/**************************/
 // this preconditioner first initializes dpsihat to (IA)dpsihat = rhshat
 // (diagonization of L -- A is the matrix version of L)
 // then smooths with a couple of passes of levelGSRB
-void HamiltonianPoissonOperator::preCond(LevelData<FArrayBox> &a_dpsi,
+void VariableCoeffPoissonOperator::preCond(LevelData<FArrayBox> &a_dpsi,
                                          const LevelData<FArrayBox> &a_rhs) {
-  CH_TIME("HamiltonianPoissonOperator::preCond");
+  CH_TIME("VariableCoeffPoissonOperator::preCond");
 
   // diagonal term of this operator in:
   //
@@ -102,10 +104,10 @@ void HamiltonianPoissonOperator::preCond(LevelData<FArrayBox> &a_dpsi,
   relax(a_dpsi, a_rhs, 2);
 }
 
-void HamiltonianPoissonOperator::applyOpI(LevelData<FArrayBox> &a_lhs,
+void VariableCoeffPoissonOperator::applyOpI(LevelData<FArrayBox> &a_lhs,
                                           const LevelData<FArrayBox> &a_dpsi,
                                           bool a_homogeneous) {
-  CH_TIME("HamiltonianPoissonOperator::applyOpI");
+  CH_TIME("VariableCoeffPoissonOperator::applyOpI");
   LevelData<FArrayBox> &dpsi = (LevelData<FArrayBox> &)a_dpsi;
   Real dx = m_dx;
   const DisjointBoxLayout &dbl = a_lhs.disjointBoxLayout();
@@ -118,9 +120,9 @@ void HamiltonianPoissonOperator::applyOpI(LevelData<FArrayBox> &a_lhs,
   applyOpNoBoundary(a_lhs, a_dpsi);
 }
 
-void HamiltonianPoissonOperator::applyOpNoBoundary(
+void VariableCoeffPoissonOperator::applyOpNoBoundary(
     LevelData<FArrayBox> &a_lhs, const LevelData<FArrayBox> &a_dpsi) {
-  CH_TIME("HamiltonianPoissonOperator::applyOpNoBoundary");
+  CH_TIME("VariableCoeffPoissonOperator::applyOpNoBoundary");
 
   LevelData<FArrayBox> &dpsi = (LevelData<FArrayBox> &)a_dpsi;
 
@@ -147,10 +149,10 @@ void HamiltonianPoissonOperator::applyOpNoBoundary(
   } // end loop over boxes
 }
 
-void HamiltonianPoissonOperator::restrictResidual(
+void VariableCoeffPoissonOperator::restrictResidual(
     LevelData<FArrayBox> &a_resCoarse, LevelData<FArrayBox> &a_dpsiFine,
     const LevelData<FArrayBox> &a_rhsFine) {
-  CH_TIME("HamiltonianPoissonOperator::restrictResidual");
+  CH_TIME("VariableCoeffPoissonOperator::restrictResidual");
 
   homogeneousCFInterp(a_dpsiFine);
   const DisjointBoxLayout &dblFine = a_dpsiFine.disjointBoxLayout();
@@ -192,7 +194,7 @@ void HamiltonianPoissonOperator::restrictResidual(
   }
 }
 
-void HamiltonianPoissonOperator::setAlphaAndBeta(const Real &a_alpha,
+void VariableCoeffPoissonOperator::setAlphaAndBeta(const Real &a_alpha,
                                                  const Real &a_beta) {
   m_alpha = a_alpha;
   m_beta = a_beta;
@@ -201,7 +203,7 @@ void HamiltonianPoissonOperator::setAlphaAndBeta(const Real &a_alpha,
   m_lambdaNeedsResetting = true;
 }
 
-void HamiltonianPoissonOperator::setCoefs(
+void VariableCoeffPoissonOperator::setCoefs(
     const RefCountedPtr<LevelData<FArrayBox>> &a_aCoef,
     const RefCountedPtr<LevelData<FArrayBox>> &a_bCoef, const Real &a_alpha,
     const Real &a_beta) {
@@ -216,7 +218,7 @@ void HamiltonianPoissonOperator::setCoefs(
   m_lambdaNeedsResetting = true;
 }
 
-void HamiltonianPoissonOperator::resetLambda() {
+void VariableCoeffPoissonOperator::resetLambda() {
 
   if (m_lambdaNeedsResetting) {
 
@@ -233,7 +235,9 @@ void HamiltonianPoissonOperator::resetLambda() {
       lambdaFab.copy(aCoefFab);
       lambdaFab.mult(m_alpha);
 
-      // EUGENE: Add in the Laplacian term 6.0*m_beta/(m_dx*m_dx)
+      // Add in the Laplacian term 6.0*m_beta/(m_dx*m_dx)
+      // KC TODO: Should implement other adjustments for NL terms, 
+      // but appears to converge without
       lambdaFab.plus(2.0 * SpaceDim * m_beta / (m_dx * m_dx));
 
       // Take its reciprocal
@@ -246,8 +250,8 @@ void HamiltonianPoissonOperator::resetLambda() {
 }
 
 // Compute the reciprocal of the diagonal entry of the operator matrix
-void HamiltonianPoissonOperator::computeLambda() {
-  CH_TIME("HamiltonianPoissonOperator::computeLambda");
+void VariableCoeffPoissonOperator::computeLambda() {
+  CH_TIME("VariableCoeffPoissonOperator::computeLambda");
 
   CH_assert(!m_lambda.isDefined());
 
@@ -256,96 +260,20 @@ void HamiltonianPoissonOperator::computeLambda() {
   resetLambda();
 }
 
-// KC TODO: Don't need this any more?
-// reflux operator
-void HamiltonianPoissonOperator::reflux(
+// NB This was removed as we do not need it - may want to reinstate, if so see 
+// MG examples for reflux operator
+void VariableCoeffPoissonOperator::reflux(
     const LevelData<FArrayBox> &a_dpsiFine, const LevelData<FArrayBox> &a_dpsi,
     LevelData<FArrayBox> &a_residual,
-    AMRLevelOp<LevelData<FArrayBox>> *a_finerOp) {}
-/*
-  CH_TIMERS("HamiltonianPoissonOperator::reflux");
+    AMRLevelOp<LevelData<FArrayBox>> *a_finerOp) {
 
-  m_levfluxreg.setToZero();
-  Interval interv(0, a_dpsi.nComp() - 1);
+  MayDay::Abort("VariableCoeffPoissonOperator::reflux - Not implemented");
 
-  CH_TIMER("HamiltonianPoissonOperator::reflux::incrementCoarse", t2);
-  CH_START(t2);
-
-  DataIterator dit = a_dpsi.dataIterator();
-  for (dit.reset(); dit.ok(); ++dit) {
-    const FArrayBox &coarfab = a_dpsi[dit];
-    const FluxBox &coarBCoef = (*m_bCoef)[dit];
-    const Box &gridBox = a_dpsi.getBoxes()[dit];
-
-    if (m_levfluxreg.hasCF(dit())) {
-      for (int idir = 0; idir < SpaceDim; idir++) {
-        FArrayBox coarflux;
-        Box faceBox = surroundingNodes(gridBox, idir);
-
-        getFlux(coarflux, coarfab, coarBCoef, faceBox, idir);
-
-        Real scale = 1.0;
-        m_levfluxreg.incrementCoarse(coarflux, scale, dit(), interv, interv,
-                                     idir);
-      }
-    }
-  }
-
-  CH_STOP(t2);
-
-  // const cast:  OK because we're changing ghost cells only
-  LevelData<FArrayBox> &dpsiFineRef = (LevelData<FArrayBox> &)a_dpsiFine;
-
-  HamiltonianPoissonOperator *finerAMRPOp =
-      (HamiltonianPoissonOperator *)a_finerOp;
-  QuadCFInterp &quadCFI = finerAMRPOp->m_interpWithCoarser;
-
-  quadCFI.coarseFineInterp(dpsiFineRef, a_dpsi);
-  // I'm pretty sure this is not necessary. bvs -- flux calculations use
-  // outer ghost cells, but not inner ones
-  // dpsiFineRef.exchange(a_dpsiFine.interval());
-  IntVect dpsiGhost = dpsiFineRef.ghostVect();
-  int ncomps = a_dpsiFine.nComp();
-
-  CH_TIMER("HamiltonianPoissonOperator::reflux::incrementFine", t3);
-  CH_START(t3);
-
-  DataIterator ditf = a_dpsiFine.dataIterator();
-  const DisjointBoxLayout &dblFine = a_dpsiFine.disjointBoxLayout();
-  for (ditf.reset(); ditf.ok(); ++ditf) {
-    const FArrayBox &dpsifFab = a_dpsiFine[ditf];
-    const FluxBox &fineBCoef = (*(finerAMRPOp->m_bCoef))[ditf];
-    const Box &gridbox = dblFine.get(ditf());
-
-    for (int idir = 0; idir < SpaceDim; idir++) {
-      // int normalGhost = dpsiGhost[idir];
-      SideIterator sit;
-      for (sit.begin(); sit.ok(); sit.next()) {
-        if (m_levfluxreg.hasCF(ditf(), sit())) {
-          Side::LoHiSide hiorlo = sit();
-          Box fluxBox = bdryBox(gridbox, idir, hiorlo, 1);
-
-          FArrayBox fineflux(fluxBox, ncomps);
-          getFlux(fineflux, dpsifFab, fineBCoef, fluxBox, idir, m_refToFiner);
-
-          Real scale = 1.0;
-          m_levfluxreg.incrementFine(fineflux, scale, ditf(), interv, interv,
-                                     idir, hiorlo);
-        }
-      }
-    }
-  }
-
-  CH_STOP(t3);
-
-  Real scale = 1.0 / m_dx;
-  m_levfluxreg.reflux(a_residual, scale);
 }
-*/
 
-void HamiltonianPoissonOperator::levelGSRB(LevelData<FArrayBox> &a_dpsi,
+void VariableCoeffPoissonOperator::levelGSRB(LevelData<FArrayBox> &a_dpsi,
                                            const LevelData<FArrayBox> &a_rhs) {
-  CH_TIME("HamiltonianPoissonOperator::levelGSRB");
+  CH_TIME("VariableCoeffPoissonOperator::levelGSRB");
 
   CH_assert(a_dpsi.isDefined());
   CH_assert(a_rhs.isDefined());
@@ -361,21 +289,21 @@ void HamiltonianPoissonOperator::levelGSRB(LevelData<FArrayBox> &a_dpsi,
 
   // do first red, then black passes
   for (int whichPass = 0; whichPass <= 1; whichPass++) {
-    CH_TIMERS("HamiltonianPoissonOperator::levelGSRB::Compute");
+    CH_TIMERS("VariableCoeffPoissonOperator::levelGSRB::Compute");
 
     // fill in intersection of ghostcells and a_dpsi's boxes
     {
-      CH_TIME("HamiltonianPoissonOperator::levelGSRB::homogeneousCFInterp");
+      CH_TIME("VariableCoeffPoissonOperator::levelGSRB::homogeneousCFInterp");
       homogeneousCFInterp(a_dpsi);
     }
 
     {
-      CH_TIME("HamiltonianPoissonOperator::levelGSRB::exchange");
+      CH_TIME("VariableCoeffPoissonOperator::levelGSRB::exchange");
       a_dpsi.exchange(a_dpsi.interval(), m_exchangeCopier);
     }
 
     {
-      CH_TIME("HamiltonianPoissonOperator::levelGSRB::BCs");
+      CH_TIME("VariableCoeffPoissonOperator::levelGSRB::BCs");
       // now step through grids...
       for (dit.begin(); dit.ok(); ++dit) {
         // invoke physical BC's where necessary
@@ -404,35 +332,35 @@ void HamiltonianPoissonOperator::levelGSRB(LevelData<FArrayBox> &a_dpsi,
   }   // end loop through red-black
 }
 
-void HamiltonianPoissonOperator::levelMultiColor(
+void VariableCoeffPoissonOperator::levelMultiColor(
     LevelData<FArrayBox> &a_dpsi, const LevelData<FArrayBox> &a_rhs) {
-  CH_TIME("HamiltonianPoissonOperator::levelMultiColor");
+  CH_TIME("VariableCoeffPoissonOperator::levelMultiColor");
   MayDay::Abort(
-      "HamiltonianPoissonOperator::levelMultiColor - Not implemented");
+      "VariableCoeffPoissonOperator::levelMultiColor - Not implemented");
 }
 
-void HamiltonianPoissonOperator::looseGSRB(LevelData<FArrayBox> &a_dpsi,
+void VariableCoeffPoissonOperator::looseGSRB(LevelData<FArrayBox> &a_dpsi,
                                            const LevelData<FArrayBox> &a_rhs) {
-  CH_TIME("HamiltonianPoissonOperator::looseGSRB");
-  MayDay::Abort("HamiltonianPoissonOperator::looseGSRB - Not implemented");
+  CH_TIME("VariableCoeffPoissonOperator::looseGSRB");
+  MayDay::Abort("VariableCoeffPoissonOperator::looseGSRB - Not implemented");
 }
 
-void HamiltonianPoissonOperator::overlapGSRB(
+void VariableCoeffPoissonOperator::overlapGSRB(
     LevelData<FArrayBox> &a_dpsi, const LevelData<FArrayBox> &a_rhs) {
-  CH_TIME("HamiltonianPoissonOperator::overlapGSRB");
-  MayDay::Abort("HamiltonianPoissonOperator::overlapGSRB - Not implemented");
+  CH_TIME("VariableCoeffPoissonOperator::overlapGSRB");
+  MayDay::Abort("VariableCoeffPoissonOperator::overlapGSRB - Not implemented");
 }
 
-void HamiltonianPoissonOperator::levelGSRBLazy(
+void VariableCoeffPoissonOperator::levelGSRBLazy(
     LevelData<FArrayBox> &a_dpsi, const LevelData<FArrayBox> &a_rhs) {
-  CH_TIME("HamiltonianPoissonOperator::levelGSRBLazy");
-  MayDay::Abort("HamiltonianPoissonOperator::levelGSRBLazy - Not implemented");
+  CH_TIME("VariableCoeffPoissonOperator::levelGSRBLazy");
+  MayDay::Abort("VariableCoeffPoissonOperator::levelGSRBLazy - Not implemented");
 }
 
-void HamiltonianPoissonOperator::levelJacobi(
+void VariableCoeffPoissonOperator::levelJacobi(
     LevelData<FArrayBox> &a_dpsi, const LevelData<FArrayBox> &a_rhs) {
 
-  CH_TIME("HamiltonianPoissonOperator::levelJacobi");
+  CH_TIME("VariableCoeffPoissonOperator::levelJacobi");
 
   // Recompute the relaxation coefficient if needed.
   resetLambda();
@@ -456,59 +384,20 @@ void HamiltonianPoissonOperator::levelJacobi(
   a_dpsi.exchange(a_dpsi.interval(), m_exchangeCopier);
 }
 
-// KC TODO: Think we don't need this any more
-/*
-void HamiltonianPoissonOperator::getFlux(FArrayBox &a_flux,
+// Removed as only needed for fluxes, may need to reinstate in future,
+// if so see MG examples
+void VariableCoeffPoissonOperator::getFlux(FArrayBox &a_flux,
                                          const FArrayBox &a_data,
                                          const FArrayBox &b_data,
                                          const Box &a_facebox, int a_dir,
                                          int a_ref) const {
 
-  CH_TIME("HamiltonianPoissonOperator::getFlux");
+  MayDay::Abort("VariableCoeffPoissonOperator::getFlux - Not implemented");
 
-  CH_assert(a_dir >= 0);
-  CH_assert(a_dir < SpaceDim);
-  CH_assert(!a_data.box().isEmpty());
-  CH_assert(!a_facebox.isEmpty());
-
-  // probably the simplest way to test centering
-  // a_box needs to be face-centered in the a_dir
-  Box faceTestBox(IntVect::Zero, IntVect::Unit);
-  faceTestBox.surroundingNodes(a_dir);
-  CH_assert(a_facebox.type() == faceTestBox.type());
-
-  const FArrayBox &bCoefDir = a_bCoef[a_dir];
-
-  // reality check for bCoef
-  CH_assert(bCoefDir.box().contains(a_facebox));
-
-  a_flux.resize(a_facebox, a_data.nComp());
-  BoxIterator bit(a_facebox);
-
-  Real scale = m_beta * a_ref / m_dx;
-
-  for (bit.begin(); bit.ok(); bit.next()) {
-    IntVect iv = bit();
-    IntVect shiftiv = BASISV(a_dir);
-    IntVect ivlo = iv - shiftiv;
-    IntVect ivhi = iv;
-
-    CH_assert(a_data.box().contains(ivlo));
-    CH_assert(a_data.box().contains(ivhi));
-
-    for (int ivar = 0; ivar < a_data.nComp(); ivar++) {
-      Real dpsihi = a_data(ivhi, ivar);
-      Real dpsilo = a_data(ivlo, ivar);
-      Real graddpsi = (dpsihi - dpsilo) * scale;
-
-      a_flux(iv, ivar) = -bCoefDir(iv, ivar) * graddpsi;
-    }
-  }
 }
-*/
 
-//-----------------------------------------------------------------------
-void HamiltonianPoissonOperator::setTime(Real a_time) {
+// set the time
+void VariableCoeffPoissonOperator::setTime(Real a_time) {
   // Jot down the time.
   m_time = a_time;
 
