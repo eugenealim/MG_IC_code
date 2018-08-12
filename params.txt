@@ -2,22 +2,22 @@
 # alpha*aCoef(x)*I - beta*bCoef(x) * laplacian = rhs
 
 # spatially-varying aCoef and bCoef are set in the example itself
+# see SetLevelData.cpp, we expect alpha = 1 and beta = -1
 # (for pure laplacian, alpha = 0, beta=-1)
 alpha = 1.0
 beta  = -1.0
 
 # Threshold for AMR refinement, based on magnitude of rhs
-refine_threshold = 0.85
+refine_threshold = 0.8
 
 # AMR grid params 
+L = 100.0
+N = 64 64 64
 max_level    = 4
-ref_ratio    = 2 2 2 2 2 
-n_cells      = 64 64 64
 block_factor = 16
 fill_ratio   = 0.7
 max_grid_size = 16
 buffer_size  = 2
-domain_length = 100.0 100.0 100.0
 
 # Setup multigrid params
 numMGsmooth = 4 # number of GSRB smooths before and after MG coarsening
@@ -25,7 +25,7 @@ numMGsmooth = 4 # number of GSRB smooths before and after MG coarsening
 num_mg     = 1 
 numMGIterations = 2 #this is the number of MG v-cycles in the preconditioner
 max_iterations = 100 #max number of solver iterations
-max_NL_iterations = 2 #non linear outside loop iterations
+max_NL_iterations = 5 #non linear outside loop iterations
 tolerance  = 1.0e-10  #solver tolerance for declaring convergence
 hang       = 1.0e-11  #solver tolerance for deciding when we're hung
 verbosity = 1 # higher number means more verbose output

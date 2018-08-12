@@ -61,10 +61,8 @@ void ParseBC(FArrayBox &a_state, const Box &a_valid,
 
     for (int i = 0; i < CH_SPACEDIM; ++i) {
 
-      // periodic?
+      // periodic? If not, check if Dirichlet or Neumann
       if (!a_domain.isPeriodic(i)) {
-        // periodic?
-
         Box ghostBoxLo = adjCellBox(valid, i, Side::Lo, 1);
         Box ghostBoxHi = adjCellBox(valid, i, Side::Hi, 1);
         if (!a_domain.domainBox().contains(ghostBoxLo)) {

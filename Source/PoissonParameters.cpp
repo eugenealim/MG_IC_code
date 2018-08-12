@@ -22,23 +22,11 @@
 #include "parstream.H"
 #include <cmath>
 
+// function to read in the key params for solver
 void getPoissonParameters(PoissonParameters &a_params) {
   ParmParse pp;
 
-  std::vector<int> nCellsArray(SpaceDim);
-  pp.getarr("n_cells", nCellsArray, 0, SpaceDim);
-
-  for (int idir = 0; idir < SpaceDim; idir++) {
-    a_params.nCells[idir] = nCellsArray[idir];
-  }
-
-  Vector<int> is_periodic(SpaceDim, false);
-  pp.queryarr("periodic", is_periodic, 0, SpaceDim);
-
-  pp.get("refine_threshold", a_params.refineThresh);
-  pp.get("block_factor", a_params.blockFactor);
-  pp.get("fill_ratio", a_params.fillRatio);
-  pp.get("buffer_size", a_params.bufferSize);
+  // problem specific params
   pp.get("alpha", a_params.alpha);
   pp.get("beta", a_params.beta);
   pp.get("G_Newton", a_params.G_Newton);
@@ -54,6 +42,39 @@ void getPoissonParameters(PoissonParameters &a_params) {
   // correctly
   pout() << "alpha, beta = " << a_params.alpha << ", " << a_params.beta << endl;
 
+  // Set verbosity
+  a_params.verbosity = 3;
+  pp.query("verbosity", a_params.verbosity);
+
+  // Chombo grid params
+  pp.get("max_level", a_params.maxLevel);
+  a_params.numLevels = a_params.maxLevel + 1;
+  std::vector<int> nCellsArray(SpaceDim);
+  pp.getarr("N", nCellsArray, 0, SpaceDim);
+  for (int idir = 0; idir < SpaceDim; idir++) {
+    a_params.nCells[idir] = nCellsArray[idir];
+  }
+  // Enforce that dx is same in every directions
+  // and that ref_ratio = 2 always as these conditions
+  // are required in several places in our code
+  for (int ilev = 0; ilev < a_params.numLevels; ilev++) {
+    a_params.refRatio[ilev] = 2;
+  }
+  Real domain_length;
+  pp.get("L", domain_length);
+  a_params.coarsestDx = domain_length / a_params.nCells[0];
+  for (int idir = 0; idir < SpaceDim; idir++) {
+    a_params.domainLength[idir] = a_params.coarsestDx * a_params.nCells[idir];
+  }
+
+  // Chombo refinement and load balancing criteria
+  pp.get("refine_threshold", a_params.refineThresh);
+  pp.get("block_factor", a_params.blockFactor);
+  pp.get("max_grid_size", a_params.maxGridSize);
+  pp.get("fill_ratio", a_params.fillRatio);
+  pp.get("buffer_size", a_params.bufferSize);
+
+  // set average type -
   // set to a bogus default value, so we only break from solver
   // default if it's set to something real
   a_params.coefficient_average_type = -1;
@@ -69,44 +90,30 @@ void getPoissonParameters(PoissonParameters &a_params) {
     }
   } // end if an average_type is present in inputs
 
-  pp.get("max_level", a_params.maxLevel);
-  a_params.numLevels = a_params.maxLevel + 1;
-  pp.getarr("ref_ratio", a_params.refRatio, 0, a_params.numLevels);
-  a_params.verbosity = 3;
-  pp.query("verbosity", a_params.verbosity);
-
+  // set up coarse domain box
   IntVect lo = IntVect::Zero;
   IntVect hi = a_params.nCells;
   hi -= IntVect::Unit;
-
   Box crseDomBox(lo, hi);
 
-  // Eugene : let's read in the periodic info first, implement later
-  //  bool is_periodic[SpaceDim];
+  // Periodicity - bool is_periodic[SpaceDim];
+  Vector<int> is_periodic(SpaceDim, false);
+  pp.queryarr("periodic", is_periodic, 0, SpaceDim);
+  // is_periodic_int defines type of BC if not periodic
   Vector<int> is_periodic_int;
   pp.getarr("is_periodic", is_periodic_int, 0, SpaceDim);
   for (int dir = 0; dir < SpaceDim; dir++) {
     is_periodic[dir] = (is_periodic_int[dir] == 1);
   }
   a_params.periodic = is_periodic_int;
-
+  // set this on coarsest level
   ProblemDomain crseDom(crseDomBox);
   for (int dir = 0; dir < SpaceDim; dir++) {
     crseDom.setPeriodic(dir, is_periodic[dir]);
   }
   a_params.coarsestDomain = crseDom;
 
-  std::vector<Real> dLArray(SpaceDim);
-  pp.getarr("domain_length", dLArray, 0, SpaceDim);
-  for (int idir = 0; idir < SpaceDim; idir++) {
-    a_params.domainLength[idir] = dLArray[idir];
-  }
-
-  pp.get("max_grid_size", a_params.maxGridSize);
-
   // derived stuff
-  a_params.coarsestDx = a_params.domainLength[0] / a_params.nCells[0];
-
   a_params.probLo = RealVect::Zero;
   a_params.probHi = RealVect::Zero;
   a_params.probHi += a_params.domainLength;

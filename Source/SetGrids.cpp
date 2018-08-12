@@ -16,11 +16,11 @@
 #include "BoxIterator.H"
 #include "CONSTANTS.H"
 #include "CoarseAverage.H"
-#include "VariableCoeffPoissonOperatorFactory.H"
 #include "LoadBalance.H"
 #include "PoissonParameters.H"
 #include "SetLevelData.H"
 #include "UsingNamespace.H"
+#include "VariableCoeffPoissonOperatorFactory.H"
 #include "computeNorm.H"
 #include "parstream.H"
 #include <cmath>

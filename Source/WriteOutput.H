@@ -1,3 +1,8 @@
+/* GRChombo
+ * Copyright 2012 The GRChombo collaboration.
+ * Please refer to LICENSE in GRChombo's root directory.
+ */
+
 #ifdef CH_LANG_CC
 /*
  *      _______              __
@@ -41,7 +46,8 @@ static void enableFpExceptions();
 
 using std::cerr;
 
-/***************/
+/// This function outputs the variable data during the solver updates
+/// which helps to check convergence and debug
 void output_solver_data(const Vector<LevelData<FArrayBox>* >&   a_dpsi,
                       const Vector<LevelData<FArrayBox>* >&   a_psi,
                       const Vector<LevelData<FArrayBox>* >&   a_phi,
@@ -76,7 +82,7 @@ void output_solver_data(const Vector<LevelData<FArrayBox>* >&   a_dpsi,
     variable_names[2] = "phi";
     variable_names[3] = "rhs";
 
-
+    // check the domain sizes are the same
     CH_assert(a_dpsi.size() == a_rhs.size());
     CH_assert(a_dpsi.size() == a_phi.size());
     CH_assert(a_dpsi.size() == a_psi.size());
@@ -99,8 +105,7 @@ void output_solver_data(const Vector<LevelData<FArrayBox>* >&   a_dpsi,
                              *tempData[level], rhsComps);
       }
 
-
-    Real fakeTime = 0.0;
+    Real fakeTime = iter * 1.0;
     Real fakeDt = 1.0;
     WriteAMRHierarchyHDF5(fileName, a_grids,
                           tempData, variable_names,
@@ -112,20 +117,22 @@ void output_solver_data(const Vector<LevelData<FArrayBox>* >&   a_dpsi,
 
     // clean up temporary storage
     for (int level=0; level<a_dpsi.size(); level++)
-      {
-        delete tempData[level];
-        tempData[level] = NULL;
-      }
+    {
+      delete tempData[level];
+      tempData[level] = NULL;
+    }
 #endif
 
 }
 
+/// This function outputs the final data after the solver is finished
+/// in a format that GRChombo can read in for an AMRTimeDependent run
 void output_final_data( const Vector<LevelData<FArrayBox>* >&   a_psi,
-                      const Vector<LevelData<FArrayBox>* >&   a_phi,
-                      const Vector< DisjointBoxLayout >&      a_grids,
-                      const Vector<RealVect>&               a_vectDx,
-                      const Vector<ProblemDomain>&          a_vectDomains,
-                      const PoissonParameters&              a_params)
+                        const Vector<LevelData<FArrayBox>* >&   a_phi,
+                        const Vector< DisjointBoxLayout >&      a_grids,
+                        const Vector<RealVect>&               a_vectDx,
+                        const Vector<ProblemDomain>&          a_vectDomains,
+                        const PoissonParameters&              a_params)
 {
 #ifdef CH_USE_HDF5
 
@@ -221,6 +228,5 @@ void output_final_data( const Vector<LevelData<FArrayBox>* >&   a_psi,
 #endif
 
 }
-
 
 #endif

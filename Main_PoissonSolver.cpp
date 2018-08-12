@@ -1,29 +1,24 @@
-#ifdef CH_LANG_CC
-/*
- *      _______              __
- *     / ___/ /  ___  __ _  / /  ___
- *    / /__/ _ \/ _ \/  V \/ _ \/ _ \
- *    \___/_//_/\___/_/_/_/_.__/\___/
- *    Please refer to Copyright.txt, in Chombo's root directory.
+/* GRChombo
+ * Copyright 2012 The GRChombo collaboration.
+ * Please refer to LICENSE in GRChombo's root directory.
  */
-#endif
 
 #include "AMRIO.H"
-#include "SetBCs.H"
 #include "BRMeshRefine.H"
 #include "BiCGStabSolver.H"
 #include "DebugDump.H"
 #include "FABView.H"
 #include "FArrayBox.H"
-#include "VariableCoeffPoissonOperatorFactory.H"
 #include "LevelData.H"
 #include "LoadBalance.H"
 #include "MultilevelLinearOp.H"
 #include "ParmParse.H"
 #include "PoissonParameters.H"
+#include "SetBCs.H"
 #include "SetGrids.H"
 #include "SetLevelData.H"
 #include "UsingNamespace.H"
+#include "VariableCoeffPoissonOperatorFactory.H"
 #include "WriteOutput.H"
 #include "computeNorm.H"
 #include <iostream>
@@ -45,33 +40,44 @@ using std::cerr;
 // We assume conformal flatness, K=const and Momentum constraint satisfied
 // trivially  lapse = 1 shift = 0, phi is the scalar field and is used to
 // calculate the rhs
-int poissonSolve(Vector<LevelData<FArrayBox> *> &a_dpsi,
-                 Vector<LevelData<FArrayBox> *> &a_psi,
-                 Vector<LevelData<FArrayBox> *> &a_phi,
-                 Vector<LevelData<FArrayBox> *> &a_rhs,
-                 const Vector<DisjointBoxLayout> &a_grids,
+int poissonSolve(const Vector<DisjointBoxLayout> &a_grids,
                  const PoissonParameters &a_params) {
+
+  // the params reader
   ParmParse pp;
 
+  // create the necessary hierarchy of data components
   int nlevels = a_params.numLevels;
-  Vector<RefCountedPtr<LevelData<FArrayBox>>> aCoef(nlevels);
-  Vector<RefCountedPtr<LevelData<FArrayBox>>> bCoef(nlevels);
-  Vector<ProblemDomain> vectDomains(nlevels);
-  Vector<RealVect> vectDx(nlevels);
+  Vector<LevelData<FArrayBox> *> dpsi(
+      nlevels, NULL); // the correction to the conformal factor
+  Vector<LevelData<FArrayBox> *> rhs(nlevels, NULL); // rhs
+  Vector<LevelData<FArrayBox> *> psi(nlevels, NULL); // the conformal factor
+  Vector<LevelData<FArrayBox> *> phi(nlevels, NULL); // scalar field
+  Vector<RefCountedPtr<LevelData<FArrayBox>>> aCoef(
+      nlevels); // the coeff for the I term
+  Vector<RefCountedPtr<LevelData<FArrayBox>>> bCoef(
+      nlevels);                               // the coeff for the Laplacian
+  Vector<ProblemDomain> vectDomains(nlevels); // the domains
+  Vector<RealVect> vectDx(nlevels);           // the grid spacings on each level
 
+  // Set temp vars at coarsest level values
   RealVect dxLev = RealVect::Unit;
   dxLev *= a_params.coarsestDx;
   ProblemDomain domLev(a_params.coarsestDomain);
 
-  // Declare variables here, with num comps = 1 and ghosts for sources
-  // want output data to have 3 ghost cells to match GRChombo, although
-  // not currently needed for 2nd order stencils used here
+  // Declare variables here, with num comps = 3 and ghosts for all
+  // sources NB - we want output data to have 3 ghost cells to match GRChombo,
+  // although not currently needed for 2nd order stencils used here
   for (int ilev = 0; ilev < nlevels; ilev++) {
     IntVect ghosts = 3 * IntVect::Unit;
-    a_rhs[ilev] = new LevelData<FArrayBox>(a_grids[ilev], 1, IntVect::Zero);
-    a_dpsi[ilev] = new LevelData<FArrayBox>(a_grids[ilev], 1, ghosts);
-    a_psi[ilev] = new LevelData<FArrayBox>(a_grids[ilev], 1, ghosts);
-    a_phi[ilev] = new LevelData<FArrayBox>(a_grids[ilev], 1, ghosts);
+    dpsi[ilev]  = RefCountedPtr<LevelData<FArrayBox>>(
+        new LevelData<FArrayBox>(a_grids[ilev], 1, ghosts));
+    psi[ilev]   = RefCountedPtr<LevelData<FArrayBox>>(
+        new LevelData<FArrayBox>(a_grids[ilev], 1, ghosts));
+    phi[ilev]   = RefCountedPtr<LevelData<FArrayBox>>(
+        new LevelData<FArrayBox>(a_grids[ilev], 1, ghosts));
+    rhs[ilev]   = RefCountedPtr<LevelData<FArrayBox>>(
+        new LevelData<FArrayBox>(a_grids[ilev], 1, IntVect::Zero));
     aCoef[ilev] = RefCountedPtr<LevelData<FArrayBox>>(
         new LevelData<FArrayBox>(a_grids[ilev], 1, IntVect::Zero));
     bCoef[ilev] = RefCountedPtr<LevelData<FArrayBox>>(
@@ -79,13 +85,13 @@ int poissonSolve(Vector<LevelData<FArrayBox> *> &a_dpsi,
     vectDomains[ilev] = domLev;
     vectDx[ilev] = dxLev;
 
-    // set initial guess for psi and zero the difference
-    set_initial_psi(*a_psi[ilev], *a_dpsi[ilev], vectDx[ilev], a_params);
+    // set initial guess for psi and zero dpsi
+    set_initial_psi(*psi[ilev], *dpsi[ilev], vectDx[ilev], a_params);
 
-    // set source - scalar field
-    set_initial_phi(*a_phi[ilev], vectDx[ilev], a_params);
+    // set source - scalar field - see SetLevelData.cpp
+    set_initial_phi(*phi[ilev], vectDx[ilev], a_params);
 
-    // prepare dx, domain for next level
+    // prepare temp dx, domain vars for next level
     dxLev /= a_params.refRatio[ilev];
     domLev.refine(a_params.refRatio[ilev]);
   }
@@ -93,7 +99,9 @@ int poissonSolve(Vector<LevelData<FArrayBox> *> &a_dpsi,
   // set up linear operator
   int lBase = 0;
   MultilevelLinearOp<FArrayBox> mlOp;
+  BiCGStabSolver<Vector<LevelData<FArrayBox> *>> solver; // define solver object
 
+  // default or read in solver params
   int numMGIter = 1;
   pp.query("numMGIterations", numMGIter);
   mlOp.m_num_mg_iterations = numMGIter;
@@ -112,36 +120,35 @@ int poissonSolve(Vector<LevelData<FArrayBox> *> &a_dpsi,
   int max_iter = 10;
   pp.query("max_iterations", max_iter);
 
-  BiCGStabSolver<Vector<LevelData<FArrayBox> *>> solver; // define solver object
-
-  // Main loop
-  int NL_iter = 0;
-  int max_NL_iter = 1;
+  int max_NL_iter = 4;
   pp.query("max_NL_iterations", max_NL_iter);
-  Real dpsi_norm = 0.0;
 
-  for (NL_iter; NL_iter < max_NL_iter; NL_iter++) {
+  // Iterate linearised Poisson eqn for NL solution
+  Real dpsi_norm = 0.0;
+  for (int NL_iter = 0; NL_iter < max_NL_iter; NL_iter++) {
 
     pout() << "Main Loop Iteration " << (NL_iter + 1) << " out of "
            << max_NL_iter << endl;
 
-    // Assign values for coefficients here
+    // Calculate values for coefficients here - see SetLevelData.cpp
+    // for details
     for (int ilev = 0; ilev < nlevels; ilev++) {
-      set_a_coef(*aCoef[ilev], *a_psi[ilev], *a_phi[ilev], a_params,
-                 vectDx[ilev]);
+      set_a_coef(*aCoef[ilev], *psi[ilev], *phi[ilev], a_params, vectDx[ilev]);
       set_b_coef(*bCoef[ilev], a_params, vectDx[ilev]);
-      set_rhs(*a_rhs[ilev], *a_psi[ilev], *a_phi[ilev], vectDx[ilev], a_params);
+      set_rhs(*rhs[ilev], *psi[ilev], *phi[ilev], vectDx[ilev], a_params);
     }
 
-    // set up solver
+    // set up solver factory
     RefCountedPtr<AMRLevelOpFactory<LevelData<FArrayBox>>> opFactory =
         RefCountedPtr<AMRLevelOpFactory<LevelData<FArrayBox>>>(
             defineOperatorFactory(a_grids, vectDomains, aCoef, bCoef,
                                   a_params));
 
+    // define the multi level operator
     mlOp.define(a_grids, a_params.refRatio, vectDomains, vectDx, opFactory,
                 lBase);
 
+    // set the more solver params
     bool homogeneousBC = false;
     solver.define(&mlOp, homogeneousBC);
     solver.m_verbosity = a_params.verbosity;
@@ -149,9 +156,11 @@ int poissonSolve(Vector<LevelData<FArrayBox> *> &a_dpsi,
     solver.m_eps = tolerance;
     solver.m_imax = max_iter;
 
-    output_solver_data(a_dpsi, a_psi, a_phi, a_rhs, a_grids, a_params, NL_iter);
+    // output the data before the solver acts to check starting conditions
+    output_solver_data(dpsi, psi, phi, rhs, a_grids, a_params, NL_iter);
 
-    solver.solve(a_dpsi, a_rhs);
+    // Engage!
+    solver.solve(dpsi, rhs);
 
     // Add the solution to the linearised eqn to the previous iteration
     // ie psi -> psi + dpsi
@@ -164,23 +173,23 @@ int poissonSolve(Vector<LevelData<FArrayBox> *> &a_dpsi,
         QuadCFInterp quadCFI(a_grids[ilev], &a_grids[ilev - 1], vectDx[ilev][0],
                              a_params.refRatio[ilev], num_comps,
                              vectDomains[ilev]);
-        quadCFI.coarseFineInterp(*a_dpsi[ilev], *a_dpsi[ilev - 1]);
+        quadCFI.coarseFineInterp(*dpsi[ilev], *dpsi[ilev - 1]);
       }
 
-      // For intralevel ghosts
+      // For intralevel ghosts - this is done in set_update_phi0
+      // but need the exchange copier object to do this
       Copier exchange_copier;
       exchange_copier.exchangeDefine(a_grids[ilev], IntVect::Unit);
 
       // now the update
-      set_update_psi0(*a_psi[ilev], *a_dpsi[ilev], exchange_copier);
+      set_update_psi0(*psi[ilev], *dpsi[ilev], exchange_copier);
     }
 
     // check if converged and if so exit NL iteration for loop
-    dpsi_norm = computeNorm(a_dpsi, a_params.refRatio, a_params.coarsestDx,
+    dpsi_norm = computeNorm(dpsi, a_params.refRatio, a_params.coarsestDx,
                             Interval(0, 0));
-    pout() << "The norm of dpsi at step " << NL_iter << " is " << dpsi_norm
-           << endl;
-
+    pout() << "The norm of dpsi after step " << NL_iter + 1 << " is "
+           << dpsi_norm << endl;
     if (dpsi_norm < tolerance) {
       break;
     }
@@ -191,14 +200,14 @@ int poissonSolve(Vector<LevelData<FArrayBox> *> &a_dpsi,
 
   // Mayday if result not converged at all - using a fairly generous threshold
   // for this as usually non convergence means everything goes nuts
-  if (dpsi_norm > 1e-4) {
+  if (dpsi_norm > 1e-3) {
     MayDay::Error(
         "NL iterations did not converge - may need a better initial guess");
   }
 
   // now output final data in a form which can be read as a checkpoint file
-  // for the AMR time dependent runs
-  output_final_data(a_psi, a_phi, a_grids, vectDx, vectDomains, a_params);
+  // for the GRChombo AMR time dependent runs
+  output_final_data(psi, phi, a_grids, vectDx, vectDomains, a_params);
 
   int exitStatus = solver.m_exitStatus;
   // note that for AMRMultiGrid, success = 1.
@@ -226,36 +235,13 @@ int main(int argc, char *argv[]) {
 
     // read params from file
     getPoissonParameters(params);
-    int nlevels = params.numLevels;
-    Vector<LevelData<FArrayBox> *> dpsi(
-        nlevels, NULL); // the correction to the conformal factor
-    Vector<LevelData<FArrayBox> *> rhs(nlevels, NULL); // rhs
-    Vector<LevelData<FArrayBox> *> psi(nlevels, NULL); // the conformal factor
-    Vector<LevelData<FArrayBox> *> phi(nlevels, NULL); // scalar field
 
+    // set up the grids, using the rhs for tagging to decide
+    // where needs additional levels
     set_grids(grids, params);
 
-    status = poissonSolve(dpsi, psi, phi, rhs, grids, params);
-
-    // clear memory
-    for (int level = 0; level < dpsi.size(); level++) {
-      if (dpsi[level] != NULL) {
-        delete dpsi[level];
-        dpsi[level] = NULL;
-      }
-      if (psi[level] != NULL) {
-        delete psi[level];
-        psi[level] = NULL;
-      }
-      if (phi[level] != NULL) {
-        delete phi[level];
-        phi[level] = NULL;
-      }
-      if (rhs[level] != NULL) {
-        delete rhs[level];
-        rhs[level] = NULL;
-      }
-    }
+    // Solve the equations!
+    status = poissonSolve(grids, params);
 
   } // End scoping trick
 

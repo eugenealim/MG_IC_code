@@ -18,20 +18,19 @@
 #include "DebugOut.H"
 #include "FORT_PROTO.H"
 #include "FineInterp.H"
-#include "VariableCoeffPoissonOperatorF_F.H"
 #include "InterpF_F.H"
 #include "LayoutIterator.H"
 #include "Misc.H"
+#include "VariableCoeffPoissonOperatorF_F.H"
 
 #include "NamespaceHeader.H"
-
 
 // This file implements the key functions for the multi grid methods
 
 void VariableCoeffPoissonOperator::residualI(LevelData<FArrayBox> &a_lhs,
-                                           const LevelData<FArrayBox> &a_dpsi,
-                                           const LevelData<FArrayBox> &a_rhs,
-                                           bool a_homogeneous) {
+                                             const LevelData<FArrayBox> &a_dpsi,
+                                             const LevelData<FArrayBox> &a_rhs,
+                                             bool a_homogeneous) {
   CH_TIME("VariableCoeffPoissonOperator::residualI");
 
   LevelData<FArrayBox> &dpsi = (LevelData<FArrayBox> &)a_dpsi;
@@ -71,7 +70,7 @@ void VariableCoeffPoissonOperator::residualI(LevelData<FArrayBox> &a_lhs,
 // (diagonization of L -- A is the matrix version of L)
 // then smooths with a couple of passes of levelGSRB
 void VariableCoeffPoissonOperator::preCond(LevelData<FArrayBox> &a_dpsi,
-                                         const LevelData<FArrayBox> &a_rhs) {
+                                           const LevelData<FArrayBox> &a_rhs) {
   CH_TIME("VariableCoeffPoissonOperator::preCond");
 
   // diagonal term of this operator in:
@@ -105,8 +104,8 @@ void VariableCoeffPoissonOperator::preCond(LevelData<FArrayBox> &a_dpsi,
 }
 
 void VariableCoeffPoissonOperator::applyOpI(LevelData<FArrayBox> &a_lhs,
-                                          const LevelData<FArrayBox> &a_dpsi,
-                                          bool a_homogeneous) {
+                                            const LevelData<FArrayBox> &a_dpsi,
+                                            bool a_homogeneous) {
   CH_TIME("VariableCoeffPoissonOperator::applyOpI");
   LevelData<FArrayBox> &dpsi = (LevelData<FArrayBox> &)a_dpsi;
   Real dx = m_dx;
@@ -195,7 +194,7 @@ void VariableCoeffPoissonOperator::restrictResidual(
 }
 
 void VariableCoeffPoissonOperator::setAlphaAndBeta(const Real &a_alpha,
-                                                 const Real &a_beta) {
+                                                   const Real &a_beta) {
   m_alpha = a_alpha;
   m_beta = a_beta;
 
@@ -236,7 +235,7 @@ void VariableCoeffPoissonOperator::resetLambda() {
       lambdaFab.mult(m_alpha);
 
       // Add in the Laplacian term 6.0*m_beta/(m_dx*m_dx)
-      // KC TODO: Should implement other adjustments for NL terms, 
+      // KC TODO: Should implement other adjustments for NL terms,
       // but appears to converge without
       lambdaFab.plus(2.0 * SpaceDim * m_beta / (m_dx * m_dx));
 
@@ -260,7 +259,7 @@ void VariableCoeffPoissonOperator::computeLambda() {
   resetLambda();
 }
 
-// NB This was removed as we do not need it - may want to reinstate, if so see 
+// NB This was removed as we do not need it - may want to reinstate, if so see
 // MG examples for reflux operator
 void VariableCoeffPoissonOperator::reflux(
     const LevelData<FArrayBox> &a_dpsiFine, const LevelData<FArrayBox> &a_dpsi,
@@ -268,11 +267,10 @@ void VariableCoeffPoissonOperator::reflux(
     AMRLevelOp<LevelData<FArrayBox>> *a_finerOp) {
 
   MayDay::Abort("VariableCoeffPoissonOperator::reflux - Not implemented");
-
 }
 
-void VariableCoeffPoissonOperator::levelGSRB(LevelData<FArrayBox> &a_dpsi,
-                                           const LevelData<FArrayBox> &a_rhs) {
+void VariableCoeffPoissonOperator::levelGSRB(
+    LevelData<FArrayBox> &a_dpsi, const LevelData<FArrayBox> &a_rhs) {
   CH_TIME("VariableCoeffPoissonOperator::levelGSRB");
 
   CH_assert(a_dpsi.isDefined());
@@ -339,8 +337,8 @@ void VariableCoeffPoissonOperator::levelMultiColor(
       "VariableCoeffPoissonOperator::levelMultiColor - Not implemented");
 }
 
-void VariableCoeffPoissonOperator::looseGSRB(LevelData<FArrayBox> &a_dpsi,
-                                           const LevelData<FArrayBox> &a_rhs) {
+void VariableCoeffPoissonOperator::looseGSRB(
+    LevelData<FArrayBox> &a_dpsi, const LevelData<FArrayBox> &a_rhs) {
   CH_TIME("VariableCoeffPoissonOperator::looseGSRB");
   MayDay::Abort("VariableCoeffPoissonOperator::looseGSRB - Not implemented");
 }
@@ -354,7 +352,8 @@ void VariableCoeffPoissonOperator::overlapGSRB(
 void VariableCoeffPoissonOperator::levelGSRBLazy(
     LevelData<FArrayBox> &a_dpsi, const LevelData<FArrayBox> &a_rhs) {
   CH_TIME("VariableCoeffPoissonOperator::levelGSRBLazy");
-  MayDay::Abort("VariableCoeffPoissonOperator::levelGSRBLazy - Not implemented");
+  MayDay::Abort(
+      "VariableCoeffPoissonOperator::levelGSRBLazy - Not implemented");
 }
 
 void VariableCoeffPoissonOperator::levelJacobi(
@@ -387,13 +386,12 @@ void VariableCoeffPoissonOperator::levelJacobi(
 // Removed as only needed for fluxes, may need to reinstate in future,
 // if so see MG examples
 void VariableCoeffPoissonOperator::getFlux(FArrayBox &a_flux,
-                                         const FArrayBox &a_data,
-                                         const FArrayBox &b_data,
-                                         const Box &a_facebox, int a_dir,
-                                         int a_ref) const {
+                                           const FArrayBox &a_data,
+                                           const FArrayBox &b_data,
+                                           const Box &a_facebox, int a_dir,
+                                           int a_ref) const {
 
   MayDay::Abort("VariableCoeffPoissonOperator::getFlux - Not implemented");
-
 }
 
 // set the time

@@ -1,12 +1,7 @@
-#ifdef CH_LANG_CC
-/*
- *      _______              __
- *     / ___/ /  ___  __ _  / /  ___
- *    / /__/ _ \/ _ \/  V \/ _ \/ _ \
- *    \___/_//_/\___/_/_/_/_.__/\___/
- *    Please refer to Copyright.txt, in Chombo's root directory.
+/* GRChombo
+ * Copyright 2012 The GRChombo collaboration.
+ * Please refer to LICENSE in GRChombo's root directory.
  */
-#endif
 
 #include "SetLevelData.H"
 #include "AMRIO.H"
@@ -16,11 +11,11 @@
 #include "BoxIterator.H"
 #include "CONSTANTS.H"
 #include "CoarseAverage.H"
-#include "VariableCoeffPoissonOperatorFactory.H"
 #include "LoadBalance.H"
 #include "PoissonParameters.H"
 #include "SetLevelDataF_F.H"
 #include "UsingNamespace.H"
+#include "VariableCoeffPoissonOperatorFactory.H"
 #include "computeNorm.H"
 #include "parstream.H"
 #include <cmath>
@@ -30,7 +25,7 @@
 // set initial guess value for the conformal factor psi
 // defined by \gamma_ij = \psi^4 \tilde \gamma_ij
 // Usually just psi = 1 for flat space but may want to change this for BHs
-// e.g. to put in schwarzschild
+// e.g. to put in schwarzschild as initial guess for spinning case
 void set_initial_psi(LevelData<FArrayBox> &a_psi, LevelData<FArrayBox> &a_dpsi,
                      const RealVect &a_dx, const PoissonParameters &a_params) {
 
@@ -94,9 +89,6 @@ void set_rhs(LevelData<FArrayBox> &a_rhs, LevelData<FArrayBox> &a_psi,
   CH_assert(a_rhs.nComp() == 1);
   int comp_number = 0;
 
-  // rhs is cell-centered
-  RealVect cc_offset = 0.5 * a_dx * RealVect::Unit;
-
   for (DataIterator dit = a_psi.dataIterator(); dit.ok(); ++dit) {
     FArrayBox &this_rhs = a_rhs[dit()];
     this_rhs.setVal(0, comp_number);
@@ -124,11 +116,17 @@ void set_rhs(LevelData<FArrayBox> &a_rhs, LevelData<FArrayBox> &a_psi,
       // rhs = m/8 psi_0^5 - 2 pi rho_grad psi_0  - laplacian(psi_0)
       Real m = 0;
       set_m_value(m, this_phi(iv, comp_number), a_params);
+
+      // KC TODO: Add A2 contribution
+      // Also \bar A_ij \bar A^ij
+      // Real A2 = 0.0;
+      // set_A2_value(A2, a_params);
+
       Real psi_0 = this_psi(iv, comp_number);
       this_rhs(iv, comp_number) =
-          0.125 * m * pow(psi_0, 5.0)
-          - 2.0 * M_PI * a_params.G_Newton * rho_gradient(iv) * psi_0
-          - laplacian_of_psi(iv);
+          0.125 * m * pow(psi_0, 5.0) -
+          2.0 * M_PI * a_params.G_Newton * rho_gradient(iv) * psi_0 -
+          laplacian_of_psi(iv);
     }
   }
 } // end set_rhs
@@ -155,13 +153,23 @@ void set_m_value(Real &m, const Real &phi_here,
 
   // KC TODO:
   // For now rho is just the gradient term which is kept separate
-  // ... may want to add V(phi) and phidot here though
+  // ... may want to add V(phi) and phidot/Pi here later though
   Real rho = 0.0;
 
   m = (2.0 / 3.0) * (a_params.constant_K * a_params.constant_K) -
       16.0 * M_PI * a_params.G_Newton * rho;
 }
 
+// The value \bar A^ij \bar A_ij
+// Where the bar is the natural conformal decomposition for Aij
+// (ie, NOT the BSSN one, but \bar A_ij = \psi^2 A_ij)
+void set_A2_value(Real &A2, const PoissonParameters &a_params) {
+
+// KC TODO: Add a function here for calculating A_ij A^ij
+// in BH and periodic case
+   A2 = 0;
+
+}
 // The coefficient of the I operator on dpsi
 void set_a_coef(LevelData<FArrayBox> &a_aCoef, LevelData<FArrayBox> &a_psi,
                 LevelData<FArrayBox> &a_phi, const PoissonParameters &a_params,
@@ -171,9 +179,6 @@ void set_a_coef(LevelData<FArrayBox> &a_aCoef, LevelData<FArrayBox> &a_psi,
 
   DataIterator dit = a_aCoef.dataIterator();
   for (dit.begin(); dit.ok(); ++dit) {
-    // cell centered
-    RealVect cc_offset = 0.5 * a_dx * RealVect::Unit;
-
     FArrayBox &aCoef = a_aCoef[dit];
     FArrayBox &this_psi = a_psi[dit];
     FArrayBox &this_phi = a_phi[dit];
@@ -181,7 +186,6 @@ void set_a_coef(LevelData<FArrayBox> &a_aCoef, LevelData<FArrayBox> &a_psi,
 
     // calculate the rho contribution from gradients of phi
     FArrayBox rho_gradient(this_box, 1);
-    ;
     FORT_GETRHOGRADPHIF(CHF_FRA1(rho_gradient, comp_number),
                         CHF_CONST_FRA1(this_phi, comp_number),
                         CHF_CONST_REAL(a_dx[0]), CHF_BOX(this_box));
@@ -189,16 +193,18 @@ void set_a_coef(LevelData<FArrayBox> &a_aCoef, LevelData<FArrayBox> &a_psi,
     BoxIterator bit(this_box);
     for (bit.begin(); bit.ok(); ++bit) {
       IntVect iv = bit();
-      RealVect loc(iv);
-      loc *= a_dx;
-      loc += cc_offset;
-
       // m(K, phi) = 2/3 K^2 - 16 pi G rho
       Real m;
       set_m_value(m, this_phi(iv, comp_number), a_params);
+
+      // KC TODO: Add A2 contribution
+      // Also \bar A_ij \bar A^ij
+      // Real A2 = 0.0;
+      // set_A2_value(A2, a_params);
+
       Real psi_0 = this_psi(iv, 0);
-      aCoef(iv, 0) = - 0.625 * m * pow(psi_0, 4.0)
-                     + 2.0 * M_PI * a_params.G_Newton * rho_gradient(iv);
+      aCoef(iv, 0) = -0.625 * m * pow(psi_0, 4.0) +
+                     2.0 * M_PI * a_params.G_Newton * rho_gradient(iv);
     }
   }
 }
@@ -217,6 +223,7 @@ void set_b_coef(LevelData<FArrayBox> &a_bCoef,
   }
 }
 
+// used to set output data for all ADM Vars for GRChombo restart
 void set_output_data(LevelData<FArrayBox> &a_vars, LevelData<FArrayBox> &a_psi,
                      LevelData<FArrayBox> &a_phi,
                      const PoissonParameters &a_params) {

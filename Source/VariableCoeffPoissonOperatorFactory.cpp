@@ -18,12 +18,12 @@
 #include "DebugOut.H"
 #include "FORT_PROTO.H"
 #include "FineInterp.H"
-#include "VariableCoeffPoissonOperator.H"
-#include "VariableCoeffPoissonOperatorF_F.H"
 #include "InterpF_F.H"
 #include "LayoutIterator.H"
 #include "Misc.H"
 #include "NamespaceHeader.H"
+#include "VariableCoeffPoissonOperator.H"
+#include "VariableCoeffPoissonOperatorF_F.H"
 
 // function to define op factory
 AMRLevelOpFactory<LevelData<FArrayBox>> *
@@ -138,7 +138,7 @@ void VariableCoeffPoissonOperatorFactory::define(
 
 MGLevelOp<LevelData<FArrayBox>> *
 VariableCoeffPoissonOperatorFactory::MGnewOp(const ProblemDomain &a_indexSpace,
-                                           int a_depth, bool a_homoOnly) {
+                                             int a_depth, bool a_homoOnly) {
 
   CH_TIME("VariableCoeffPoissonOperatorFactory::MGnewOp");
 
@@ -233,8 +233,8 @@ VariableCoeffPoissonOperatorFactory::MGnewOp(const ProblemDomain &a_indexSpace,
   return (MGLevelOp<LevelData<FArrayBox>> *)newOp;
 }
 
-AMRLevelOp<LevelData<FArrayBox>> *
-VariableCoeffPoissonOperatorFactory::AMRnewOp(const ProblemDomain &a_indexSpace) {
+AMRLevelOp<LevelData<FArrayBox>> *VariableCoeffPoissonOperatorFactory::AMRnewOp(
+    const ProblemDomain &a_indexSpace) {
   CH_TIME("VariableCoeffPoissonOperatorFactory::AMRnewOp");
 
   VariableCoeffPoissonOperator *newOp = new VariableCoeffPoissonOperator;
