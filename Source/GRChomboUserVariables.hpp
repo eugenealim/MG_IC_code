@@ -3,8 +3,8 @@
  * Please refer to LICENSE in GRChombo's root directory.
  */
 
-#ifndef USERVARIABLES_HPP
-#define USERVARIABLES_HPP
+#ifndef GRCHOMBOUSERVARIABLES_HPP
+#define GRCHOMBOUSERVARIABLES_HPP
 
 // assign an enum to each variable
 enum {
@@ -51,11 +51,11 @@ enum {
   c_Mom2,
   c_Mom3,
 
-  NUM_VARS
+  NUM_GRCHOMBO_VARS
 };
 
-namespace UserVariables {
-static constexpr char const *variable_names[NUM_VARS] = {
+namespace GRChomboUserVariables {
+static constexpr char const *variable_names[NUM_GRCHOMBO_VARS] = {
     "chi",
 
     "h11",    "h12",    "h13",    "h22", "h23", "h33",
@@ -79,4 +79,4 @@ static constexpr char const *variable_names[NUM_VARS] = {
     "Ham",    "Mom1",   "Mom2",   "Mom3"};
 }
 
-#endif /* USERVARIABLES_HPP */
+#endif /* GRCHOMBOUSERVARIABLES_HPP */

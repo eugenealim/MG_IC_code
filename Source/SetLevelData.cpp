@@ -165,10 +165,9 @@ void set_m_value(Real &m, const Real &phi_here,
 // (ie, NOT the BSSN one, but \bar A_ij = \psi^2 A_ij)
 void set_A2_value(Real &A2, const PoissonParameters &a_params) {
 
-// KC TODO: Add a function here for calculating A_ij A^ij
-// in BH and periodic case
-   A2 = 0;
-
+  // KC TODO: Add a function here for calculating A_ij A^ij
+  // in BH and periodic case
+  A2 = 0;
 }
 // The coefficient of the I operator on dpsi
 void set_a_coef(LevelData<FArrayBox> &a_aCoef, LevelData<FArrayBox> &a_psi,
@@ -228,7 +227,7 @@ void set_output_data(LevelData<FArrayBox> &a_vars, LevelData<FArrayBox> &a_psi,
                      LevelData<FArrayBox> &a_phi,
                      const PoissonParameters &a_params) {
 
-  CH_assert(a_vars.nComp() == NUM_VARS);
+  CH_assert(a_vars.nComp() == NUM_GRCHOMBO_VARS);
 
   DataIterator dit = a_psi.dataIterator();
   for (dit.begin(); dit.ok(); ++dit) {
@@ -237,7 +236,7 @@ void set_output_data(LevelData<FArrayBox> &a_vars, LevelData<FArrayBox> &a_psi,
     FArrayBox &this_phi = a_phi[dit];
 
     // first set everything to zero
-    for (int comp = 0; comp < NUM_VARS; comp++) {
+    for (int comp = 0; comp < NUM_GRCHOMBO_VARS; comp++) {
       this_vars.setVal(0.0, comp);
     }
 

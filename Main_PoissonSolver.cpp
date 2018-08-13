@@ -70,13 +70,13 @@ int poissonSolve(const Vector<DisjointBoxLayout> &a_grids,
   // although not currently needed for 2nd order stencils used here
   for (int ilev = 0; ilev < nlevels; ilev++) {
     IntVect ghosts = 3 * IntVect::Unit;
-    dpsi[ilev]  = RefCountedPtr<LevelData<FArrayBox>>(
+    dpsi[ilev] = RefCountedPtr<LevelData<FArrayBox>>(
         new LevelData<FArrayBox>(a_grids[ilev], 1, ghosts));
-    psi[ilev]   = RefCountedPtr<LevelData<FArrayBox>>(
+    psi[ilev] = RefCountedPtr<LevelData<FArrayBox>>(
         new LevelData<FArrayBox>(a_grids[ilev], 1, ghosts));
-    phi[ilev]   = RefCountedPtr<LevelData<FArrayBox>>(
+    phi[ilev] = RefCountedPtr<LevelData<FArrayBox>>(
         new LevelData<FArrayBox>(a_grids[ilev], 1, ghosts));
-    rhs[ilev]   = RefCountedPtr<LevelData<FArrayBox>>(
+    rhs[ilev] = RefCountedPtr<LevelData<FArrayBox>>(
         new LevelData<FArrayBox>(a_grids[ilev], 1, IntVect::Zero));
     aCoef[ilev] = RefCountedPtr<LevelData<FArrayBox>>(
         new LevelData<FArrayBox>(a_grids[ilev], 1, IntVect::Zero));
@@ -129,6 +129,11 @@ int poissonSolve(const Vector<DisjointBoxLayout> &a_grids,
 
     pout() << "Main Loop Iteration " << (NL_iter + 1) << " out of "
            << max_NL_iter << endl;
+
+    // KC TODO: Set integrability condition on K if periodic
+    // Calculate K^2 from integral requirement
+    // Then set constant_K = this value
+    // will need compute_sum() and may be easier to pre compute rhs?
 
     // Calculate values for coefficients here - see SetLevelData.cpp
     // for details
@@ -215,6 +220,8 @@ int poissonSolve(const Vector<DisjointBoxLayout> &a_grids,
   return exitStatus;
 }
 
+
+// Main function - keep this simple with just setup and read params
 int main(int argc, char *argv[]) {
   int status = 0;
 #ifdef CH_MPI

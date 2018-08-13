@@ -31,7 +31,8 @@
 #include "CH_HDF5.H"
 #include "SetLevelData.H"
 #include "UsingNamespace.H"
-#include "UserVariables.hpp"
+#include "GRChomboUserVariables.hpp"
+#include "MultigridUserVariables.hpp"
 
 #ifdef CH_Linux
 // Should be undefined by default
@@ -144,7 +145,7 @@ void output_final_data( const Vector<LevelData<FArrayBox>* >&   a_psi,
 
     // set up full data and write to hdf5 file ready for GRChombo
     HDF5Handle handle(filename, HDF5Handle::CREATE);
-    Vector<LevelData<FArrayBox>* > vars_data(a_psi.size(), NULL);
+    Vector<LevelData<FArrayBox>* > grchombo_vars(a_psi.size(), NULL);
     HDF5HeaderData header;
 
     header.m_int["max_level"] = a_params.maxLevel;
@@ -163,13 +164,13 @@ void output_final_data( const Vector<LevelData<FArrayBox>* >&   a_psi,
       header.m_int[headername2] = 0;
     }
 
-    header.m_int["num_components"] = NUM_VARS;
+    header.m_int["num_components"] = NUM_GRCHOMBO_VARS;
 
     char comp_str[30];
-    for (int comp = 0; comp < NUM_VARS; ++comp)
+    for (int comp = 0; comp < NUM_GRCHOMBO_VARS; ++comp)
     {
         sprintf(comp_str, "component_%d", comp);
-        header.m_string[comp_str] = UserVariables::variable_names[comp];
+        header.m_string[comp_str] = GRChomboUserVariables::variable_names[comp];
     }
 
     // write header data to file
@@ -180,10 +181,10 @@ void output_final_data( const Vector<LevelData<FArrayBox>* >&   a_psi,
     {
         HDF5HeaderData level_header;
         // want output data to have 3 ghost cells to match GRChombo
-        vars_data[level] = new LevelData<FArrayBox>(a_grids[level], NUM_VARS, 3*IntVect::Unit);
+        grchombo_vars[level] = new LevelData<FArrayBox>(a_grids[level], NUM_GRCHOMBO_VARS, 3*IntVect::Unit);
 
-        //Add in the rest of the data in the correct form
-        set_output_data(*vars_data[level], *a_psi[level], *a_phi[level], a_params);
+        //Add in the values of the data in the correct form
+        set_output_data(*grchombo_vars[level], *a_psi[level], *a_phi[level], a_params);
 
         //Now continue the write out
         char level_str[20];
@@ -212,7 +213,7 @@ void output_final_data( const Vector<LevelData<FArrayBox>* >&   a_psi,
 
         level_header.writeToFile(handle);
         write(handle, a_grids[level]);
-        write(handle, *vars_data[level], "data");
+        write(handle, *grchombo_vars[level], "data");
     }
 
     //shut the file
@@ -221,8 +222,8 @@ void output_final_data( const Vector<LevelData<FArrayBox>* >&   a_psi,
     // clean up temporary storage
     for (int level=0; level<a_psi.size(); level++)
     {
-        delete vars_data[level];
-        vars_data[level] = NULL;
+        delete grchombo_vars[level];
+        grchombo_vars[level] = NULL;
     }
 
 #endif

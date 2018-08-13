@@ -16,7 +16,8 @@ using std::cerr;
 #include "ParmParse.H"
 #include "PoissonParameters.H"
 #include "FArrayBox.H"
-#include "UserVariables.hpp"
+#include "GRChomboUserVariables.hpp"
+#include "MultigridUserVariables.hpp"
 
 #include "UsingNamespace.H"
 
