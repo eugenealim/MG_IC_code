@@ -50,9 +50,8 @@ using std::cerr;
 /// This function outputs the variable data during the solver updates
 /// which helps to check convergence and debug
 void output_solver_data(const Vector<LevelData<FArrayBox>* >&   a_dpsi,
-                      const Vector<LevelData<FArrayBox>* >&   a_psi,
-                      const Vector<LevelData<FArrayBox>* >&   a_phi,
                       const Vector<LevelData<FArrayBox>* >&   a_rhs,
+                      const Vector<LevelData<FArrayBox>* >&   a_multigrid_vars,
                       const Vector< DisjointBoxLayout >&      a_grids,
                       const PoissonParameters&              a_params,
                       const int iter)
@@ -71,39 +70,36 @@ void output_solver_data(const Vector<LevelData<FArrayBox>* >&   a_dpsi,
 
     int ndpsiComp = a_dpsi[0]->nComp();
     int nRhsComp = a_rhs[0]->nComp();
-    int npsiComp = a_psi[0]->nComp();
-    int nphiComp = a_phi[0]->nComp();
-    int totalComp = ndpsiComp + nRhsComp + npsiComp + nphiComp;
+    int nMGComp = a_multigrid_vars[0]->nComp();
+    int totalComp = ndpsiComp + nRhsComp + nMGComp;
+    CH_assert(totalComp == 2 + NUM_MULTIGRID_VARS);
 
+    // set names
     Vector<string> variable_names(totalComp);
-    // hardwire to single-component
-    CH_assert(totalComp == 4);
     variable_names[0] = "dpsi";
-    variable_names[1] = "psi";
-    variable_names[2] = "phi";
-    variable_names[3] = "rhs";
+    variable_names[1] = "rhs";
+    for(int icomp=0; icomp < NUM_MULTIGRID_VARS; icomp ++)
+    {
+      variable_names[2+icomp] = MultigridUserVariables::variable_names[icomp];
+    }
 
     // check the domain sizes are the same
     CH_assert(a_dpsi.size() == a_rhs.size());
-    CH_assert(a_dpsi.size() == a_phi.size());
-    CH_assert(a_dpsi.size() == a_psi.size());
+    CH_assert(a_dpsi.size() == a_multigrid_vars.size());
 
     Vector<LevelData<FArrayBox>* > tempData(a_dpsi.size(), NULL);
     for (int level=0; level<a_dpsi.size(); level++)
       {
         tempData[level] = new LevelData<FArrayBox>(a_grids[level], totalComp);
         Interval dpsiComps(0, 0);
-        Interval psiComps(1, 1);
-        Interval phiComps(2, 2);
-        Interval rhsComps(3, 3);
+        Interval rhsComps(1, 1);
+        Interval mgComps(2, NUM_MULTIGRID_VARS+1);
         a_dpsi[level]->copyTo(a_dpsi[level]->interval(),
                              *tempData[level], dpsiComps);
-        a_psi[level]->copyTo(a_psi[level]->interval(),
-                             *tempData[level], psiComps);
-        a_phi[level]->copyTo(a_phi[level]->interval(),
-                             *tempData[level], phiComps);
         a_rhs[level]->copyTo(a_rhs[level]->interval(),
                              *tempData[level], rhsComps);
+        a_multigrid_vars[level]->copyTo(a_multigrid_vars[level]->interval(),
+                             *tempData[level], mgComps);
       }
 
     Real fakeTime = iter * 1.0;
@@ -128,8 +124,7 @@ void output_solver_data(const Vector<LevelData<FArrayBox>* >&   a_dpsi,
 
 /// This function outputs the final data after the solver is finished
 /// in a format that GRChombo can read in for an AMRTimeDependent run
-void output_final_data( const Vector<LevelData<FArrayBox>* >&   a_psi,
-                        const Vector<LevelData<FArrayBox>* >&   a_phi,
+void output_final_data( const Vector<LevelData<FArrayBox>* >&   a_multigrid_vars,
                         const Vector< DisjointBoxLayout >&      a_grids,
                         const Vector<RealVect>&               a_vectDx,
                         const Vector<ProblemDomain>&          a_vectDomains,
@@ -145,7 +140,7 @@ void output_final_data( const Vector<LevelData<FArrayBox>* >&   a_psi,
 
     // set up full data and write to hdf5 file ready for GRChombo
     HDF5Handle handle(filename, HDF5Handle::CREATE);
-    Vector<LevelData<FArrayBox>* > grchombo_vars(a_psi.size(), NULL);
+    Vector<LevelData<FArrayBox>* > grchombo_vars(a_multigrid_vars.size(), NULL);
     HDF5HeaderData header;
 
     header.m_int["max_level"] = a_params.maxLevel;
@@ -153,7 +148,7 @@ void output_final_data( const Vector<LevelData<FArrayBox>* >&   a_psi,
     header.m_int["iteration"] = 0;
     header.m_real["time"] = 0.0;
 
-    for (int level = 0; level < a_psi.size(); ++level)
+    for (int level = 0; level < a_multigrid_vars.size(); ++level)
     {
       char headername1[100];
       sprintf(headername1, "regrid_interval_%d", level);
@@ -177,14 +172,14 @@ void output_final_data( const Vector<LevelData<FArrayBox>* >&   a_psi,
     header.writeToFile(handle);
 
     // loop over levels
-    for (int level=0; level<a_psi.size(); level++)
+    for (int level=0; level<a_multigrid_vars.size(); level++)
     {
         HDF5HeaderData level_header;
         // want output data to have 3 ghost cells to match GRChombo
         grchombo_vars[level] = new LevelData<FArrayBox>(a_grids[level], NUM_GRCHOMBO_VARS, 3*IntVect::Unit);
 
         //Add in the values of the data in the correct form
-        set_output_data(*grchombo_vars[level], *a_psi[level], *a_phi[level], a_params);
+        set_output_data(*grchombo_vars[level], *a_multigrid_vars[level], a_params);
 
         //Now continue the write out
         char level_str[20];
@@ -220,7 +215,7 @@ void output_final_data( const Vector<LevelData<FArrayBox>* >&   a_psi,
     handle.close();
 
     // clean up temporary storage
-    for (int level=0; level<a_psi.size(); level++)
+    for (int level=0; level<a_multigrid_vars.size(); level++)
     {
         delete grchombo_vars[level];
         grchombo_vars[level] = NULL;

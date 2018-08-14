@@ -21,6 +21,7 @@ using std::cerr;
 #include "ParmParse.H"
 #include "SetLevelData.H"
 #include "PoissonParameters.H"
+#include "MultigridUserVariables.hpp"
 #include "FArrayBox.H"
 
 #include "UsingNamespace.H"

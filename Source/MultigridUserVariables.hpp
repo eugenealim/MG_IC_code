@@ -10,19 +10,19 @@
 enum {
   c_psi,
 
-  c_A11_t0,
-  c_A12_t0,
-  c_A13_t0,
-  c_A22_t0,
-  c_A23_t0,
-  c_A33_t0,
+  c_A11_0,
+  c_A12_0,
+  c_A13_0,
+  c_A22_0,
+  c_A23_0,
+  c_A33_0,
 
-  c_phi_t0, // matter field
+  c_phi_0, // matter field
 
   NUM_MULTIGRID_VARS
 };
 
-namespace MultiGridUserVariables {
+namespace MultigridUserVariables {
 static constexpr char const *variable_names[NUM_MULTIGRID_VARS] = {
     "psi",
 

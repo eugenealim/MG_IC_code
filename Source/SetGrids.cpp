@@ -82,32 +82,24 @@ int set_grids(Vector<DisjointBoxLayout> &vectGrids,
     for (int level = 0; level <= topLevel; level++) {
       RealVect dxLevel = vectDx[level] * RealVect::Unit;
 
-      LevelData<FArrayBox> *temp_psi;
+      LevelData<FArrayBox> *temp_multigrid_vars;
       LevelData<FArrayBox> *temp_dpsi;
-      LevelData<FArrayBox> *temp_phi;
 
-      temp_psi =
-          new LevelData<FArrayBox>(vectGrids[level], ncomps, IntVect::Unit);
+      temp_multigrid_vars =
+          new LevelData<FArrayBox>(vectGrids[level], NUM_MULTIGRID_VARS, IntVect::Unit);
       temp_dpsi =
           new LevelData<FArrayBox>(vectGrids[level], ncomps, IntVect::Unit);
-      temp_phi =
-          new LevelData<FArrayBox>(vectGrids[level], ncomps, IntVect::Unit);
 
-      set_initial_psi(*temp_psi, *temp_dpsi, dxLevel, a_params);
-      set_initial_phi(*temp_phi, dxLevel, a_params);
-      set_rhs(*vectRHS[level], *temp_psi, *temp_phi, dxLevel, a_params);
+      set_initial_conditions(*temp_multigrid_vars, *temp_dpsi, dxLevel, a_params);
+      set_rhs(*vectRHS[level], *temp_multigrid_vars, dxLevel, a_params);
 
-      if (temp_psi != NULL) {
-        delete temp_psi;
-        temp_psi = NULL;
+      if (temp_multigrid_vars != NULL) {
+        delete temp_multigrid_vars;
+        temp_multigrid_vars = NULL;
       }
       if (temp_dpsi != NULL) {
         delete temp_dpsi;
         temp_dpsi = NULL;
-      }
-      if (temp_phi != NULL) {
-        delete temp_phi;
-        temp_phi = NULL;
       }
     }
 
