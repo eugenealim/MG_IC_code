@@ -41,7 +41,6 @@ int set_grids(Vector<DisjointBoxLayout> &vectGrids,
 
   vectGrids.resize(numlevels);
 
-  pout() << "tagging on gradient of RHS" << endl;
   int maxLevel = numlevels - 1;
   Vector<Vector<Box>> newBoxes(numlevels);
   Vector<Vector<Box>> oldBoxes(numlevels);
@@ -49,7 +48,6 @@ int set_grids(Vector<DisjointBoxLayout> &vectGrids,
   // determine grids dynamically, based on grad(RHS)
   // will need temp storage for RHS
   Vector<LevelData<FArrayBox> *> vectRHS(maxLevel + 1, NULL);
-  int ncomps = 1;
 
   // define base level first
   Vector<Vector<int>> procAssign(maxLevel + 1);
@@ -58,7 +56,7 @@ int set_grids(Vector<DisjointBoxLayout> &vectGrids,
   procAssign[0].resize(oldBoxes[0].size());
   LoadBalance(procAssign[0], oldBoxes[0]);
   vectGrids[0].define(oldBoxes[0], procAssign[0], vectDomain[0]);
-  vectRHS[0] = new LevelData<FArrayBox>(vectGrids[0], ncomps, IntVect::Zero);
+  vectRHS[0] = new LevelData<FArrayBox>(vectGrids[0], 1, IntVect::Zero);
 
   int topLevel = 0;
   bool moreLevels = (maxLevel > 0);
@@ -85,13 +83,14 @@ int set_grids(Vector<DisjointBoxLayout> &vectGrids,
       LevelData<FArrayBox> *temp_multigrid_vars;
       LevelData<FArrayBox> *temp_dpsi;
 
-      temp_multigrid_vars =
-          new LevelData<FArrayBox>(vectGrids[level], NUM_MULTIGRID_VARS, IntVect::Unit);
+      temp_multigrid_vars = new LevelData<FArrayBox>(
+          vectGrids[level], NUM_MULTIGRID_VARS, IntVect::Unit);
       temp_dpsi =
-          new LevelData<FArrayBox>(vectGrids[level], ncomps, IntVect::Unit);
+          new LevelData<FArrayBox>(vectGrids[level], 1, IntVect::Unit);
 
-      set_initial_conditions(*temp_multigrid_vars, *temp_dpsi, dxLevel, a_params);
-      set_rhs(*vectRHS[level], *temp_multigrid_vars, dxLevel, a_params);
+      set_initial_conditions(*temp_multigrid_vars, *temp_dpsi, dxLevel,
+                             a_params);
+      set_rhs(*vectRHS[level], *temp_multigrid_vars, dxLevel, a_params, 0.0);
 
       if (temp_multigrid_vars != NULL) {
         delete temp_multigrid_vars;
@@ -127,7 +126,7 @@ int set_grids(Vector<DisjointBoxLayout> &vectGrids,
       vectGrids[lev] = newDBL;
       delete vectRHS[lev];
       vectRHS[lev] =
-          new LevelData<FArrayBox>(vectGrids[lev], ncomps, IntVect::Zero);
+          new LevelData<FArrayBox>(vectGrids[lev], 1, IntVect::Zero);
     } // end loop over levels for initialization
 
     // figure out whether we need another pass through grid generation

@@ -69,42 +69,26 @@ void ParseBC(FArrayBox &a_state, const Box &a_valid,
           if (GlobalBCRS::s_bcLo[i] == 1) {
             if (!GlobalBCRS::s_printedThatLo[i]) {
               GlobalBCRS::s_printedThatLo[i] = true;
-              pout() << "const neum bcs lo for direction " << i << endl;
+              pout() << "Constant Neumann bcs imposed for low side direction " << i << endl;
             }
             NeumBC(a_state, valid, a_dx, a_homogeneous,
                    ParseValue, // BCValueHolder class
                    i, Side::Lo);
-            //} else if (GlobalBCRS::s_bcLo[i] == 2) {
-            // if (!GlobalBCRS::s_printedThatLo[i]) {
-            //  GlobalBCRS::s_printedThatLo[i] = true;
-            //  pout() << "trig neum bcs lo for direction " << i << endl;
-            //}
-            // NeumBC(a_state, valid, a_dx, a_homogeneous, TrigValueNeum, i,
-            //       Side::Lo);
           } else if (GlobalBCRS::s_bcLo[i] == 0) {
             if (!GlobalBCRS::s_printedThatLo[i]) {
               GlobalBCRS::s_printedThatLo[i] = true;
-              pout() << "const diri bcs lo for direction " << i << endl;
+              pout() << "Constant Dirichlet bcs imposed for low side direction " << i << endl;
             }
             DiriBC(a_state, valid, a_dx, a_homogeneous, ParseValue, i,
                    Side::Lo);
-
-            //} else if (GlobalBCRS::s_bcLo[i] == 3) {
-            // if (!GlobalBCRS::s_printedThatLo[i]) {
-            //  GlobalBCRS::s_printedThatLo[i] = true;
-            //  pout() << "trig diri bcs lo for direction " << i << endl;
-            //}
-            // DiriBC(a_state, valid, a_dx, a_homogeneous, TrigValueDiri, i,
-            //       Side::Lo);
-
-          } else if (GlobalBCRS::s_bcLo[i] == 4) {
+          } else if (GlobalBCRS::s_bcLo[i] == 2) {
             if (!GlobalBCRS::s_printedThatLo[i]) {
               GlobalBCRS::s_printedThatLo[i] = true;
-              pout() << "periodic bcs lo for direction " << i << endl;
+              pout() << "Periodic bcs imposed for low side direction " << i << endl;
             }
 
           } else {
-            MayDay::Error("bogus bc flag lo");
+            MayDay::Error("bogus bc flag low side");
           }
         }
 
@@ -112,43 +96,29 @@ void ParseBC(FArrayBox &a_state, const Box &a_valid,
           if (GlobalBCRS::s_bcHi[i] == 1) {
             if (!GlobalBCRS::s_printedThatHi[i]) {
               GlobalBCRS::s_printedThatHi[i] = true;
-              pout() << "const neum bcs hi for direction " << i << endl;
+              pout() << "Constant Neumann bcs imposed for high side direction " << i << endl;
             }
             NeumBC(a_state, valid, a_dx, a_homogeneous, ParseValue, i,
                    Side::Hi);
-            //} else if (GlobalBCRS::s_bcHi[i] == 2) {
-            //  if (!GlobalBCRS::s_printedThatHi[i]) {
-            //    GlobalBCRS::s_printedThatHi[i] = true;
-            //    pout() << "trig neum bcs hi for direction " << i << endl;
-            //  }
-            //  NeumBC(a_state, valid, a_dx, a_homogeneous, TrigValueNeum, i,
-            //         Side::Hi);
           } else if (GlobalBCRS::s_bcHi[i] == 0) {
             if (!GlobalBCRS::s_printedThatHi[i]) {
               GlobalBCRS::s_printedThatHi[i] = true;
-              pout() << "const diri bcs hi for direction " << i << endl;
+              pout() << "Constant Dirichlet bcs imposed for high side direction " << i << endl;
             }
             DiriBC(a_state, valid, a_dx, a_homogeneous, ParseValue, i,
                    Side::Hi);
-            //} else if (GlobalBCRS::s_bcHi[i] == 3) {
-            //  if (!GlobalBCRS::s_printedThatHi[i]) {
-            //    GlobalBCRS::s_printedThatHi[i] = true;
-            //    pout() << "trig diri bcs hi for direction " << i << endl;
-            //  }
-            //  DiriBC(a_state, valid, a_dx, a_homogeneous, TrigValueDiri, i,
-            //         Side::Hi);
-          } else if (GlobalBCRS::s_bcHi[i] == 4) {
+          } else if (GlobalBCRS::s_bcHi[i] == 2) {
             if (!GlobalBCRS::s_printedThatHi[i]) {
               GlobalBCRS::s_printedThatHi[i] = true;
-              pout() << "periodic bcs hi for direction " << i << endl;
+              pout() << "Periodic bcs imposed for high side direction " << i << endl;
             }
           } else {
-            MayDay::Error("bogus bc flag hi");
+            MayDay::Error("bogus bc flag high side");
           }
         }
-        // is periodic
-      }
-      // is periodic
-    }
+
+      } // else - is periodic
+
+    } // close for idir
   }
 }

@@ -1,6 +1,11 @@
 # Params for variable coefficient multigrid solver, solving the eqn
 # alpha*aCoef(x)*I - beta*bCoef(x) * laplacian = rhs
 
+# The default setup allows for 2 BHs (Bowen York data) in the presence
+# of a scalar field configuration, with either periodic BCs (constant K
+# set by integrability conditions) or asymptotically flat (constant K=0,
+# dirichlet BCs should be set to dpsi=0)
+
 # spatially-varying aCoef and bCoef are set in the example itself
 # see SetLevelData.cpp, we expect alpha = 1 and beta = -1
 # (for pure laplacian, alpha = 0, beta=-1)
@@ -28,28 +33,50 @@ max_iterations = 100 #max number of solver iterations
 max_NL_iterations = 5 #non linear outside loop iterations
 tolerance  = 1.0e-10  #solver tolerance for declaring convergence
 hang       = 1.0e-11  #solver tolerance for deciding when we're hung
-verbosity = 1 # higher number means more verbose output
+verbosity = 2 # higher number means more verbose output
 
 # how to average face-centered coefficients to coarser multigrid levels
 #coefficient_average_type = arithmetic
 coefficient_average_type = harmonic
 
 # Boundary conditions for domain-boundary faces 
-# 1== const Neumann, 0 == const Dirichlet
-# note bc_value = 0 because it is applied to dpsi - we want psi = 1
-is_periodic = 0 0 0 
+# 0 for non periodic, 1 for periodic (enforces same for all)
+is_periodic = 0
+# if not periodic, then what?
+# 1 -> const Neumann (gradient), 0 -> const Dirichlet (value)
 bc_lo       = 0 0 0
-bc_hi       = 0 0 0  
+bc_hi       = 0 0 0
+# And set the constant value of these conditions
+# note bc_value probably 0 because it is applied to dpsi at boundary (not psi)
 bc_value = 0.0
-
-# phi gaussian
-phi_scale = 1
-phi_strength = 1e-2
-phi_center = 50.0 50.0 50.0
 
 # Q: "Simple, change the gravitational constant of the Universe"
 G_Newton = 1.0 
 
-# initial constants
-initial_psi = 1.0
-constant_K = 0 # K=0 for dirichlet, K= -\sqrt{ < 24 pi G rho + (3/2chi)A^2>} for periodic 
+# scalar field input params
+phi_amplitude = 1e-2
+phi_wavelength = 1
+phi_center = 50.0 50.0 50.0
+
+# initial conditions for Binary BH spacetimes
+# (can be with or without periodic BCs, 
+#  and in presence of scalar field)
+# if you don't want BHs just set masses to zero
+
+#BH1
+bh1_bare_mass = 0.0
+# spin about z axis (this is J_z)
+bh1_spin = 0.1
+# boost in y direction (this is P_y)
+bh1_momentum = 0.05
+# offset from center in x direction
+bh1_offset = 20.0
+
+#BH2
+bh2_bare_mass = 0.0
+# spin about z axis (this is J_z)
+bh2_spin = 0.1
+# boost in y direction (this is P_y)
+bh2_momentum = -0.05
+# offset from center in x direction
+bh2_offset = -20.0

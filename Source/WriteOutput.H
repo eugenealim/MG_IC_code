@@ -50,11 +50,11 @@ using std::cerr;
 /// This function outputs the variable data during the solver updates
 /// which helps to check convergence and debug
 void output_solver_data(const Vector<LevelData<FArrayBox>* >&   a_dpsi,
-                      const Vector<LevelData<FArrayBox>* >&   a_rhs,
-                      const Vector<LevelData<FArrayBox>* >&   a_multigrid_vars,
-                      const Vector< DisjointBoxLayout >&      a_grids,
-                      const PoissonParameters&              a_params,
-                      const int iter)
+                        const Vector<LevelData<FArrayBox>* >&   a_rhs,
+                        const Vector<LevelData<FArrayBox>* >&   a_multigrid_vars,
+                        const Vector< DisjointBoxLayout >&      a_grids,
+                        const PoissonParameters&              a_params,
+                        const int iter)
 {
 #ifdef CH_USE_HDF5
 
@@ -128,7 +128,8 @@ void output_final_data( const Vector<LevelData<FArrayBox>* >&   a_multigrid_vars
                         const Vector< DisjointBoxLayout >&      a_grids,
                         const Vector<RealVect>&               a_vectDx,
                         const Vector<ProblemDomain>&          a_vectDomains,
-                        const PoissonParameters&              a_params)
+                        const PoissonParameters&              a_params,
+                        const Real&                           constant_K)
 {
 #ifdef CH_USE_HDF5
 
@@ -179,7 +180,7 @@ void output_final_data( const Vector<LevelData<FArrayBox>* >&   a_multigrid_vars
         grchombo_vars[level] = new LevelData<FArrayBox>(a_grids[level], NUM_GRCHOMBO_VARS, 3*IntVect::Unit);
 
         //Add in the values of the data in the correct form
-        set_output_data(*grchombo_vars[level], *a_multigrid_vars[level], a_params);
+        set_output_data(*grchombo_vars[level], *a_multigrid_vars[level], a_params, constant_K);
 
         //Now continue the write out
         char level_str[20];

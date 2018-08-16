@@ -25,23 +25,25 @@ using std::cerr;
 // conditions, spatially dependent coefficients and rhs etc
 
 extern void set_rhs(LevelData<FArrayBox>&    a_rhs,
-                   LevelData<FArrayBox>&    a_multigrid_vars,
-                   const RealVect&          a_dx,
-                   const PoissonParameters& a_params);
+                    LevelData<FArrayBox>&    a_multigrid_vars,
+                    const RealVect&          a_dx,
+                    const PoissonParameters& a_params,
+                    const Real constant_K);
 
-extern void set_initial_conditions(LevelData<FArrayBox>&    a_multigrid_vars,
+extern void set_initial_conditions(LevelData<FArrayBox>& a_multigrid_vars,
                    LevelData<FArrayBox>&    a_dpsi,
                    const RealVect&          a_dx,
                    const PoissonParameters& a_params);
 
 extern void set_m_value(Real& m, const Real& phi_here,
-                    const PoissonParameters& a_params);
+                    const PoissonParameters& a_params, const Real constant_K);
 
 extern void
 set_a_coef(LevelData<FArrayBox>& a_aCoef,
          LevelData<FArrayBox>&    a_multigrid_vars,
          const PoissonParameters& a_params,
-         const RealVect& a_dx);
+         const RealVect& a_dx,
+         const Real constant_K);
 
 extern void
 set_b_coef(LevelData<FArrayBox>& a_bCoef,
@@ -54,6 +56,7 @@ extern void set_update_psi0(LevelData<FArrayBox>&    a_multigrid_vars,
 
 extern void set_output_data(LevelData<FArrayBox>& a_vars, 
                             LevelData<FArrayBox>&    a_multigrid_vars,
-                            const PoissonParameters &a_params);
+                            const PoissonParameters& a_params,
+                            const Real& constant_K);
 
 #endif

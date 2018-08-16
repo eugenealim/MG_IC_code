@@ -35,6 +35,9 @@ public:
   int          bufferSize;
   Real         fillRatio;
   Real         refineThresh;
+  int          coefficient_average_type;
+  int          verbosity;
+  Vector<int>  periodic;
   int          domBcType;
   int          maxLevel;
   int          numLevels;
@@ -47,14 +50,17 @@ public:
   Real         alpha;
   Real         beta;
   Real         G_Newton;
-  Real         initial_psi; // initial constant psi
-  Real         constant_K; // initial constant K
-  Real         phi_scale; // scale of phi gaussian
-  Real         phi_strength; // strength of phi gaussian, phi = strength*Exp(-r^2/scale)
+  Real         phi_amplitude;
+  Real         phi_wavelength;
   Vector<Real> phi_center;
-  int          coefficient_average_type;
-  int          verbosity;
-  Vector<int>  periodic; // 1 1 1 for periodic, 0 0 0 for non-periodic
+  Real         bh1_bare_mass;
+  Real         bh2_bare_mass;
+  Real         bh1_spin;
+  Real         bh2_spin;
+  Real         bh1_momentum;
+  Real         bh2_momentum;
+  Real         bh1_offset;
+  Real         bh2_offset;
 };
 
 ///get stuff from input file

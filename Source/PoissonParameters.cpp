@@ -29,18 +29,36 @@ void getPoissonParameters(PoissonParameters &a_params) {
   // problem specific params
   pp.get("alpha", a_params.alpha);
   pp.get("beta", a_params.beta);
-  pp.get("G_Newton", a_params.G_Newton);
-  pp.get("initial_psi", a_params.initial_psi);
-  pp.get("constant_K", a_params.constant_K);
-
-  // Gaussian phi = strength * Exp[-r^2/scale]
-  pp.get("phi_scale", a_params.phi_scale);
-  pp.get("phi_strength", a_params.phi_strength);
-  pp.getarr("phi_center", a_params.phi_center, 0, SpaceDim);
-
   // print out the overall coeffs just to be sure we have selected them
   // correctly
   pout() << "alpha, beta = " << a_params.alpha << ", " << a_params.beta << endl;
+
+  // Initial conditions for the scalar field
+  pp.get("G_Newton", a_params.G_Newton);
+  pp.get("phi_amplitude", a_params.phi_amplitude);
+  pp.get("phi_wavelength", a_params.phi_wavelength);
+  pp.getarr("phi_center", a_params.phi_center, 0, SpaceDim);
+
+  if (abs(a_params.phi_amplitude) > 0.0) 
+  {
+     pout() << "Spacetime contains scalar field of amplitude " << a_params.phi_amplitude << endl;
+  }
+
+  // Initial conditions for the black holes
+  pp.get("bh1_bare_mass", a_params.bh1_bare_mass);
+  pp.get("bh2_bare_mass", a_params.bh2_bare_mass);
+  pp.get("bh1_spin", a_params.bh1_spin);
+  pp.get("bh2_spin", a_params.bh2_spin);
+  pp.get("bh1_offset", a_params.bh1_offset);
+  pp.get("bh2_offset", a_params.bh2_offset);
+  pp.get("bh1_momentum", a_params.bh1_momentum);
+  pp.get("bh2_momentum", a_params.bh2_momentum);
+
+  if (abs(a_params.bh1_bare_mass) > 0.0 || abs(a_params.bh2_bare_mass) > 0.0) 
+  {
+     pout() << "Spacetime contains black holes with bare masses " << a_params.bh1_bare_mass << " and " 
+            << a_params.bh2_bare_mass << endl;
+  }
 
   // Set verbosity
   a_params.verbosity = 3;
@@ -54,12 +72,12 @@ void getPoissonParameters(PoissonParameters &a_params) {
   for (int idir = 0; idir < SpaceDim; idir++) {
     a_params.nCells[idir] = nCellsArray[idir];
   }
+
   // Enforce that dx is same in every directions
   // and that ref_ratio = 2 always as these conditions
   // are required in several places in our code
-  for (int ilev = 0; ilev < a_params.numLevels; ilev++) {
-    a_params.refRatio[ilev] = 2;
-  }
+  a_params.refRatio.resize(a_params.numLevels);
+  a_params.refRatio.assign(2);
   Real domain_length;
   pp.get("L", domain_length);
   a_params.coarsestDx = domain_length / a_params.nCells[0];
@@ -95,26 +113,20 @@ void getPoissonParameters(PoissonParameters &a_params) {
   IntVect hi = a_params.nCells;
   hi -= IntVect::Unit;
   Box crseDomBox(lo, hi);
-
-  // Periodicity - bool is_periodic[SpaceDim];
-  Vector<int> is_periodic(SpaceDim, false);
-  pp.queryarr("periodic", is_periodic, 0, SpaceDim);
-  // is_periodic_int defines type of BC if not periodic
-  Vector<int> is_periodic_int;
-  pp.getarr("is_periodic", is_periodic_int, 0, SpaceDim);
-  for (int dir = 0; dir < SpaceDim; dir++) {
-    is_periodic[dir] = (is_periodic_int[dir] == 1);
-  }
-  a_params.periodic = is_periodic_int;
-  // set this on coarsest level
-  ProblemDomain crseDom(crseDomBox);
-  for (int dir = 0; dir < SpaceDim; dir++) {
-    crseDom.setPeriodic(dir, is_periodic[dir]);
-  }
-  a_params.coarsestDomain = crseDom;
-
-  // derived stuff
   a_params.probLo = RealVect::Zero;
   a_params.probHi = RealVect::Zero;
   a_params.probHi += a_params.domainLength;
+
+  // Periodicity - for the moment enforce same in all directions
+  ProblemDomain crseDom(crseDomBox);
+  int is_periodic;
+  pp.get("is_periodic", is_periodic);
+  a_params.periodic.resize(SpaceDim);
+  a_params.periodic.assign(is_periodic);
+  for (int dir = 0; dir < SpaceDim; dir++) {
+    crseDom.setPeriodic(dir, is_periodic);
+  }
+  a_params.coarsestDomain = crseDom;
+
+  pout() << "periodicity = " << is_periodic << endl;
 }

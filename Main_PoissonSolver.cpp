@@ -38,7 +38,7 @@ using std::cerr;
 // Sets up and runs the solver
 // The equation solved is: [aCoef*I + bCoef*Laplacian](dpsi) = rhs
 // We assume conformal flatness, K=const and Momentum constraint satisfied
-// by chosen Aij (for now sourced by Bowen York data), 
+// by chosen Aij (for now sourced by Bowen York data),
 // lapse = 1 shift = 0, phi is the scalar field and is used to
 // calculate the rhs, Pi = dphidt = 0.
 int poissonSolve(const Vector<DisjointBoxLayout> &a_grids,
@@ -49,16 +49,18 @@ int poissonSolve(const Vector<DisjointBoxLayout> &a_grids,
 
   // create the necessary hierarchy of data components
   int nlevels = a_params.numLevels;
-  // the correction to the conformal factor - what the solver actually solves for
-  Vector<LevelData<FArrayBox> *> dpsi(nlevels, NULL);
   // the user set initial conditions - currently including psi, phi, A_ij
   Vector<LevelData<FArrayBox> *> multigrid_vars(nlevels, NULL);
+  // the correction to the conformal factor - what the solver solves for
+  Vector<LevelData<FArrayBox> *> dpsi(nlevels, NULL);
   // the solver vars - coefficients and source
   Vector<LevelData<FArrayBox> *> rhs(nlevels, NULL);
-  Vector<RefCountedPtr<LevelData<FArrayBox>>> aCoef(
-      nlevels); // the coeff for the I term
-  Vector<RefCountedPtr<LevelData<FArrayBox>>> bCoef(
-      nlevels);                               // the coeff for the Laplacian
+  // the coeff for the I term
+  Vector<RefCountedPtr<LevelData<FArrayBox>>> aCoef(nlevels);
+  // the coeff for the Laplacian
+  Vector<RefCountedPtr<LevelData<FArrayBox>>> bCoef(nlevels);
+
+  // Grid params
   Vector<ProblemDomain> vectDomains(nlevels); // the domains
   Vector<RealVect> vectDx(nlevels);           // the grid spacings on each level
 
@@ -72,22 +74,19 @@ int poissonSolve(const Vector<DisjointBoxLayout> &a_grids,
   // although not currently needed for 2nd order stencils used here
   for (int ilev = 0; ilev < nlevels; ilev++) {
     IntVect ghosts = 3 * IntVect::Unit;
-    dpsi[ilev] = RefCountedPtr<LevelData<FArrayBox>>(
-        new LevelData<FArrayBox>(a_grids[ilev], 1, ghosts));
-    multigrid_vars[ilev] = RefCountedPtr<LevelData<FArrayBox>>(
-        new LevelData<FArrayBox>(a_grids[ilev], NUM_MULTIGRID_VARS, ghosts));
-    rhs[ilev]   = RefCountedPtr<LevelData<FArrayBox>>(
-        new LevelData<FArrayBox>(a_grids[ilev], 1, IntVect::Zero));
+    multigrid_vars[ilev] = new LevelData<FArrayBox>(a_grids[ilev], NUM_MULTIGRID_VARS, ghosts);
+    dpsi[ilev] = new LevelData<FArrayBox>(a_grids[ilev], 1, ghosts);
+    rhs[ilev] = new LevelData<FArrayBox>(a_grids[ilev], 1, IntVect::Zero);
     aCoef[ilev] = RefCountedPtr<LevelData<FArrayBox>>(
         new LevelData<FArrayBox>(a_grids[ilev], 1, IntVect::Zero));
     bCoef[ilev] = RefCountedPtr<LevelData<FArrayBox>>(
         new LevelData<FArrayBox>(a_grids[ilev], 1, IntVect::Zero));
     vectDomains[ilev] = domLev;
     vectDx[ilev] = dxLev;
-
     // set initial guess for psi and zero dpsi
     // and values for other multigrid sources - phi and Aij
-    set_initial_conditions(*multigrid_vars[ilev], *dpsi[ilev], vectDx[ilev], a_params);
+    set_initial_conditions(*multigrid_vars[ilev], *dpsi[ilev], vectDx[ilev],
+                           a_params);
 
     // prepare temp dx, domain vars for next level
     dxLev /= a_params.refRatio[ilev];
@@ -123,22 +122,32 @@ int poissonSolve(const Vector<DisjointBoxLayout> &a_grids,
 
   // Iterate linearised Poisson eqn for NL solution
   Real dpsi_norm = 0.0;
+  Real constant_K = 0.0;
   for (int NL_iter = 0; NL_iter < max_NL_iter; NL_iter++) {
 
     pout() << "Main Loop Iteration " << (NL_iter + 1) << " out of "
            << max_NL_iter << endl;
 
-    // KC TODO: Set integrability condition on K if periodic
-    // Calculate K^2 from integral requirement
-    // Then set constant_K = this value
-    // will need compute_sum() and may be easier to pre compute rhs?
+    // Set integrability condition on K if periodic
+    if (a_params.periodic[0] == 1) {
+      // Calculate values for rhs here with K unset
+      for (int ilev = 0; ilev < nlevels; ilev++) {
+        set_rhs(*rhs[ilev], *multigrid_vars[ilev], vectDx[ilev], a_params,
+                constant_K);
+      }
+      Real average_Ham = computeNorm(rhs, a_params.refRatio,
+                                     a_params.coarsestDx, Interval(0, 0));
+      constant_K = 2.0 / 3.0 * average_Ham - constant_K;
+    }
 
     // Calculate values for coefficients here - see SetLevelData.cpp
     // for details
     for (int ilev = 0; ilev < nlevels; ilev++) {
-      set_a_coef(*aCoef[ilev], *multigrid_vars[ilev], a_params, vectDx[ilev]);
+      set_a_coef(*aCoef[ilev], *multigrid_vars[ilev], a_params, vectDx[ilev],
+                 constant_K);
       set_b_coef(*bCoef[ilev], a_params, vectDx[ilev]);
-      set_rhs(*rhs[ilev], *multigrid_vars[ilev], vectDx[ilev], a_params);
+      set_rhs(*rhs[ilev], *multigrid_vars[ilev], vectDx[ilev], a_params,
+              constant_K);
     }
 
     // set up solver factory
@@ -172,11 +181,11 @@ int poissonSolve(const Vector<DisjointBoxLayout> &a_grids,
 
       // For interlevel ghosts
       if (ilev > 0) {
-        int num_comps = 1;
         QuadCFInterp quadCFI(a_grids[ilev], &a_grids[ilev - 1], vectDx[ilev][0],
-                             a_params.refRatio[ilev], num_comps,
+                             a_params.refRatio[ilev], 1,
                              vectDomains[ilev]);
-        quadCFI.coarseFineInterp(*multigrid_vars[ilev], *multigrid_vars[ilev - 1]);
+        quadCFI.coarseFineInterp(*dpsi[ilev],
+                                 *dpsi[ilev - 1]);
       }
 
       // For intralevel ghosts - this is done in set_update_phi0
@@ -188,12 +197,12 @@ int poissonSolve(const Vector<DisjointBoxLayout> &a_grids,
       set_update_psi0(*multigrid_vars[ilev], *dpsi[ilev], exchange_copier);
     }
 
-    // check if converged and if so exit NL iteration for loop
+    // check if converged or diverging and if so exit NL iteration for loop
     dpsi_norm = computeNorm(dpsi, a_params.refRatio, a_params.coarsestDx,
                             Interval(0, 0));
     pout() << "The norm of dpsi after step " << NL_iter + 1 << " is "
            << dpsi_norm << endl;
-    if (dpsi_norm < tolerance) {
+    if (dpsi_norm < tolerance || dpsi_norm > 1e5) {
       break;
     }
 
@@ -210,14 +219,30 @@ int poissonSolve(const Vector<DisjointBoxLayout> &a_grids,
 
   // now output final data in a form which can be read as a checkpoint file
   // for the GRChombo AMR time dependent runs
-  output_final_data(multigrid_vars, a_grids, vectDx, vectDomains, a_params);
+  output_final_data(multigrid_vars, a_grids, vectDx, vectDomains, a_params,
+                    constant_K);
+
+  // clean up data
+  for (int level = 0; level < multigrid_vars.size(); level++) {
+    if (multigrid_vars[level] != NULL) {
+      delete multigrid_vars[level];
+      multigrid_vars[level] = NULL;
+    }
+    if (rhs[level] != NULL) {
+      delete rhs[level];
+      rhs[level] = NULL;
+    }
+    if (dpsi[level] != NULL) {
+      delete dpsi[level];
+      dpsi[level] = NULL;
+    }
+  }
 
   int exitStatus = solver.m_exitStatus;
   // note that for AMRMultiGrid, success = 1.
   exitStatus -= 1;
   return exitStatus;
 }
-
 
 // Main function - keep this simple with just setup and read params
 int main(int argc, char *argv[]) {
