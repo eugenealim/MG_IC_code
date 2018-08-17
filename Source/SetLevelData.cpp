@@ -35,8 +35,6 @@ void set_initial_conditions(LevelData<FArrayBox> &a_multigrid_vars,
 
   CH_assert(a_multigrid_vars.nComp() == NUM_MULTIGRID_VARS);
 
-  RealVect cc_offset = 0.5 * a_dx * RealVect::Unit;
-
   DataIterator dit = a_multigrid_vars.dataIterator();
   for (dit.begin(); dit.ok(); ++dit) {
     FArrayBox &multigrid_vars_box = a_multigrid_vars[dit()];
@@ -51,15 +49,15 @@ void set_initial_conditions(LevelData<FArrayBox> &a_multigrid_vars,
       // set psi to 1.0 and zero dpsi
       // note that we don't include the singular part of psi
       // for the BHs - this is added at the output data stage
+      // and when we calculate psi_0 in the rhs etc
       // as it already satisfies Laplacian(psi) = 0
       multigrid_vars_box(iv, c_psi) = 1.0;
       dpsi_box(iv, 0) = 0.0;
 
       // set the phi value - need the distance from centre
-      RealVect loc(iv);
+      RealVect loc(iv + 0.5 * RealVect::Unit);
       loc *= a_dx;
-      loc += cc_offset;
-      loc -= a_params.domainLength/2.0;
+      loc -= a_params.domainLength / 2.0;
 
       // set phi according to user defined function
       multigrid_vars_box(iv, c_phi_0) =
@@ -102,7 +100,7 @@ void set_rhs(LevelData<FArrayBox> &a_rhs,
       IntVect iv = bit();
       RealVect loc(iv + 0.5 * RealVect::Unit);
       loc *= a_dx;
-      loc -= a_params.domainLength/2.0;
+      loc -= a_params.domainLength / 2.0;
 
       // rhs = m/8 psi_0^5 - 2 pi rho_grad psi_0  - laplacian(psi_0)
       Real m = 0;
@@ -161,7 +159,7 @@ void set_constant_K_integrand(LevelData<FArrayBox> &a_integrand,
       IntVect iv = bit();
       RealVect loc(iv + 0.5 * RealVect::Unit);
       loc *= a_dx;
-      loc -= a_params.domainLength/2.0;
+      loc -= a_params.domainLength / 2.0;
 
       // integrand = -1.5*m + 1.5 * \bar A_ij \bar A^ij psi_0^-12 +
       // 24 pi rho_grad psi_0^-4  + 12*laplacian(psi_0)*psi^-5
@@ -190,9 +188,9 @@ void set_constant_K_integrand(LevelData<FArrayBox> &a_integrand,
 
 // set the regrid condition - abs value of this drives AMR regrid
 void set_regrid_condition(LevelData<FArrayBox> &a_condition,
-                              LevelData<FArrayBox> &a_multigrid_vars,
-                              const RealVect &a_dx,
-                              const PoissonParameters &a_params) {
+                          LevelData<FArrayBox> &a_multigrid_vars,
+                          const RealVect &a_dx,
+                          const PoissonParameters &a_params) {
 
   CH_assert(a_multigrid_vars.nComp() == NUM_MULTIGRID_VARS);
 
@@ -214,7 +212,7 @@ void set_regrid_condition(LevelData<FArrayBox> &a_condition,
       IntVect iv = bit();
       RealVect loc(iv + 0.5 * RealVect::Unit);
       loc *= a_dx;
-      loc -= a_params.domainLength/2.0;
+      loc -= a_params.domainLength / 2.0;
 
       // calculate contributions
       Real m = 0;
@@ -229,13 +227,13 @@ void set_regrid_condition(LevelData<FArrayBox> &a_condition,
            2 * pow(multigrid_vars_box(iv, c_A13_0), 2.0) +
            2 * pow(multigrid_vars_box(iv, c_A23_0), 2.0);
 
-      // the condition is similar to the rhs but we take abs 
+      // the condition is similar to the rhs but we take abs
       // value of the contributions and add in BH criteria
       Real psi_bh = set_binary_bh_psi(loc, a_params);
       Real psi_0 = multigrid_vars_box(iv, c_psi) + psi_bh;
       condition_box(iv, 0) = 1.5 * abs(m) + 1.5 * A2 * pow(psi_0, -7.0) +
                              24.0 * M_PI * a_params.G_Newton *
-                             abs(rho_gradient(iv, 0)) * pow(psi_0, 1.0) +
+                                 abs(rho_gradient(iv, 0)) * pow(psi_0, 1.0) +
                              log(psi_0);
     }
   }
@@ -304,7 +302,7 @@ void set_a_coef(LevelData<FArrayBox> &a_aCoef,
       IntVect iv = bit();
       RealVect loc(iv + 0.5 * RealVect::Unit);
       loc *= a_dx;
-      loc -= a_params.domainLength/2.0;
+      loc -= a_params.domainLength / 2.0;
       // m(K, phi) = 2/3 K^2 - 16 pi G rho
       Real m;
       set_m_value(m, multigrid_vars_box(iv, c_phi_0), a_params, constant_K);
@@ -344,8 +342,7 @@ void set_b_coef(LevelData<FArrayBox> &a_bCoef,
 // used to set output data for all ADM Vars for GRChombo restart
 void set_output_data(LevelData<FArrayBox> &a_grchombo_vars,
                      LevelData<FArrayBox> &a_multigrid_vars,
-                     const PoissonParameters &a_params,
-                     const RealVect &a_dx,
+                     const PoissonParameters &a_params, const RealVect &a_dx,
                      const Real &constant_K) {
 
   CH_assert(a_grchombo_vars.nComp() == NUM_GRCHOMBO_VARS);
@@ -378,20 +375,22 @@ void set_output_data(LevelData<FArrayBox> &a_grchombo_vars,
       IntVect iv = bit();
       RealVect loc(iv + 0.5 * RealVect::Unit);
       loc *= a_dx;
-      loc -= a_params.domainLength/2.0;
+      loc -= a_params.domainLength / 2.0;
 
       // GRChombo conformal factor chi = psi^-4
       Real psi_bh = set_binary_bh_psi(loc, a_params);
-      grchombo_vars_box(iv, c_chi) = pow(multigrid_vars_box(iv, c_psi) + psi_bh, -4.0);
+      Real chi = pow(multigrid_vars_box(iv, c_psi) + psi_bh, -4.0);
+      grchombo_vars_box(iv, c_chi) = chi;
+      Real factor = pow(chi, 1.5);
 
-      // Copy phi  and Aij across
+      // Copy phi and Aij across - note this is now \tilde Aij not \bar Aij
       grchombo_vars_box(iv, c_phi) = multigrid_vars_box(iv, c_phi_0);
-      grchombo_vars_box(iv, c_A11) = multigrid_vars_box(iv, c_A11_0);
-      grchombo_vars_box(iv, c_A12) = multigrid_vars_box(iv, c_A12_0);
-      grchombo_vars_box(iv, c_A13) = multigrid_vars_box(iv, c_A13_0);
-      grchombo_vars_box(iv, c_A22) = multigrid_vars_box(iv, c_A22_0);
-      grchombo_vars_box(iv, c_A23) = multigrid_vars_box(iv, c_A23_0);
-      grchombo_vars_box(iv, c_A33) = multigrid_vars_box(iv, c_A33_0);
+      grchombo_vars_box(iv, c_A11) = multigrid_vars_box(iv, c_A11_0) * factor;
+      grchombo_vars_box(iv, c_A12) = multigrid_vars_box(iv, c_A12_0) * factor;
+      grchombo_vars_box(iv, c_A13) = multigrid_vars_box(iv, c_A13_0) * factor;
+      grchombo_vars_box(iv, c_A22) = multigrid_vars_box(iv, c_A22_0) * factor;
+      grchombo_vars_box(iv, c_A23) = multigrid_vars_box(iv, c_A23_0) * factor;
+      grchombo_vars_box(iv, c_A33) = multigrid_vars_box(iv, c_A33_0) * factor;
     }
   }
 }
