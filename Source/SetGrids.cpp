@@ -37,8 +37,8 @@ int set_grids(Vector<DisjointBoxLayout> &vectGrids,
   int numlevels = a_params.numLevels;
 
   ParmParse pp;
-  // grid generation parameters
 
+  // grid generation parameters
   vectGrids.resize(numlevels);
 
   int maxLevel = numlevels - 1;
@@ -89,7 +89,9 @@ int set_grids(Vector<DisjointBoxLayout> &vectGrids,
 
       set_initial_conditions(*temp_multigrid_vars, *temp_dpsi, dxLevel,
                              a_params);
-      set_rhs(*vectRHS[level], *temp_multigrid_vars, dxLevel, a_params, 0.0);
+
+      // set condition for regrid - use the integrability condition integral
+      set_regrid_condition(*vectRHS[level], *temp_multigrid_vars, dxLevel, a_params);
 
       if (temp_multigrid_vars != NULL) {
         delete temp_multigrid_vars;
@@ -102,7 +104,7 @@ int set_grids(Vector<DisjointBoxLayout> &vectGrids,
     }
 
     Vector<IntVectSet> tagVect(topLevel + 1);
-    int tags_grow = 1;
+    int tags_grow = 2;
     set_tag_cells(vectRHS, tagVect, vectDx, vectDomain, a_params.refineThresh,
                   tags_grow, baseLevel, topLevel + 1);
 

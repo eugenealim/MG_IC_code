@@ -180,7 +180,7 @@ void output_final_data( const Vector<LevelData<FArrayBox>* >&   a_multigrid_vars
         grchombo_vars[level] = new LevelData<FArrayBox>(a_grids[level], NUM_GRCHOMBO_VARS, 3*IntVect::Unit);
 
         //Add in the values of the data in the correct form
-        set_output_data(*grchombo_vars[level], *a_multigrid_vars[level], a_params, constant_K);
+        set_output_data(*grchombo_vars[level], *a_multigrid_vars[level], a_params, a_vectDx[level], constant_K);
 
         //Now continue the write out
         char level_str[20];

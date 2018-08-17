@@ -71,12 +71,12 @@ int poissonSolve(const Vector<DisjointBoxLayout> &a_grids,
   RealVect dxLev = RealVect::Unit;
   dxLev *= a_params.coarsestDx;
   ProblemDomain domLev(a_params.coarsestDomain);
+  IntVect ghosts = 3 * IntVect::Unit;
 
   // Declare variables here, with num comps, and ghosts for all
   // sources NB - we want output data to have 3 ghost cells to match GRChombo,
   // although not currently needed for 2nd order stencils used here
   for (int ilev = 0; ilev < nlevels; ilev++) {
-    IntVect ghosts = 3 * IntVect::Unit;
     multigrid_vars[ilev] =
         new LevelData<FArrayBox>(a_grids[ilev], NUM_MULTIGRID_VARS, ghosts);
     dpsi[ilev] = new LevelData<FArrayBox>(a_grids[ilev], 1, ghosts);
@@ -198,7 +198,7 @@ int poissonSolve(const Vector<DisjointBoxLayout> &a_grids,
       // For intralevel ghosts - this is done in set_update_phi0
       // but need the exchange copier object to do this
       Copier exchange_copier;
-      exchange_copier.exchangeDefine(a_grids[ilev], IntVect::Unit);
+      exchange_copier.exchangeDefine(a_grids[ilev], ghosts);
 
       // now the update
       set_update_psi0(*multigrid_vars[ilev], *dpsi[ilev], exchange_copier);

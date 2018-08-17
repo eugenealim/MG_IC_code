@@ -16,9 +16,9 @@ beta  = -1.0
 L = 100.0
 N = 64 64 64
 # number of AMR refinement levels is max_level + 1
-max_level    = 8
+max_level    = 6
 # Threshold for AMR refinement, based on magnitude of rhs
-refine_threshold = 0.01
+refine_threshold = 0.1
 #min box size
 block_factor = 8
 #max box size
@@ -33,7 +33,7 @@ numMGsmooth = 4 # number of GSRB smooths before and after MG coarsening
 num_mg     = 1 
 numMGIterations = 2 #this is the number of MG v-cycles in the preconditioner
 max_iterations = 100 #max number of solver iterations
-max_NL_iterations = 1 #non linear outside loop iterations
+max_NL_iterations = 6 #non linear outside loop iterations
 tolerance  = 1.0e-10  #solver tolerance for declaring convergence
 hang       = 1.0e-11  #solver tolerance for deciding when we're hung
 verbosity = 2 # higher number means more verbose output
@@ -57,9 +57,8 @@ bc_value = 0.0
 G_Newton = 1.0 
 
 # scalar field input params
-phi_amplitude = 0.0
+phi_amplitude = 0.1
 phi_wavelength = 1
-phi_center = 50.0 50.0 50.0
 
 # initial conditions for Binary BH spacetimes
 # (can be with or without periodic BCs, 
@@ -69,17 +68,17 @@ phi_center = 50.0 50.0 50.0
 #BH1
 bh1_bare_mass = 0.5
 # spin about z axis (this is J_z)
-bh1_spin = 0.0
+bh1_spin = 0.1
 # boost in y direction (this is P_y)
-bh1_momentum = 0.0
+bh1_momentum = 0.05
 # offset from center in x direction
 bh1_offset = 10.0
 
 #BH2
 bh2_bare_mass = 0.5
 # spin about z axis (this is J_z)
-bh2_spin = 0.0
+bh2_spin = 0.1
 # boost in y direction (this is P_y)
-bh2_momentum = -0.0
+bh2_momentum = -0.05
 # offset from center in x direction
 bh2_offset = -10.0

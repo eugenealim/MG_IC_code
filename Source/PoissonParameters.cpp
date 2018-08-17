@@ -37,7 +37,6 @@ void getPoissonParameters(PoissonParameters &a_params) {
   pp.get("G_Newton", a_params.G_Newton);
   pp.get("phi_amplitude", a_params.phi_amplitude);
   pp.get("phi_wavelength", a_params.phi_wavelength);
-  pp.getarr("phi_center", a_params.phi_center, 0, SpaceDim);
 
   if (abs(a_params.phi_amplitude) > 0.0) {
     pout() << "Spacetime contains scalar field of amplitude "

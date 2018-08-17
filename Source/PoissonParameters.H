@@ -52,7 +52,6 @@ public:
   Real         G_Newton;
   Real         phi_amplitude;
   Real         phi_wavelength;
-  Vector<Real> phi_center;
   Real         bh1_bare_mass;
   Real         bh2_bare_mass;
   Real         bh1_spin;
