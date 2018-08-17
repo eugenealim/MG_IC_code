@@ -12,6 +12,7 @@
 #include "CONSTANTS.H"
 #include "CoarseAverage.H"
 #include "LoadBalance.H"
+#include "MyPhiFunction.H"
 #include "PoissonParameters.H"
 #include "SetLevelDataF_F.H"
 #include "UsingNamespace.H"
@@ -56,11 +57,11 @@ void set_initial_conditions(LevelData<FArrayBox> &a_multigrid_vars,
       loc += cc_offset;
       RealVect center(a_params.phi_center);
       loc -= center;
-      Real r2 = D_TERM(loc[0] * loc[0], +loc[1] * loc[1], +loc[2] * loc[2]);
 
-      // a gaussian
+      // set phi according to user defined function
       multigrid_vars_box(iv, c_phi_0) =
-          a_params.phi_amplitude * exp(-r2 / a_params.phi_wavelength);
+          my_phi_function(loc, a_params.phi_amplitude, a_params.phi_wavelength,
+                          a_params.domainLength);
 
       // set the BH values - location
       RealVect loc_bh1 = loc;
@@ -79,8 +80,13 @@ void set_initial_conditions(LevelData<FArrayBox> &a_multigrid_vars,
       Real Jz2 = a_params.bh2_spin;
       Real Py1 = a_params.bh1_momentum;
       Real Py2 = a_params.bh2_momentum;
+      RealVect n1 = {loc_bh1[0] / r_bh1, loc_bh1[1] / r_bh1,
+                     loc_bh1[2] / r_bh1};
+      RealVect n2 = {loc_bh2[0] / r_bh2, loc_bh2[1] / r_bh2,
+                     loc_bh2[2] / r_bh2};
 
-      multigrid_vars_box(iv, c_psi) += -m1 / r_bh1 - m2 / r_bh2;
+      // set the vars
+      multigrid_vars_box(iv, c_psi) += 0.5 * m1 / r_bh1 + 0.5 * m2 / r_bh2;
       multigrid_vars_box(iv, c_A11_0) = 0.0;
       multigrid_vars_box(iv, c_A12_0) = 0.0;
       multigrid_vars_box(iv, c_A13_0) = 0.0;
@@ -126,9 +132,9 @@ void set_rhs(LevelData<FArrayBox> &a_rhs,
 
       // Also \bar  A_ij \bar A^ij
       Real A2 = 0.0;
-      A2 =     pow(multigrid_vars_box(iv, c_A11_0), 2.0) +
-               pow(multigrid_vars_box(iv, c_A22_0), 2.0) +
-               pow(multigrid_vars_box(iv, c_A33_0), 2.0) +
+      A2 = pow(multigrid_vars_box(iv, c_A11_0), 2.0) +
+           pow(multigrid_vars_box(iv, c_A22_0), 2.0) +
+           pow(multigrid_vars_box(iv, c_A33_0), 2.0) +
            2 * pow(multigrid_vars_box(iv, c_A12_0), 2.0) +
            2 * pow(multigrid_vars_box(iv, c_A13_0), 2.0) +
            2 * pow(multigrid_vars_box(iv, c_A23_0), 2.0);
@@ -141,6 +147,60 @@ void set_rhs(LevelData<FArrayBox> &a_rhs,
     }
   }
 } // end set_rhs
+
+// Set the integrand for the integrability condition for constant K
+// when periodic BCs set
+void set_constant_K_integrand(LevelData<FArrayBox> &a_integrand,
+             LevelData<FArrayBox> &a_multigrid_vars, const RealVect &a_dx,
+             const PoissonParameters &a_params) {
+
+  CH_assert(a_multigrid_vars.nComp() == NUM_MULTIGRID_VARS);
+
+  DataIterator dit = a_integrand.dataIterator();
+  for (dit.begin(); dit.ok(); ++dit) {
+    FArrayBox &multigrid_vars_box = a_multigrid_vars[dit()];
+    FArrayBox &integrand_box = a_integrand[dit()];
+    integrand_box.setVal(0.0, 0);
+    Box this_box = integrand_box.box(); // no ghost cells
+
+    // calculate the laplacian of psi across the box
+    FArrayBox laplacian_of_psi(this_box, 1);
+    FORT_GETLAPLACIANPSIF(CHF_FRA1(laplacian_of_psi, 0),
+                          CHF_CONST_FRA1(multigrid_vars_box, c_psi),
+                          CHF_CONST_REAL(a_dx[0]), CHF_BOX(this_box));
+
+    // calculate the rho contribution from gradients of phi
+    FArrayBox rho_gradient(this_box, 1);
+    FORT_GETRHOGRADPHIF(CHF_FRA1(rho_gradient, 0),
+                        CHF_CONST_FRA1(multigrid_vars_box, c_phi_0),
+                        CHF_CONST_REAL(a_dx[0]), CHF_BOX(this_box));
+
+    BoxIterator bit(this_box);
+    for (bit.begin(); bit.ok(); ++bit) {
+      IntVect iv = bit();
+
+      // integrand = -1.5*m + 1.5 * \bar A_ij \bar A^ij psi_0^-12 +
+      // 24 pi rho_grad psi_0^-4  + 12*laplacian(psi_0)*psi^-5
+      Real m = 0;
+      set_m_value(m, multigrid_vars_box(iv, c_phi_0), a_params, 0.0);
+
+      // Also \bar  A_ij \bar A^ij
+      Real A2 = 0.0;
+      A2 = pow(multigrid_vars_box(iv, c_A11_0), 2.0) +
+           pow(multigrid_vars_box(iv, c_A22_0), 2.0) +
+           pow(multigrid_vars_box(iv, c_A33_0), 2.0) +
+           2 * pow(multigrid_vars_box(iv, c_A12_0), 2.0) +
+           2 * pow(multigrid_vars_box(iv, c_A13_0), 2.0) +
+           2 * pow(multigrid_vars_box(iv, c_A23_0), 2.0);
+
+      Real psi_0 = multigrid_vars_box(iv, c_psi);
+      integrand_box(iv, 0) =
+          -1.5 * m + 1.5 * A2 * pow(psi_0, -12.0) +
+          24.0 * M_PI * a_params.G_Newton * rho_gradient(iv, 0) * pow(psi_0, -4.0) +
+          12.0 * laplacian_of_psi(iv, 0) * pow(psi_0, -5.0);
+    }
+  }
+} // end set_constant_K_integrand
 
 // Add the correction to psi0 after the solver operates
 void set_update_psi0(LevelData<FArrayBox> &a_multigrid_vars,
@@ -209,9 +269,9 @@ void set_a_coef(LevelData<FArrayBox> &a_aCoef,
 
       // Also \bar  A_ij \bar A^ij
       Real A2 = 0.0;
-      A2 =     pow(multigrid_vars_box(iv, c_A11_0), 2.0) +
-               pow(multigrid_vars_box(iv, c_A22_0), 2.0) +
-               pow(multigrid_vars_box(iv, c_A33_0), 2.0) +
+      A2 = pow(multigrid_vars_box(iv, c_A11_0), 2.0) +
+           pow(multigrid_vars_box(iv, c_A22_0), 2.0) +
+           pow(multigrid_vars_box(iv, c_A33_0), 2.0) +
            2 * pow(multigrid_vars_box(iv, c_A12_0), 2.0) +
            2 * pow(multigrid_vars_box(iv, c_A13_0), 2.0) +
            2 * pow(multigrid_vars_box(iv, c_A23_0), 2.0);

@@ -69,7 +69,8 @@ void ParseBC(FArrayBox &a_state, const Box &a_valid,
           if (GlobalBCRS::s_bcLo[i] == 1) {
             if (!GlobalBCRS::s_printedThatLo[i]) {
               GlobalBCRS::s_printedThatLo[i] = true;
-              pout() << "Constant Neumann bcs imposed for low side direction " << i << endl;
+              pout() << "Constant Neumann bcs imposed for low side direction "
+                     << i << endl;
             }
             NeumBC(a_state, valid, a_dx, a_homogeneous,
                    ParseValue, // BCValueHolder class
@@ -77,14 +78,16 @@ void ParseBC(FArrayBox &a_state, const Box &a_valid,
           } else if (GlobalBCRS::s_bcLo[i] == 0) {
             if (!GlobalBCRS::s_printedThatLo[i]) {
               GlobalBCRS::s_printedThatLo[i] = true;
-              pout() << "Constant Dirichlet bcs imposed for low side direction " << i << endl;
+              pout() << "Constant Dirichlet bcs imposed for low side direction "
+                     << i << endl;
             }
             DiriBC(a_state, valid, a_dx, a_homogeneous, ParseValue, i,
                    Side::Lo);
           } else if (GlobalBCRS::s_bcLo[i] == 2) {
             if (!GlobalBCRS::s_printedThatLo[i]) {
               GlobalBCRS::s_printedThatLo[i] = true;
-              pout() << "Periodic bcs imposed for low side direction " << i << endl;
+              pout() << "Periodic bcs imposed for low side direction " << i
+                     << endl;
             }
 
           } else {
@@ -96,21 +99,25 @@ void ParseBC(FArrayBox &a_state, const Box &a_valid,
           if (GlobalBCRS::s_bcHi[i] == 1) {
             if (!GlobalBCRS::s_printedThatHi[i]) {
               GlobalBCRS::s_printedThatHi[i] = true;
-              pout() << "Constant Neumann bcs imposed for high side direction " << i << endl;
+              pout() << "Constant Neumann bcs imposed for high side direction "
+                     << i << endl;
             }
             NeumBC(a_state, valid, a_dx, a_homogeneous, ParseValue, i,
                    Side::Hi);
           } else if (GlobalBCRS::s_bcHi[i] == 0) {
             if (!GlobalBCRS::s_printedThatHi[i]) {
               GlobalBCRS::s_printedThatHi[i] = true;
-              pout() << "Constant Dirichlet bcs imposed for high side direction " << i << endl;
+              pout()
+                  << "Constant Dirichlet bcs imposed for high side direction "
+                  << i << endl;
             }
             DiriBC(a_state, valid, a_dx, a_homogeneous, ParseValue, i,
                    Side::Hi);
           } else if (GlobalBCRS::s_bcHi[i] == 2) {
             if (!GlobalBCRS::s_printedThatHi[i]) {
               GlobalBCRS::s_printedThatHi[i] = true;
-              pout() << "Periodic bcs imposed for high side direction " << i << endl;
+              pout() << "Periodic bcs imposed for high side direction " << i
+                     << endl;
             }
           } else {
             MayDay::Error("bogus bc flag high side");

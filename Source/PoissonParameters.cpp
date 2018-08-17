@@ -39,9 +39,9 @@ void getPoissonParameters(PoissonParameters &a_params) {
   pp.get("phi_wavelength", a_params.phi_wavelength);
   pp.getarr("phi_center", a_params.phi_center, 0, SpaceDim);
 
-  if (abs(a_params.phi_amplitude) > 0.0) 
-  {
-     pout() << "Spacetime contains scalar field of amplitude " << a_params.phi_amplitude << endl;
+  if (abs(a_params.phi_amplitude) > 0.0) {
+    pout() << "Spacetime contains scalar field of amplitude "
+           << a_params.phi_amplitude << endl;
   }
 
   // Initial conditions for the black holes
@@ -54,10 +54,10 @@ void getPoissonParameters(PoissonParameters &a_params) {
   pp.get("bh1_momentum", a_params.bh1_momentum);
   pp.get("bh2_momentum", a_params.bh2_momentum);
 
-  if (abs(a_params.bh1_bare_mass) > 0.0 || abs(a_params.bh2_bare_mass) > 0.0) 
-  {
-     pout() << "Spacetime contains black holes with bare masses " << a_params.bh1_bare_mass << " and " 
-            << a_params.bh2_bare_mass << endl;
+  if (abs(a_params.bh1_bare_mass) > 0.0 || abs(a_params.bh2_bare_mass) > 0.0) {
+    pout() << "Spacetime contains black holes with bare masses "
+           << a_params.bh1_bare_mass << " and " << a_params.bh2_bare_mass
+           << endl;
   }
 
   // Set verbosity

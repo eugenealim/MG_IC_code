@@ -18,7 +18,7 @@ refine_threshold = 0.8
 # AMR grid params 
 L = 100.0
 N = 64 64 64
-max_level    = 4
+max_level    = 1
 block_factor = 16
 fill_ratio   = 0.7
 max_grid_size = 16
@@ -41,7 +41,7 @@ coefficient_average_type = harmonic
 
 # Boundary conditions for domain-boundary faces 
 # 0 for non periodic, 1 for periodic (enforces same for all)
-is_periodic = 0
+is_periodic = 1
 # if not periodic, then what?
 # 1 -> const Neumann (gradient), 0 -> const Dirichlet (value)
 bc_lo       = 0 0 0
@@ -54,7 +54,7 @@ bc_value = 0.0
 G_Newton = 1.0 
 
 # scalar field input params
-phi_amplitude = 1e-2
+phi_amplitude = 0.1
 phi_wavelength = 1
 phi_center = 50.0 50.0 50.0
 

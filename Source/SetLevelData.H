@@ -30,6 +30,11 @@ extern void set_rhs(LevelData<FArrayBox>&    a_rhs,
                     const PoissonParameters& a_params,
                     const Real constant_K);
 
+extern void set_constant_K_integrand(LevelData<FArrayBox>&    a_rhs,
+                    LevelData<FArrayBox>&    a_multigrid_vars,
+                    const RealVect&          a_dx,
+                    const PoissonParameters& a_params);
+
 extern void set_initial_conditions(LevelData<FArrayBox>& a_multigrid_vars,
                    LevelData<FArrayBox>&    a_dpsi,
                    const RealVect&          a_dx,

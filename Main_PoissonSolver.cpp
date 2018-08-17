@@ -21,6 +21,7 @@
 #include "VariableCoeffPoissonOperatorFactory.H"
 #include "WriteOutput.H"
 #include "computeNorm.H"
+#include "computeSum.H"
 #include <iostream>
 
 #ifdef CH_Linux
@@ -55,6 +56,8 @@ int poissonSolve(const Vector<DisjointBoxLayout> &a_grids,
   Vector<LevelData<FArrayBox> *> dpsi(nlevels, NULL);
   // the solver vars - coefficients and source
   Vector<LevelData<FArrayBox> *> rhs(nlevels, NULL);
+  // the integrand for constant K integrability condition
+  Vector<LevelData<FArrayBox> *> integrand(nlevels, NULL);
   // the coeff for the I term
   Vector<RefCountedPtr<LevelData<FArrayBox>>> aCoef(nlevels);
   // the coeff for the Laplacian
@@ -74,9 +77,11 @@ int poissonSolve(const Vector<DisjointBoxLayout> &a_grids,
   // although not currently needed for 2nd order stencils used here
   for (int ilev = 0; ilev < nlevels; ilev++) {
     IntVect ghosts = 3 * IntVect::Unit;
-    multigrid_vars[ilev] = new LevelData<FArrayBox>(a_grids[ilev], NUM_MULTIGRID_VARS, ghosts);
+    multigrid_vars[ilev] =
+        new LevelData<FArrayBox>(a_grids[ilev], NUM_MULTIGRID_VARS, ghosts);
     dpsi[ilev] = new LevelData<FArrayBox>(a_grids[ilev], 1, ghosts);
     rhs[ilev] = new LevelData<FArrayBox>(a_grids[ilev], 1, IntVect::Zero);
+    integrand[ilev] = new LevelData<FArrayBox>(a_grids[ilev], 1, IntVect::Zero);
     aCoef[ilev] = RefCountedPtr<LevelData<FArrayBox>>(
         new LevelData<FArrayBox>(a_grids[ilev], 1, IntVect::Zero));
     bCoef[ilev] = RefCountedPtr<LevelData<FArrayBox>>(
@@ -130,14 +135,16 @@ int poissonSolve(const Vector<DisjointBoxLayout> &a_grids,
 
     // Set integrability condition on K if periodic
     if (a_params.periodic[0] == 1) {
-      // Calculate values for rhs here with K unset
+      // Calculate values for integrand here with K unset
+      pout() << "Computing average K value... " << endl;
       for (int ilev = 0; ilev < nlevels; ilev++) {
-        set_rhs(*rhs[ilev], *multigrid_vars[ilev], vectDx[ilev], a_params,
-                constant_K);
+        set_constant_K_integrand(*integrand[ilev], *multigrid_vars[ilev], vectDx[ilev], a_params);
       }
-      Real average_Ham = computeNorm(rhs, a_params.refRatio,
+      Real integral = computeSum(integrand, a_params.refRatio,
                                      a_params.coarsestDx, Interval(0, 0));
-      constant_K = 2.0 / 3.0 * average_Ham - constant_K;
+      Real volume = a_params.domainLength[0]*a_params.domainLength[1]*a_params.domainLength[2];
+      constant_K = - sqrt(abs(integral) / volume);
+      pout() << "Constant average K value set to " << constant_K << endl;
     }
 
     // Calculate values for coefficients here - see SetLevelData.cpp
@@ -182,10 +189,8 @@ int poissonSolve(const Vector<DisjointBoxLayout> &a_grids,
       // For interlevel ghosts
       if (ilev > 0) {
         QuadCFInterp quadCFI(a_grids[ilev], &a_grids[ilev - 1], vectDx[ilev][0],
-                             a_params.refRatio[ilev], 1,
-                             vectDomains[ilev]);
-        quadCFI.coarseFineInterp(*dpsi[ilev],
-                                 *dpsi[ilev - 1]);
+                             a_params.refRatio[ilev], 1, vectDomains[ilev]);
+        quadCFI.coarseFineInterp(*dpsi[ilev], *dpsi[ilev - 1]);
       }
 
       // For intralevel ghosts - this is done in set_update_phi0
@@ -231,6 +236,10 @@ int poissonSolve(const Vector<DisjointBoxLayout> &a_grids,
     if (rhs[level] != NULL) {
       delete rhs[level];
       rhs[level] = NULL;
+    }
+    if (integrand[level] != NULL) {
+      delete integrand[level];
+      integrand[level] = NULL;
     }
     if (dpsi[level] != NULL) {
       delete dpsi[level];

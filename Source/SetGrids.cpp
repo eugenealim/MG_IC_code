@@ -85,8 +85,7 @@ int set_grids(Vector<DisjointBoxLayout> &vectGrids,
 
       temp_multigrid_vars = new LevelData<FArrayBox>(
           vectGrids[level], NUM_MULTIGRID_VARS, IntVect::Unit);
-      temp_dpsi =
-          new LevelData<FArrayBox>(vectGrids[level], 1, IntVect::Unit);
+      temp_dpsi = new LevelData<FArrayBox>(vectGrids[level], 1, IntVect::Unit);
 
       set_initial_conditions(*temp_multigrid_vars, *temp_dpsi, dxLevel,
                              a_params);
@@ -125,8 +124,7 @@ int set_grids(Vector<DisjointBoxLayout> &vectGrids,
                                      vectDomain[lev]);
       vectGrids[lev] = newDBL;
       delete vectRHS[lev];
-      vectRHS[lev] =
-          new LevelData<FArrayBox>(vectGrids[lev], 1, IntVect::Zero);
+      vectRHS[lev] = new LevelData<FArrayBox>(vectGrids[lev], 1, IntVect::Zero);
     } // end loop over levels for initialization
 
     // figure out whether we need another pass through grid generation

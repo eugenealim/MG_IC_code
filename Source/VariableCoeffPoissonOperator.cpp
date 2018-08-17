@@ -266,7 +266,8 @@ void VariableCoeffPoissonOperator::reflux(
     LevelData<FArrayBox> &a_residual,
     AMRLevelOp<LevelData<FArrayBox>> *a_finerOp) {
 
-  //pout() << "Warning :: VariableCoeffPoissonOperator::reflux - called but not implemented" << endl;
+  // pout() << "Warning :: VariableCoeffPoissonOperator::reflux - called but not
+  // implemented" << endl;
 }
 
 void VariableCoeffPoissonOperator::levelGSRB(
@@ -391,7 +392,8 @@ void VariableCoeffPoissonOperator::getFlux(FArrayBox &a_flux,
                                            const Box &a_facebox, int a_dir,
                                            int a_ref) const {
 
-//  pout() << "Warning :: VariableCoeffPoissonOperator::getFlux - called but not implemented" << endl;
+  //  pout() << "Warning :: VariableCoeffPoissonOperator::getFlux - called but
+  //  not implemented" << endl;
 }
 
 // set the time
