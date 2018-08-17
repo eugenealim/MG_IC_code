@@ -138,12 +138,14 @@ int poissonSolve(const Vector<DisjointBoxLayout> &a_grids,
       // Calculate values for integrand here with K unset
       pout() << "Computing average K value... " << endl;
       for (int ilev = 0; ilev < nlevels; ilev++) {
-        set_constant_K_integrand(*integrand[ilev], *multigrid_vars[ilev], vectDx[ilev], a_params);
+        set_constant_K_integrand(*integrand[ilev], *multigrid_vars[ilev],
+                                 vectDx[ilev], a_params);
       }
       Real integral = computeSum(integrand, a_params.refRatio,
-                                     a_params.coarsestDx, Interval(0, 0));
-      Real volume = a_params.domainLength[0]*a_params.domainLength[1]*a_params.domainLength[2];
-      constant_K = - sqrt(abs(integral) / volume);
+                                 a_params.coarsestDx, Interval(0, 0));
+      Real volume = a_params.domainLength[0] * a_params.domainLength[1] *
+                    a_params.domainLength[2];
+      constant_K = -sqrt(abs(integral) / volume);
       pout() << "Constant average K value set to " << constant_K << endl;
     }
 
@@ -217,7 +219,7 @@ int poissonSolve(const Vector<DisjointBoxLayout> &a_grids,
 
   // Mayday if result not converged at all - using a fairly generous threshold
   // for this as usually non convergence means everything goes nuts
-  if (dpsi_norm > 1e-3) {
+  if (dpsi_norm > 1e-1) {
     MayDay::Error(
         "NL iterations did not converge - may need a better initial guess");
   }

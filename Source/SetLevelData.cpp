@@ -14,6 +14,7 @@
 #include "LoadBalance.H"
 #include "MyPhiFunction.H"
 #include "PoissonParameters.H"
+#include "SetBinaryBH.H"
 #include "SetLevelDataF_F.H"
 #include "UsingNamespace.H"
 #include "VariableCoeffPoissonOperatorFactory.H"
@@ -63,36 +64,8 @@ void set_initial_conditions(LevelData<FArrayBox> &a_multigrid_vars,
           my_phi_function(loc, a_params.phi_amplitude, a_params.phi_wavelength,
                           a_params.domainLength);
 
-      // set the BH values - location
-      RealVect loc_bh1 = loc;
-      loc_bh1[0] -= a_params.bh1_offset;
-      Real r_bh1 = sqrt(loc_bh1[0] * loc_bh1[0] + loc_bh1[1] * loc_bh1[1] +
-                        loc_bh1[2] * loc_bh1[2]);
-      RealVect loc_bh2 = loc;
-      loc_bh2[0] -= a_params.bh2_offset;
-      Real r_bh2 = sqrt(loc_bh2[0] * loc_bh2[0] + loc_bh2[1] * loc_bh2[1] +
-                        loc_bh2[2] * loc_bh2[2]);
-
-      // the Bowen York params
-      Real m1 = a_params.bh1_bare_mass;
-      Real m2 = a_params.bh2_bare_mass;
-      Real Jz1 = a_params.bh1_spin;
-      Real Jz2 = a_params.bh2_spin;
-      Real Py1 = a_params.bh1_momentum;
-      Real Py2 = a_params.bh2_momentum;
-      RealVect n1 = {loc_bh1[0] / r_bh1, loc_bh1[1] / r_bh1,
-                     loc_bh1[2] / r_bh1};
-      RealVect n2 = {loc_bh2[0] / r_bh2, loc_bh2[1] / r_bh2,
-                     loc_bh2[2] / r_bh2};
-
-      // set the vars
-      multigrid_vars_box(iv, c_psi) += 0.5 * m1 / r_bh1 + 0.5 * m2 / r_bh2;
-      multigrid_vars_box(iv, c_A11_0) = 0.0;
-      multigrid_vars_box(iv, c_A12_0) = 0.0;
-      multigrid_vars_box(iv, c_A13_0) = 0.0;
-      multigrid_vars_box(iv, c_A22_0) = 0.0;
-      multigrid_vars_box(iv, c_A23_0) = 0.0;
-      multigrid_vars_box(iv, c_A33_0) = 0.0;
+      // set Aij and psi according to BH params
+      set_binary_bh(multigrid_vars_box, iv, loc, a_params);
     }
   }
 } // end set_initial_conditions
@@ -151,8 +124,9 @@ void set_rhs(LevelData<FArrayBox> &a_rhs,
 // Set the integrand for the integrability condition for constant K
 // when periodic BCs set
 void set_constant_K_integrand(LevelData<FArrayBox> &a_integrand,
-             LevelData<FArrayBox> &a_multigrid_vars, const RealVect &a_dx,
-             const PoissonParameters &a_params) {
+                              LevelData<FArrayBox> &a_multigrid_vars,
+                              const RealVect &a_dx,
+                              const PoissonParameters &a_params) {
 
   CH_assert(a_multigrid_vars.nComp() == NUM_MULTIGRID_VARS);
 
@@ -194,10 +168,10 @@ void set_constant_K_integrand(LevelData<FArrayBox> &a_integrand,
            2 * pow(multigrid_vars_box(iv, c_A23_0), 2.0);
 
       Real psi_0 = multigrid_vars_box(iv, c_psi);
-      integrand_box(iv, 0) =
-          -1.5 * m + 1.5 * A2 * pow(psi_0, -12.0) +
-          24.0 * M_PI * a_params.G_Newton * rho_gradient(iv, 0) * pow(psi_0, -4.0) +
-          12.0 * laplacian_of_psi(iv, 0) * pow(psi_0, -5.0);
+      integrand_box(iv, 0) = -1.5 * m + 1.5 * A2 * pow(psi_0, -12.0) +
+                             24.0 * M_PI * a_params.G_Newton *
+                                 rho_gradient(iv, 0) * pow(psi_0, -4.0) +
+                             12.0 * laplacian_of_psi(iv, 0) * pow(psi_0, -5.0);
     }
   }
 } // end set_constant_K_integrand

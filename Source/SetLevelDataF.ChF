@@ -31,11 +31,13 @@ c     ----------------------------------------------------------------------
              ii1 = CHF_ID(d0,1);
              ii2 = CHF_ID(d0,2)]
 
-           dpsidxdx = 1.0/dx/dx * (
-     &     + 1*psi(CHF_OFFSETIX[i;-ii]  )
-     &     - 2*psi(CHF_AUTOIX[i]        )
-     &     + 1*psi(CHF_OFFSETIX[i;+ii]  )
-     &       )
+           dpsidxdx = 1.0/12.0/dx/dx * (
+     &     - 1 *psi(CHF_OFFSETIX[i;-2*ii]  )
+     &     + 16*psi(CHF_OFFSETIX[i;  -ii]  )
+     &     - 30*psi(CHF_AUTOIX  [i]        )
+     &     + 16*psi(CHF_OFFSETIX[i;  +ii]  )
+     &     - 1 *psi(CHF_OFFSETIX[i;+2*ii]  )
+     &     )
 
            l_of_psi(CHF_AUTOIX[i]) = l_of_psi(CHF_AUTOIX[i]) + dpsidxdx
          enddo
@@ -67,9 +69,11 @@ c     Note that the psi^-4 term from raising the index is dealt with elsewhere
               ii1 = CHF_ID(d0,1);
               ii2 = CHF_ID(d0,2)]
 
-            dphidx = 0.5/dx * (
-     &     + 1*phi(CHF_OFFSETIX[i;+ii])
-     &     - 1*phi(CHF_OFFSETIX[i;-ii])
+            dphidx = 1.0/12.0/dx * (
+     &     - 1*phi(CHF_OFFSETIX[i;+2*ii])
+     &     + 8*phi(CHF_OFFSETIX[i;  +ii])
+     &     - 8*phi(CHF_OFFSETIX[i;  -ii])
+     &     + 1*phi(CHF_OFFSETIX[i;-2*ii])
      &       )
 
             rho_grad_phi(CHF_AUTOIX[i]) = rho_grad_phi(CHF_AUTOIX[i]) + 0.5*dphidx*dphidx

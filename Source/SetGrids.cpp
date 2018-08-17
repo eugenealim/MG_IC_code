@@ -84,8 +84,8 @@ int set_grids(Vector<DisjointBoxLayout> &vectGrids,
       LevelData<FArrayBox> *temp_dpsi;
 
       temp_multigrid_vars = new LevelData<FArrayBox>(
-          vectGrids[level], NUM_MULTIGRID_VARS, IntVect::Unit);
-      temp_dpsi = new LevelData<FArrayBox>(vectGrids[level], 1, IntVect::Unit);
+          vectGrids[level], NUM_MULTIGRID_VARS, 3*IntVect::Unit);
+      temp_dpsi = new LevelData<FArrayBox>(vectGrids[level], 1, 3*IntVect::Unit);
 
       set_initial_conditions(*temp_multigrid_vars, *temp_dpsi, dxLevel,
                              a_params);
