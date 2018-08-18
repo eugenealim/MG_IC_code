@@ -4,3 +4,4 @@ o/
 p/
 *.ex
 pout.*
+*.hdf5
